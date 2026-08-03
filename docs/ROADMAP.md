@@ -1,20 +1,23 @@
 # 🗺️ Roadmap — Isafer Boutique Web Demo
 
-## 🔴 Tareas Completadas (Fase 1: Setup & Planificación)
+## 🟢 Tareas Completadas (Fase 1 & 2: Setup y Adaptación Visual)
 - [x] Análisis de capturas de referencia de Instagram y TikTok.
-- [x] Definición de branding, paleta de colores (Hot Pink + Dorado Luxe) y tipografía.
-- [x] Copia y estructura del proyecto base (TanStack Start + Vite).
+- [x] Definición de branding, paleta de colores Barbie Luxe (Hot Pink + Dorado Luxe) y tipografía (*Playfair Display*).
+- [x] Estructuración del proyecto TanStack Start + Vite en la rama `dev`.
 - [x] Inicialización del entorno Git en la rama `dev` enlazado a `https://github.com/musa3101/W-shopisafer`.
-- [x] Integración de reglas de sesión y documentación obligatoria (`docs/`).
+- [x] Creación de logos SVG vectoriales para header y footer con monograma "IF".
+- [x] Actualización de componentes y datos en `src/routes/index.tsx`:
+  - WhatsApp oficial: `+1 (929) 677-2514`
+  - Ubicación: Brooklyn, NY (`4711 Brooklyn`)
+  - Redes sociales: `@shopisafer` (Instagram) / `@shop_isafer1` (TikTok)
+  - Precios en Dólares ($USD)
+- [x] Validación y verificación del build de producción sin errores (`npm run build`).
 
-## 🟡 Tareas en Progreso (Fase 2: Adaptación de la Demo)
-- [ ] Adaptar Design Tokens en `src/styles.css` (Rosa Barbie, Dorado, Tipografía elegante).
-- [ ] Actualizar datos de tienda (Nombre: Isafer Boutique, Teléfono WhatsApp: `+1 (929) 677-2514`, Ubicación: Brooklyn, NY).
-- [ ] Reemplazar catálogo de productos con prendas reales/representativas de Isafer (licras moldeadoras, vestidos de malla, tops de nudo, etc.).
-- [ ] Reemplazar sección de fragancias por banner de propuesta de valor ("Realza tu figura · Brooklyn, NY").
-- [ ] Crear / adaptar imágenes y logo provisional estilo Barbie Luxe.
+## 🟡 Tareas en Progreso (Fase 3: Assets Multimedia)
+- [ ] Reemplazo de fotografías de productos y hero por imágenes renderizadas estilo Isafer Boutique.
+- [ ] Ajuste fino de microinteracciones y efectos hover Barbie Luxe.
 
-## 🟢 Próximas Mejoras Prioritarias (Fase 3: Polish & Multidioma)
-- [ ] Optimización para dispositivos móviles (experiencia fluida estilo Instagram/TikTok).
-- [ ] Internacionalización (i18n) Español / Inglés.
-- [ ] Despliegue en Cloudflare / GitHub según el flujo del desarrollador.
+## 🔵 Próximas Mejoras Prioritarias (Fase 4: i18n & Despliegue)
+- [ ] Sistema multidioma Español / Inglés.
+- [ ] Subir cambios al repositorio de GitHub (`git push origin dev`) tras confirmación del usuario.
+- [ ] Despliegue en Cloudflare Workers / Pages según flujo de trabajo.
