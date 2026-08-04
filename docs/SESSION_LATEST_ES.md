@@ -42,6 +42,9 @@
     - **Pedidos por WhatsApp**: Si la clienta tiene sesión iniciada y hace un pedido por WhatsApp, recibe automáticamente un correo detallando su selección de prendas, importes y enlace directo de WhatsApp.
 11. **Alertas por WhatsApp a la Dueña Camila**:
     - **Notificación de Compras en Stripe**: Cuando el webhook procesa un pago con éxito, realiza una llamada a CallMeBot para enviar un WhatsApp automático al móvil de Camila (`19296772514`) indicando el código de orden, nombre del cliente y total de la compra.
+12. **Keep-Alive Automático para InsForge (GitHub Actions)**:
+    - **Workflow de Tarea Programada**: Creado el archivo `.github/workflows/keep-alive.yml` que ejecuta un cron en GitHub Actions cada **30 minutos**.
+    - **Ping Externo**: Hace un `curl` rápido a la base de datos de InsForge pidiendo un único producto. Esto simula una visita y garantiza que el backend se mantenga despierto las 24/7 de manera gratuita.
 
 ### 📂 Archivos modificados
 - `src/services/insforgeService.ts`
@@ -49,6 +52,8 @@
 - `src/components/AdminDashboardModal.tsx`
 - `src/routes/index.tsx`
 - `functions/stripe-webhook.ts`
+- `package.json`
+- `.github/workflows/keep-alive.yml`
 - `docs/SESSION_LATEST_ES.md`
 - `docs/ROADMAP.md`
 

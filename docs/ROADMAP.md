@@ -21,6 +21,7 @@
 - [x] **Banner de Ubicación e Idioma Dinámico (Pull&Bear Style)**: Banner regulatorio responsivo flotante en la esquina inferior de la pantalla. Detecta automáticamente la preferencia de idioma del navegador del cliente y propone cambiar la ubicación e idioma (Español <-> Inglés) con almacenamiento persistente en `LocalStorage`.
 - [x] **Envío Automático de Correos de Pedido (Gmail)**: Sincronización del envío de confirmaciones detalladas al email real del cliente tanto para pagos aprobados con tarjeta (mediante el Webhook de Stripe en backend) como para pedidos solicitados por WhatsApp (a través del frontend integrado).
 - [x] **Notificación por WhatsApp de Nuevos Pedidos a la Dueña**: Integrada la API de CallMeBot en el webhook de Stripe para notificar automáticamente al número de Camila (`19296772514`) cuando se completa una compra con tarjeta en la web.
+- [x] **Keep-Alive de InsForge en segundo plano**: Creado el workflow de GitHub Actions `.github/workflows/keep-alive.yml` que hace un ping automático por API cada 30 minutos de forma 100% gratuita y externa para mantener el servidor siempre despierto y rápido.
 
 ## 🟡 Tareas en Progreso
 - [ ] Verificación de despliegue activo en Cloudflare Pages / Workers (`https://isafer.mynextbymusa.workers.dev`).
