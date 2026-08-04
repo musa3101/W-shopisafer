@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "isafer",
+  "main": "dist/server/server.js",
   "compatibility_date": "2026-08-03",
   "compatibility_flags": [
     "nodejs_compat"
