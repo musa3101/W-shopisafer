@@ -20,12 +20,12 @@ import {
   Truck,
   Flame,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import heroImage from "@/assets/rosse-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
-import { createOrder } from "@/services/insforgeService";
+import { createOrder, fetchProducts, BackendProduct } from "@/services/insforgeService";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { CustomerAccountModal } from "@/components/CustomerAccountModal";
@@ -34,6 +34,7 @@ import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { TrendingCarousel } from "@/components/TrendingCarousel";
 import {
   Sheet,
   SheetClose,
@@ -64,10 +65,10 @@ export const Route = createFileRoute("/")({
 });
 
 interface ProductItem {
-  id: number;
+  id: string | number;
   name: string;
   price: number;
-  category: "Licras" | "Vestidos" | "Tops & Sets" | "Bodys & Corsets" | "Accesorios & Glam";
+  category: string;
   tag: string;
   position?: string;
   image?: string;
@@ -185,10 +186,10 @@ const products: ProductItem[] = [
   },
 ];
 
-type Cart = Record<number, number>;
+type Cart = Record<string | number, number>;
 
-function ProductCrop({ id, alt, product }: { id?: number; alt?: string; product?: ProductItem }) {
-  const p = product ?? (id !== undefined ? products[id] : undefined);
+function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string; product?: ProductItem }) {
+  const p = product ?? (id !== undefined ? products.find(prod => String(prod.id) === String(id)) : undefined);
   if (!p) return null;
   if (p.image) {
     return (
@@ -214,23 +215,67 @@ function ProductCrop({ id, alt, product }: { id?: number; alt?: string; product?
 
 function Index() {
   const { t } = useTranslation();
+  const [productsList, setProductsList] = useState<ProductItem[]>(products);
   const [cart, setCart] = useState<Cart>({});
   const [cartOpen, setCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("Todos");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
-  const [favorites, setFavorites] = useState<Record<number, boolean>>({});
+  const [favorites, setFavorites] = useState<Record<string | number, boolean>>({});
+  const [isCatalogExpanded, setIsCatalogExpanded] = useState(false);
 
-  const { user, isAdmin, isCustomer } = useAuth();
+  const { user, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
+
+  const loadProductsFromInsForge = async () => {
+    try {
+      const backendProds = await fetchProducts();
+      if (backendProds && backendProds.length > 0) {
+        const mapped: ProductItem[] = backendProds.map((bp, idx) => {
+          let category = "Tops & Sets";
+          const nameLower = bp.name.toLowerCase();
+          if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
+            category = "Vestidos";
+          } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
+            category = "Licras";
+          } else if (nameLower.includes("body")) {
+            category = "Bodys & Corsets";
+          } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
+            category = "Accesorios & Glam";
+          }
+
+          return {
+            id: bp.id || idx,
+            name: bp.name,
+            price: Number(bp.price),
+            category,
+            tag: bp.badge || "Destacado",
+            image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
+            description: bp.description || "",
+          };
+        });
+        setProductsList(mapped);
+      }
+    } catch (err) {
+      console.error("Error cargando productos de InsForge:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadProductsFromInsForge();
+  }, []);
+
+  useEffect(() => {
+    setIsCatalogExpanded(false);
+  }, [activeCategory]);
 
   const itemCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
   const subtotal = useMemo(
-    () => products.reduce((sum, product) => sum + product.price * (cart[product.id] ?? 0), 0),
-    [cart],
+    () => productsList.reduce((sum, product) => sum + product.price * (cart[product.id] ?? 0), 0),
+    [cart, productsList],
   );
 
-  const toggleFavorite = (id: number) => {
+  const toggleFavorite = (id: string | number) => {
     setFavorites((prev) => {
       const next = { ...prev, [id]: !prev[id] };
       toast(next[id] ? "Añadido a favoritos 💖" : "Eliminado de favoritos", {
@@ -240,13 +285,16 @@ function Index() {
     });
   };
 
-  const addProduct = (id: number) => {
+  const addProduct = (id: string | number) => {
+    const item = productsList.find((p) => String(p.id) === String(id));
     setCart((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
     setCartOpen(true);
-    toast.success(`${products[id].name} añadido a tu bolsa ✨`);
+    if (item) {
+      toast.success(`${item.name} añadido a tu bolsa ✨`);
+    }
   };
 
-  const updateProduct = (id: number, change: number) =>
+  const updateProduct = (id: string | number, change: number) =>
     setCart((current) => {
       const quantity = Math.max(0, (current[id] ?? 0) + change);
       const next = { ...current };
@@ -255,14 +303,16 @@ function Index() {
       return next;
     });
 
-  const removeProduct = (id: number) => {
-    const productName = products[id].name;
+  const removeProduct = (id: string | number) => {
+    const item = productsList.find((p) => String(p.id) === String(id));
     setCart((current) => {
       const next = { ...current };
       delete next[id];
       return next;
     });
-    toast.info(`${productName} eliminado de la bolsa`);
+    if (item) {
+      toast.info(`${item.name} eliminado de la bolsa`);
+    }
   };
 
   const scrollToSection = (id: string) => {
@@ -273,7 +323,7 @@ function Index() {
   };
 
   const handleCheckout = () => {
-    const activeItems = products.filter((p) => cart[p.id]);
+    const activeItems = productsList.filter((p) => cart[p.id]);
 
     if (activeItems.length === 0) {
       toast.error("Tu bolsa está vacía");
@@ -300,6 +350,7 @@ function Index() {
       customer_email: user?.email || "cliente@isaferboutique.com",
       total_amount: subtotal,
       items: activeItems.map((p) => ({
+        product_id: String(p.id),
         name: p.name,
         price: p.price,
         quantity: cart[p.id],
@@ -308,9 +359,9 @@ function Index() {
   };
 
   const filteredProducts = useMemo(() => {
-    if (activeCategory === "Todos") return products;
-    return products.filter((p) => p.category === activeCategory);
-  }, [activeCategory]);
+    if (activeCategory === "Todos") return productsList;
+    return productsList.filter((p) => p.category === activeCategory);
+  }, [activeCategory, productsList]);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900 dark:selection:text-amber-100">
@@ -322,8 +373,8 @@ function Index() {
       </div>
 
       {/* 2. HEADER NAVBAR */}
-      <header className="sticky top-0 z-40 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-background/85 backdrop-blur-xl transition-all">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-8">
+      <header className="sticky top-0 z-40 border-b border-rose-100 bg-[#fff8fa]/95 text-zinc-800 backdrop-blur-xl transition-all">
+        <div className="relative mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-8">
           {/* Left Menu Drawer Trigger */}
           <div className="flex items-center gap-2">
             <Sheet>
@@ -331,102 +382,152 @@ function Index() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="rounded-full text-zinc-700 hover:text-primary hover:bg-rose-100/50"
                   aria-label="Abrir menú de navegación"
                 >
                   <Menu className="size-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[88%] max-w-sm border-zinc-800 bg-zinc-950 p-8 text-zinc-100">
-                <SheetHeader className="text-left pb-6 border-b border-zinc-800">
-                  <SheetTitle className="p-0">
-                    <IsaferLogo variant="white" />
-                  </SheetTitle>
-                  <SheetDescription className="text-zinc-400 text-xs mt-2">
-                    Ropa Femenina & Licras Moldeadoras · Brooklyn, NY
-                  </SheetDescription>
-                </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-6 text-xl font-medium tracking-tight">
-                  {[
-                    ["Nueva Colección", "#coleccion"],
-                    ["Categorías Bento", "#categorias"],
-                    ["El Sello Isafer", "#estilo"],
-                    ["Visítanos en Brooklyn", "#visitanos"],
-                  ].map(([label, href]) => (
-                    <SheetClose asChild key={label}>
-                      <a
-                        href={href}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          scrollToSection(href.substring(1));
-                        }}
-                        className="group flex items-center justify-between border-b border-zinc-800/60 pb-3 text-zinc-300 transition-colors hover:text-amber-300 cursor-pointer"
-                      >
-                        <span>{label}</span>
-                        <ArrowRight className="size-4 opacity-0 transition-opacity group-hover:opacity-100 text-amber-400" />
-                      </a>
-                    </SheetClose>
-                  ))}
-                </nav>
-                <div className="mt-12 pt-6 border-t border-zinc-800 space-y-4">
-                  <a
-                    href="https://www.instagram.com/shopisafer"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2.5 text-xs tracking-wider uppercase text-zinc-400 hover:text-amber-300 transition-colors"
-                  >
-                    <Instagram className="size-4 text-amber-400" /> @shopisafer
-                  </a>
-                  <a
-                    href="https://wa.me/19296772514"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2.5 text-xs tracking-wider uppercase text-zinc-400 hover:text-emerald-400 transition-colors"
-                  >
-                    <MessageCircle className="size-4 text-emerald-400" /> +1 (929) 677-2514
-                  </a>
+              <SheetContent side="left" className="w-[88%] max-w-sm border-r border-zinc-150 bg-white p-6 text-zinc-800 flex flex-col justify-between">
+                <div>
+                  <SheetHeader className="text-left pb-4 border-b border-zinc-100">
+                    <SheetTitle className="p-0">
+                      <IsaferLogo variant="header" size="md" />
+                    </SheetTitle>
+                    <SheetDescription className="text-zinc-500 text-xs mt-2">
+                      Ropa Femenina & Licras Moldeadoras · Brooklyn, NY
+                    </SheetDescription>
+                  </SheetHeader>
+                  <nav className="mt-6 flex flex-col">
+                    {[
+                      ["Nueva Colección", "#coleccion"],
+                      ["Categorías Bento", "#categorias"],
+                      ["El Sello Isafer", "#estilo"],
+                      ["Visítanos en Brooklyn", "#visitanos"],
+                    ].map(([label, href]) => (
+                      <SheetClose asChild key={label}>
+                        <a
+                          href={href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            scrollToSection(href.substring(1));
+                          }}
+                          className="flex items-center justify-between border-b border-zinc-100 py-4 text-xs font-bold uppercase tracking-widest text-zinc-700 hover:text-primary transition-colors cursor-pointer group"
+                        >
+                          <span>{label}</span>
+                          <Plus className="size-3.5 text-zinc-400 group-hover:text-primary transition-colors" />
+                        </a>
+                      </SheetClose>
+                    ))}
+                  </nav>
+                </div>
+
+                <div className="mt-auto space-y-6 pt-6 border-t border-zinc-100">
+                  {/* Language Selector (mobile only) */}
+                  <div className="flex flex-col gap-2 md:hidden">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">Idioma / Language</span>
+                    <div className="flex justify-start">
+                      <LanguageSelector />
+                    </div>
+                  </div>
+
+                  {/* Account button (mobile only) */}
+                  <div className="flex flex-col gap-2 md:hidden">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">Mi Cuenta</span>
+                    {user ? (
+                      <SheetClose asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full flex items-center justify-start gap-2.5 rounded-full border-rose-100/50 bg-[#fff8fa] text-zinc-700 hover:text-primary hover:bg-rose-50 text-xs font-semibold px-4 py-2.5 h-auto"
+                          onClick={() => {
+                            if (isAdmin) setAdminModalOpen(true);
+                            else setCustomerModalOpen(true);
+                          }}
+                        >
+                          {isAdmin ? <ShieldCheck className="size-4 text-amber-500" /> : <UserCheck className="size-4 text-primary" />}
+                          <span className="truncate">{user.email}</span>
+                        </Button>
+                      </SheetClose>
+                    ) : (
+                      <SheetClose asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full flex items-center justify-start gap-2.5 rounded-full border-rose-100/50 bg-[#fff8fa] text-zinc-700 hover:text-primary hover:bg-rose-50 text-xs font-semibold px-4 py-2.5 h-auto"
+                          onClick={() => setAuthDialogOpen(true)}
+                        >
+                          <User className="size-4 text-primary" /> Iniciar Sesión / Registrarse
+                        </Button>
+                      </SheetClose>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    <a
+                      href="https://www.instagram.com/shopisafer"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2.5 text-xs tracking-wider uppercase text-zinc-500 hover:text-primary transition-colors"
+                    >
+                      <Instagram className="size-4 text-primary" /> @shopisafer
+                    </a>
+                    <a
+                      href="https://wa.me/19296772514"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-2.5 text-xs tracking-wider uppercase text-zinc-500 hover:text-emerald-500 transition-colors"
+                    >
+                      <MessageCircle className="size-4 text-emerald-400" /> +1 (929) 677-2514
+                    </a>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
           </div>
 
-          {/* Center Brand Logo */}
-          <a
-            href="#inicio"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection("inicio");
-            }}
-            className="cursor-pointer transition-transform hover:scale-105"
-            aria-label="Isafer Boutique Inicio"
-          >
-            <IsaferLogo />
-          </a>
+          {/* Center Brand Logo (Absolute Center) */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
+            <a
+              href="#inicio"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection("inicio");
+              }}
+              className="cursor-pointer"
+              aria-label="Isafer Boutique Inicio"
+            >
+              <IsaferLogo variant="header" size="md" />
+            </a>
+          </div>
 
           {/* Right Action Icons: Auth, Language & Cart */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <LanguageSelector />
-            {user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-800 text-xs font-semibold px-4"
-                onClick={() => (isAdmin ? setAdminModalOpen(true) : setCustomerModalOpen(true))}
-              >
-                {isAdmin ? <ShieldCheck className="size-4 text-amber-500" /> : <UserCheck className="size-4 text-emerald-500" />}
-                <span className="truncate max-w-[100px]">{user.email?.split("@")[0]}</span>
-              </Button>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                onClick={() => setAuthDialogOpen(true)}
-                aria-label="Cuenta de cliente"
-              >
-                <User className="size-5" />
-              </Button>
-            )}
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            {/* Desktop Action Icons */}
+            <div className="hidden md:flex items-center gap-2 sm:gap-3">
+              <LanguageSelector />
+              {user ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-100 text-zinc-700 hover:text-primary hover:bg-rose-100/30 text-xs font-semibold px-4"
+                  onClick={() => (isAdmin ? setAdminModalOpen(true) : setCustomerModalOpen(true))}
+                >
+                  {isAdmin ? <ShieldCheck className="size-4 text-amber-500" /> : <UserCheck className="size-4 text-emerald-500" />}
+                  <span className="truncate max-w-[100px]">{user.email?.split("@")[0]}</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-zinc-700 hover:text-primary hover:bg-rose-100/30"
+                  onClick={() => setAuthDialogOpen(true)}
+                  aria-label="Cuenta de cliente"
+                >
+                  <User className="size-5" />
+                </Button>
+              )}
+            </div>
 
             {/* Cart Trigger */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
@@ -434,13 +535,13 @@ function Index() {
                 <Button
                   variant="default"
                   size="sm"
-                  className="relative rounded-full px-4 h-10 bg-zinc-950 text-zinc-100 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-semibold text-xs gap-2 shadow-lg transition-transform active:scale-95"
+                  className="relative rounded-full px-4 h-10 bg-primary text-primary-foreground hover:bg-primary/95 font-semibold text-xs gap-2 shadow-lg shadow-rose-200/50 transition-transform active:scale-95 border border-primary/20"
                   aria-label={`Carrito, ${itemCount} artículos`}
                 >
                   <ShoppingBag className="size-4" />
                   <span className="hidden sm:inline">Bolsa</span>
                   {itemCount > 0 && (
-                    <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-zinc-950">
+                    <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-zinc-950 text-[11px] font-bold text-white">
                       {itemCount}
                     </span>
                   )}
@@ -467,7 +568,7 @@ function Index() {
                       <p className="text-xs mt-1 text-zinc-600">Añade licras o vestidos de la nueva colección</p>
                     </div>
                   ) : (
-                    products
+                    productsList
                       .filter((product) => cart[product.id])
                       .map((product) => (
                         <div
@@ -562,33 +663,25 @@ function Index() {
 
           <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-32 sm:px-10 lg:px-16">
             <div className="max-w-2xl">
-              {/* H3 Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-1.5 backdrop-blur-md mb-6">
-                <Sparkles className="size-3.5 text-amber-400" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-amber-300">
-                  {t("hero_badge")}
-                </span>
-              </div>
-
               {/* H1 Display Title (gpt-taste rule) */}
-              <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl font-black leading-[0.9] tracking-[-0.04em] text-white uppercase">
-                {t("hero_title_1")}
+              <h1 className="font-display text-4xl sm:text-6xl font-black leading-[1.0] tracking-tight text-white uppercase text-balance">
+                {t("hero_title_1").includes("y") ? "Sensual &" : "Sexy &"}
                 <br />
-                <span className="italic font-serif font-normal text-amber-200 drop-shadow-sm normal-case">
-                  {t("hero_title_2")}
+                <span className="italic font-serif font-normal text-primary drop-shadow-sm normal-case">
+                  {t("hero_title_1").includes("y") ? "Elegante" : "Elegant"}
                 </span>
               </h1>
 
-              {/* Body Text (max 65 chars rule) */}
-              <p className="mt-6 max-w-lg text-sm sm:text-base leading-relaxed text-zinc-300 font-normal">
+              {/* Body Text (max 65 chars rule - hidden on mobile) */}
+              <p className="mt-6 max-w-lg text-sm sm:text-base leading-relaxed text-zinc-300 font-normal hidden sm:block">
                 {t("hero_subtitle")}
               </p>
 
               {/* CTA Buttons (gpt-taste uppercase tracking rule) */}
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-8 flex items-center">
                 <Button
                   asChild
-                  className="h-13 rounded-full px-8 text-xs font-bold uppercase tracking-[0.2em] bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-amber-400/20 shadow-xl transition-transform hover:scale-105 cursor-pointer"
+                  className="w-full sm:w-auto h-13 rounded-full px-8 text-xs font-bold uppercase tracking-[0.2em] bg-primary text-white hover:bg-primary/90 shadow-lg shadow-rose-950/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <a
                     href="#coleccion"
@@ -596,35 +689,21 @@ function Index() {
                       e.preventDefault();
                       scrollToSection("coleccion");
                     }}
+                    className="flex items-center justify-center gap-1.5"
                   >
                     {t("hero_cta_primary")} ✦
                   </a>
                 </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-13 rounded-full px-7 text-xs font-bold uppercase tracking-[0.2em] border-zinc-700 bg-zinc-900/60 backdrop-blur-md text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
-                >
-                  <a
-                    href="#visitanos"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection("visitanos");
-                    }}
-                  >
-                    {t("hero_cta_secondary")}
-                  </a>
-                </Button>
               </div>
 
-              {/* Social Proof Stats */}
-              <div className="mt-12 flex items-center gap-6 pt-6 border-t border-zinc-800/80 text-xs text-zinc-400">
+              {/* Social Proof Stats - hidden on mobile */}
+              <div className="mt-12 hidden sm:flex items-center gap-6 pt-6 border-t border-zinc-800/80 text-xs text-zinc-400">
                 <div className="flex items-center gap-1.5">
                   <div className="flex -space-x-1">
                     {[1, 2, 3, 4].map((i) => (
                       <span
                         key={i}
-                        className="inline-flex size-6 items-center justify-center rounded-full bg-amber-400/20 border border-amber-400 text-[10px] font-bold text-amber-300"
+                        className="inline-flex size-6 items-center justify-center rounded-full bg-primary/20 border border-primary text-[10px] font-bold text-primary"
                       >
                         ★
                       </span>
@@ -639,12 +718,21 @@ function Index() {
           </div>
         </section>
 
+        {/* Trending/New Arrivals Carousel */}
+        <TrendingCarousel
+          products={productsList}
+          favorites={favorites}
+          toggleFavorite={toggleFavorite}
+          addProduct={addProduct}
+          t={t}
+        />
+
         {/* 4. BENTO GRID CATEGORIES (uipro-max skill) */}
         <section id="categorias" className="scroll-mt-20 py-16 sm:py-24 bg-zinc-900 text-zinc-100">
           <div className="mx-auto max-w-7xl px-5 sm:px-8">
             <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-400">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
                   ESTRUCTURA DE ESTILOS
                 </p>
                 <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
@@ -666,7 +754,7 @@ function Index() {
                 }}
                 className="group relative md:col-span-2 aspect-[4/3] md:aspect-auto md:h-96 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 flex flex-col justify-end cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl"
               >
-                <ProductCrop product={products[1]} />
+                <ProductCrop product={productsList[3] || productsList[0]} />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
                 <div className="relative z-10">
                   <span className="inline-block rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-2">
@@ -692,7 +780,7 @@ function Index() {
                 }}
                 className="group relative aspect-[3/4] md:h-96 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 flex flex-col justify-end cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl"
               >
-                <ProductCrop product={products[2]} />
+                <ProductCrop product={productsList[7] || productsList[0]} />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
                 <div className="relative z-10">
                   <span className="inline-block rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-semibold uppercase text-zinc-300 mb-2">
@@ -714,7 +802,7 @@ function Index() {
                 }}
                 className="group relative aspect-[3/4] md:h-96 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 flex flex-col justify-end cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl"
               >
-                <ProductCrop product={products[0]} />
+                <ProductCrop product={productsList[0]} />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
                 <div className="relative z-10">
                   <span className="inline-block rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-semibold uppercase text-zinc-300 mb-2">
@@ -736,7 +824,7 @@ function Index() {
           <div className="mx-auto max-w-7xl px-4 sm:px-8">
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 dark:text-amber-400">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
                   {t("catalog_badge")}
                 </p>
                 <h2 className="mt-1 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
@@ -758,11 +846,10 @@ function Index() {
                     key={id}
                     variant={activeCategory === id ? "default" : "outline"}
                     size="sm"
-                    className={`rounded-full px-5 text-xs font-semibold transition-all ${
-                      activeCategory === id
+                    className={`rounded-full px-5 text-xs font-semibold transition-all ${activeCategory === id
                         ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-md"
                         : "border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    }`}
+                      }`}
                     onClick={() => setActiveCategory(id)}
                   >
                     {label}
@@ -772,75 +859,106 @@ function Index() {
             </div>
 
             {/* Product Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <article
-                  key={product.id}
-                  className="group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-card p-3 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
-                >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
-                    <ProductCrop product={product} />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {filteredProducts.map((product, idx) => {
+                const shouldHide = !isCatalogExpanded && (
+                  idx >= 4 ? (idx >= 8 ? "hidden" : "hidden lg:block") : ""
+                );
+                return (
+                  <article
+                    key={product.id}
+                    className={`group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-card p-3 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${shouldHide}`}
+                  >
+                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+                      <ProductCrop product={product} />
 
-                    {/* Tag Badge */}
-                    <span className="absolute left-3 top-3 rounded-full bg-zinc-950/80 backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/30">
-                      {product.tag}
-                    </span>
-
-                    {/* Wishlist Heart */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(product.id);
-                      }}
-                      className="absolute right-3 top-3 size-9 rounded-full bg-zinc-950/60 backdrop-blur-md flex items-center justify-center text-white hover:text-red-400 transition-colors"
-                      aria-label="Guardar en favoritos"
-                    >
-                      <Heart
-                        className={`size-4 ${favorites[product.id] ? "fill-red-500 text-red-500" : ""}`}
-                      />
-                    </button>
-
-                    {/* Quick Add Button Overlay */}
-                    <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <Button
-                        className="w-full rounded-full h-11 text-xs font-bold uppercase tracking-wider bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-xl cursor-pointer"
-                        onClick={() => addProduct(product.id)}
-                      >
-                        <Plus className="mr-1 size-4" /> {t("catalog_add_to_cart")}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="p-3 pt-4 flex flex-col flex-1 justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                        {product.category}
+                      {/* Tag Badge */}
+                      <span className="absolute left-3 top-3 rounded-full bg-zinc-950/80 backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/30">
+                        {product.tag}
                       </span>
-                      <h3 className="mt-1 font-display text-lg font-bold tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-                        {product.name}
-                      </h3>
-                      <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                        {product.description}
-                      </p>
+
+                      {/* Wishlist Heart */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(product.id);
+                        }}
+                        className="absolute right-3 top-3 size-9 rounded-full bg-zinc-950/60 backdrop-blur-md flex items-center justify-center text-white hover:text-red-400 transition-colors"
+                        aria-label="Guardar en favoritos"
+                      >
+                        <Heart
+                          className={`size-4 ${favorites[product.id] ? "fill-red-500 text-red-500" : ""}`}
+                        />
+                      </button>
+
+                      {/* Quick Add Button Overlay */}
+                      <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <Button
+                          className="w-full rounded-full h-11 text-xs font-bold uppercase tracking-wider bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-xl cursor-pointer"
+                          onClick={() => addProduct(product.id)}
+                        >
+                          <Plus className="mr-1 size-4" /> {t("catalog_add_to_cart")}
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                      <span className="font-mono text-lg font-extrabold text-zinc-950 dark:text-zinc-100">
-                        ${product.price.toFixed(2)} <span className="text-[10px] font-normal text-zinc-400">USD</span>
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-full h-9 px-3 text-xs font-semibold border-zinc-300 dark:border-zinc-700 hover:bg-zinc-950 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-950"
-                        onClick={() => addProduct(product.id)}
-                      >
-                        <ShoppingBag className="size-3.5 mr-1" /> Pedir
-                      </Button>
+                    <div className="p-3 pt-4 flex flex-col flex-1 justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                          {product.category}
+                        </span>
+                        <h3 className="mt-1 font-display text-sm sm:text-base md:text-lg font-bold tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                          {product.name}
+                        </h3>
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2 hidden sm:block">
+                          {product.description}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                        <span className="font-mono text-lg font-extrabold text-zinc-950 dark:text-zinc-100">
+                          ${product.price.toFixed(2)} <span className="text-[10px] font-normal text-zinc-400 hidden sm:inline">USD</span>
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full h-9 w-9 p-0 sm:w-auto sm:px-3 text-xs font-semibold border-zinc-300 dark:border-zinc-700 hover:bg-zinc-950 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-950"
+                          onClick={() => addProduct(product.id)}
+                          aria-label={t("catalog_add_to_cart")}
+                        >
+                          <ShoppingBag className="size-3.5 sm:mr-1" />
+                          <span className="hidden sm:inline">Pedir</span>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
+
+            {/* Show More / Show Less Button */}
+            {filteredProducts.length > 4 && (
+              <div
+                className={`mt-12 flex justify-center ${
+                  filteredProducts.length <= 8 ? "lg:hidden" : ""
+                }`}
+              >
+                <Button
+                  onClick={() => setIsCatalogExpanded(!isCatalogExpanded)}
+                  className="rounded-full h-12 px-8 text-xs font-bold uppercase tracking-[0.2em] bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 border border-zinc-300 dark:border-zinc-700 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg shadow-zinc-200/20"
+                >
+                  {isCatalogExpanded ? (
+                    <>
+                      {t("catalog_show_less")} ✦
+                    </>
+                  ) : (
+                    <>
+                      {t("catalog_show_more")} ✦
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -938,7 +1056,13 @@ function Index() {
             </div>
 
             {/* Social Posts Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div
+              className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-5 pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
               {[
                 {
                   title: "Licra Moldeadora Efecto Cintura Reloj de Arena 🔥",
@@ -974,7 +1098,7 @@ function Index() {
                   href={item.link}
                   target="_blank"
                   rel="noreferrer"
-                  className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 aspect-[4/5] flex flex-col justify-end p-4 transition-all duration-300 hover:border-rose-400/50 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 aspect-[4/5] flex flex-col justify-end p-4 transition-all duration-300 hover:border-rose-400/50 hover:shadow-2xl min-w-[75%] sm:min-w-0 snap-start shrink-0 sm:shrink"
                 >
                   <img
                     src={item.image}
@@ -1000,10 +1124,10 @@ function Index() {
         {/* 7. VISÍTANOS EN BROOKLYN (SHOWROOM CARD) */}
         <section id="visitanos" className="scroll-mt-20 py-20 px-5 bg-background">
           <div className="mx-auto max-w-5xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-card p-8 sm:p-14 text-center shadow-2xl relative overflow-hidden">
-            <div className="inline-flex size-14 items-center justify-center rounded-full bg-amber-400/10 text-amber-500 mb-6">
+            <div className="inline-flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-6">
               <MapPin className="size-7" />
             </div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-amber-600 dark:text-amber-400">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
               NUESTRA TIENDA FÍSICA
             </p>
             <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
@@ -1045,66 +1169,76 @@ function Index() {
       </main>
 
       {/* 8. FOOTER */}
-      <footer className="border-t border-zinc-800 bg-zinc-950 px-5 pb-12 pt-16 text-zinc-300">
+      <footer className="border-t border-rose-950/40 bg-[#0c080a] px-5 pb-12 pt-16 text-zinc-300 shadow-[0_-4px_20px_rgba(219,39,119,0.05)]">
         <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-4 gap-10">
-          <div className="md:col-span-2">
-            <IsaferLogo variant="white" showSubtext={true} />
+          <div className="md:col-span-2 flex flex-col items-center text-center md:items-start md:text-left">
+            <div className="relative group inline-flex items-center justify-center mb-2">
+              {/* Glowing pink halo / neon arch */}
+              <div className="absolute -inset-1.5 bg-primary/20 rounded-2xl blur opacity-75 group-hover:opacity-100 group-hover:bg-primary/30 transition-all duration-300"></div>
+              {/* Rounded logo container */}
+              <div className="relative p-1.5 bg-zinc-950 border border-primary/30 rounded-2xl shadow-[0_0_15px_rgba(219,39,119,0.25)]">
+                <IsaferLogo variant="footer" size="md" />
+              </div>
+            </div>
             <p className="mt-4 text-xs text-zinc-400 max-w-sm leading-relaxed">
               Boutique femenina exclusiva en Brooklyn, Nueva York. Especialistas en licras moldeadoras de alta compresión, vestidos sensuales y outfits de noche.
             </p>
-            <div className="mt-6 flex items-center gap-4 text-xs font-semibold text-amber-300">
-              <span>📍 Brooklyn, NY</span>
-              <span>•</span>
-              <span>🇺🇸 Envíos a todo USA</span>
+            <div className="mt-6 flex flex-wrap justify-center md:justify-start items-center gap-3 text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-amber-300">
+                📍 Brooklyn, NY
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-primary/20 text-primary">
+                🇺🇸 Envíos a todo USA
+              </span>
             </div>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <h4 className="font-display text-sm font-bold uppercase tracking-wider text-white mb-4">
               Navegación
             </h4>
-            <ul className="space-y-2.5 text-xs text-zinc-400">
+            <ul className="space-y-3.5 text-xs text-zinc-400">
               <li>
-                <a href="#coleccion" onClick={(e) => { e.preventDefault(); scrollToSection("coleccion"); }} className="hover:text-amber-300 transition-colors">
+                <a href="#coleccion" onClick={(e) => { e.preventDefault(); scrollToSection("coleccion"); }} className="hover:text-primary transition-colors">
                   Nueva Colección
                 </a>
               </li>
               <li>
-                <a href="#categorias" onClick={(e) => { e.preventDefault(); scrollToSection("categorias"); }} className="hover:text-amber-300 transition-colors">
+                <a href="#categorias" onClick={(e) => { e.preventDefault(); scrollToSection("categorias"); }} className="hover:text-primary transition-colors">
                   Licras Moldeadoras
                 </a>
               </li>
               <li>
-                <a href="#estilo" onClick={(e) => { e.preventDefault(); scrollToSection("estilo"); }} className="hover:text-amber-300 transition-colors">
+                <a href="#estilo" onClick={(e) => { e.preventDefault(); scrollToSection("estilo"); }} className="hover:text-primary transition-colors">
                   El Sello Isafer
                 </a>
               </li>
               <li>
-                <a href="#visitanos" onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }} className="hover:text-amber-300 transition-colors">
+                <a href="#visitanos" onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }} className="hover:text-primary transition-colors">
                   Showroom Brooklyn
                 </a>
               </li>
             </ul>
           </div>
 
-          <div>
+          <div className="flex flex-col items-center text-center md:items-start md:text-left">
             <h4 className="font-display text-sm font-bold uppercase tracking-wider text-white mb-4">
               Redes & Contacto
             </h4>
-            <div className="space-y-3 text-xs text-zinc-400">
+            <div className="space-y-3.5 text-xs text-zinc-400 flex flex-col items-center md:items-start">
               <a
                 href="https://www.instagram.com/shopisafer"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 hover:text-amber-300 transition-colors"
+                className="flex items-center gap-2.5 hover:text-primary transition-colors"
               >
-                <Instagram className="size-4 text-amber-400" /> @shopisafer (Instagram)
+                <Instagram className="size-4 text-primary" /> @shopisafer (Instagram)
               </a>
               <a
                 href="https://www.tiktok.com/@shop_isafer1"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 hover:text-amber-300 transition-colors"
+                className="flex items-center gap-2.5 hover:text-amber-400 transition-colors"
               >
                 <Sparkles className="size-4 text-amber-400" /> @shop_isafer1 (TikTok)
               </a>
@@ -1112,7 +1246,7 @@ function Index() {
                 href="https://wa.me/19296772514"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-2.5 hover:text-emerald-400 transition-colors"
               >
                 <MessageCircle className="size-4 text-emerald-400" /> WhatsApp Oficial
               </a>
@@ -1120,7 +1254,7 @@ function Index() {
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl mt-12 pt-8 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+        <div className="mx-auto max-w-7xl mt-12 pt-8 border-t border-zinc-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
           <p>© {new Date().getFullYear()} Isafer Boutique. Todos los derechos reservados. Brooklyn, NY.</p>
           <p className="text-[10px] tracking-widest uppercase">Designed with MYNEXT Design System</p>
         </div>
@@ -1138,26 +1272,27 @@ function Index() {
         </Button>
       )}
 
-      {/* Floating WhatsApp Action Button */}
-      <Button
-        asChild
-        size="icon"
-        className="fixed bottom-5 right-5 z-30 size-14 rounded-full bg-emerald-500 text-white shadow-2xl hover:bg-emerald-400 transition-transform hover:scale-110 cursor-pointer"
-        aria-label="Contactar por WhatsApp"
-      >
-        <a
-          href="https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20quisiera%20consultar%20sobre%20sus%20prendas"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <MessageCircle className="size-7" />
-        </a>
-      </Button>
+
 
       {/* Dialogs */}
-      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
-      <CustomerAccountModal open={customerModalOpen} onOpenChange={setCustomerModalOpen} />
-      <AdminDashboardModal open={adminModalOpen} onOpenChange={setAdminModalOpen} />
+      <AuthDialog
+        open={authDialogOpen}
+        onOpenChange={setAuthDialogOpen}
+        onGoogleSignIn={signInWithGoogle}
+        onAdminLogin={signInWithPassword}
+        onSuccessAdmin={() => setAdminModalOpen(true)}
+      />
+      <CustomerAccountModal
+        user={user}
+        open={customerModalOpen}
+        onOpenChange={setCustomerModalOpen}
+        onSignOut={signOut}
+      />
+      <AdminDashboardModal
+        open={adminModalOpen}
+        onOpenChange={setAdminModalOpen}
+        onProductsUpdated={loadProductsFromInsForge}
+      />
     </div>
   );
 }

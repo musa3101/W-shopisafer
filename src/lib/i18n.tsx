@@ -55,6 +55,8 @@ export interface Translations {
   catalog_added: string;
   catalog_quick_view: string;
   catalog_view_details: string;
+  catalog_show_more: string;
+  catalog_show_less: string;
 
   // Benefits / Values
   value_1_title: string;
@@ -89,6 +91,10 @@ export interface Translations {
   toast_added_to_cart: string;
   toast_order_success: string;
   lang_switch_tooltip: string;
+
+  // Trending Section
+  trending_title: string;
+  trending_subtitle: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -145,6 +151,8 @@ const translations: Record<Language, Translations> = {
     catalog_added: "Added!",
     catalog_quick_view: "Quick View",
     catalog_view_details: "View Product",
+    catalog_show_more: "Show Full Collection",
+    catalog_show_less: "Show Less",
 
     // Benefits / Values
     value_1_title: "Express US Shipping",
@@ -179,6 +187,10 @@ const translations: Record<Language, Translations> = {
     toast_added_to_cart: "Item added to your bag!",
     toast_order_success: "Thank you for your order!",
     lang_switch_tooltip: "Switch language / Cambiar idioma",
+
+    // Trending Section
+    trending_title: "Trending Now",
+    trending_subtitle: "Our most popular styles handpicked for you.",
   },
   es: {
     // Navigation & Header
@@ -233,6 +245,8 @@ const translations: Record<Language, Translations> = {
     catalog_added: "¡Añadido!",
     catalog_quick_view: "Vista Rápida",
     catalog_view_details: "Ver Producto",
+    catalog_show_more: "Ver Colección Completa",
+    catalog_show_less: "Ver Menos",
 
     // Benefits / Values
     value_1_title: "Envíos Rápidos en EE. UU.",
@@ -267,6 +281,10 @@ const translations: Record<Language, Translations> = {
     toast_added_to_cart: "¡Producto añadido a tu bolsa!",
     toast_order_success: "¡Gracias por tu compra!",
     lang_switch_tooltip: "Cambiar idioma / Switch language",
+
+    // Trending Section
+    trending_title: "Tendencias de la Semana",
+    trending_subtitle: "Nuestros estilos más populares elegidos para ti.",
   },
 };
 

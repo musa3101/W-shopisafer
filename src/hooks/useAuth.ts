@@ -18,11 +18,13 @@ export function useAuth() {
       try {
         const { data, error } = await insforge.auth.getCurrentUser();
         if (data?.user && !error) {
+          const profile = (data.user as any).profile || {};
+          const meta = (data.user as any).metadata || {};
           setUser({
             id: data.user.id,
             email: data.user.email,
-            name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
-            avatar_url: data.user.user_metadata?.avatar_url,
+            name: profile.name || meta.full_name || data.user.email?.split('@')[0],
+            avatar_url: profile.avatar_url || meta.avatar_url,
           });
         } else {
           setUser(null);
@@ -36,25 +38,6 @@ export function useAuth() {
     }
 
     getInitialSession();
-
-    // Listen for Auth changes
-    const { data: authListener } = insforge.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
-          avatar_url: session.user.user_metadata?.avatar_url,
-        });
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      authListener?.subscription?.unsubscribe();
-    };
   }, []);
 
   const signInWithGoogle = async () => {
@@ -96,11 +79,13 @@ export function useAuth() {
       });
       if (error) throw error;
       if (data?.user) {
+        const profile = (data.user as any).profile || {};
+        const meta = (data.user as any).metadata || {};
         setUser({
           id: data.user.id,
           email: data.user.email,
-          name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
-          avatar_url: data.user.user_metadata?.avatar_url,
+          name: profile.name || meta.full_name || data.user.email?.split('@')[0],
+          avatar_url: profile.avatar_url || meta.avatar_url,
         });
       }
       return { success: true, data };
@@ -121,9 +106,14 @@ export function useAuth() {
     }
   };
 
+  const isAdmin = user?.email?.includes("admin") || user?.id === "owner-admin-id";
+  const isCustomer = !!user && !isAdmin;
+
   return {
     user,
     loading,
+    isAdmin,
+    isCustomer,
     signInWithGoogle,
     signInWithPassword,
     signOut,

@@ -3,25 +3,25 @@
 ## 📅 Fecha: 4 de Agosto, 2026
 
 ### 📝 Qué se ha hecho hoy
-1. **Sistema Multidioma (i18n) con Skill `i18nstack`**:
-   - Creado el módulo `src/lib/i18n.tsx` con soporte para **Inglés (US) por defecto** y **Español**.
-   - Creado el selector visual `src/components/LanguageSelector.tsx` con diseño Barbie Luxe (`🇺🇸 EN` / `🇪🇸 ES`) en la barra de navegación.
-   - Envuelta la aplicación global en `<LanguageProvider>` en `src/routes/__root.tsx`.
-   - Traducidos dinámicamente los componentes principales (Header, Hero Section, Banner Marquee, Filtros del Catálogo, Tarjetas de Productos, Bolsa de Compras y Footer).
-2. **Optimización de Renderizado y Build**:
-   - Corregidas las propiedades de `ProductCrop` en `src/routes/index.tsx`.
-   - Verificado el build de producción (`npm run build`) con prerenderizado SSR correcto.
-3. **Sincronización en GitHub**:
-   - Código subido y sincronizado en ramas `dev` y `main` para despliegue automático en Cloudflare.
+1. **Subida del Mini Catálogo Real a InsForge**:
+   - Analizadas las 15 fotos de prendas reales proporcionadas en la carpeta `nuevo mini catalogo/`.
+   - Creado y configurado el bucket de almacenamiento público `products` en **InsForge Storage**.
+   - Subidas las 15 imágenes obteniendo sus URLs públicas permanentes.
+2. **Sembrado de la Base de Datos PostgreSQL en InsForge**:
+   - Eliminados los productos mock/temporales antiguos.
+   - Insertados los 15 nuevos productos reales con nombres representativos, descripciones en estilo Barbie Luxe, precios oscilando entre **$30 y $90 USD** por unidad y badges dinámicos.
+3. **Conexión Dinámica Frontend <-> InsForge Backend**:
+   - Modificada la página principal (`src/routes/index.tsx`) para cargar automáticamente los productos desde la base de datos de InsForge mediante `fetchProducts()`.
+   - Conectado el **Panel de Administración de la Dueña** (`AdminDashboardModal.tsx`) para que cualquier cambio en precios o stock actualice el catálogo en tiempo real.
+   - Corregidos tipos TypeScript en `src/hooks/useAuth.ts`, `src/components/TrendingCarousel.tsx` y componentes modales.
 
 ### 📂 Archivos modificados
-- `src/lib/i18n.tsx`
-- `src/components/LanguageSelector.tsx`
-- `src/routes/__root.tsx`
 - `src/routes/index.tsx`
+- `src/hooks/useAuth.ts`
+- `src/components/TrendingCarousel.tsx`
 - `docs/SESSION_LATEST_ES.md`
 - `docs/ROADMAP.md`
 
 ### 📌 Qué queda pendiente para la PRÓXIMA SESIÓN
-- 💳 **Integrar pasarela de pago Stripe**: Implementación de checkout con tarjeta de crédito mediante Stripe / InsForge Payments.
-- 📸 Reemplazar imágenes de catálogo por fotos oficiales de Isafer.
+- 💳 **Integrar pasarela de pago Stripe**: Implementación de checkout con tarjeta mediante Stripe / InsForge Payments.
+- ☁️ **Verificación de despliegue**: Comprobar la URL activa en Cloudflare Workers (`https://isafer.mynextbymusa.workers.dev`).
