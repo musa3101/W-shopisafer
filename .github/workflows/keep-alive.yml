@@ -1,0 +1,16 @@
+name: InsForge Keep-Alive Ping
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Se ejecuta cada 30 minutos
+  workflow_dispatch: # Permite dispararlo manualmente desde GitHub si es necesario
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar Ping de Activación al Servidor de InsForge
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: anon_222bdcf4c41d9b468d8e68a8d7492f49751b42070a2ff5e74dcba8b815dfa71b" \
+            "https://i5jqzbx6.us-east.insforge.app/rest/v1/products?limit=1"
