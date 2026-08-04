@@ -102,7 +102,14 @@ function Index() {
     toast.info(`${productName} eliminado del carrito`);
   };
 
-  const handleCheckout = async () => {
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleCheckout = () => {
     const activeItems = products.filter((p) => cart[p.id]);
 
     if (activeItems.length === 0) {
@@ -115,27 +122,28 @@ function Index() {
       .join("%0A");
 
     const subtotalFormatted = subtotal.toFixed(2);
-    
-    // Registrar pedido en el backend de InsForge
-    try {
-      await createOrder({
-        customer_name: "Cliente Web (WhatsApp)",
-        customer_email: "cliente@isaferboutique.com",
-        total_amount: subtotal,
-        items: activeItems.map((p) => ({
-          name: p.name,
-          price: p.price,
-          quantity: cart[p.id],
-        })),
-      });
-      toast.success("Pedido guardado en la base de datos de InsForge ⚡");
-    } catch (err) {
-      console.error("No se pudo registrar en InsForge:", err);
+    const whatsappUrl = `https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20me%20gustar%C3%ADa%20realizar%20el%20siguiente%20pedido%3A%0A%0A${itemsText}%0A%0ASubtotal%3A%20%24${subtotalFormatted}%0A%0A%C2%BFMe%20confirmas%20disponibilidad%3F`;
+
+    // Abrir WhatsApp inmediatamente (síncrono) para prevenir el bloqueo de popups del navegador
+    const win = window.open(whatsappUrl, "_blank");
+    if (!win) {
+      window.location.href = whatsappUrl;
     }
 
-    const text = `Hola Isafer Boutique, me gustaría realizar el siguiente pedido:%0A%0A${itemsText}%0A%0ASubtotal: $${subtotalFormatted}%0A%0A¿Me confirmas disponibilidad?`;
-    window.open(`https://wa.me/19296772514?text=${text}`, "_blank");
     setCartOpen(false);
+    toast.success("¡Redirigiendo a WhatsApp!");
+
+    // Guardar el pedido en InsForge en segundo plano sin bloquear el navegador
+    createOrder({
+      customer_name: "Cliente Web (WhatsApp)",
+      customer_email: "cliente@isaferboutique.com",
+      total_amount: subtotal,
+      items: activeItems.map((p) => ({
+        name: p.name,
+        price: p.price,
+        quantity: cart[p.id],
+      })),
+    }).catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
   };
 
   return (
@@ -174,7 +182,11 @@ function Index() {
                   <SheetClose asChild key={label}>
                     <a
                       href={href}
-                      className="border-b border-border pb-4 transition-colors hover:text-primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        scrollToSection(href.substring(1));
+                      }}
+                      className="border-b border-border pb-4 transition-colors hover:text-primary cursor-pointer"
                     >
                       {label}
                     </a>
@@ -194,7 +206,11 @@ function Index() {
 
           <a
             href="#inicio"
-            className="flex items-center justify-center"
+            onClick={(e) => {
+              e.preventDefault();
+              scrollToSection("inicio");
+            }}
+            className="flex items-center justify-center cursor-pointer"
             aria-label="Isafer Boutique, inicio"
           >
             <img
@@ -334,9 +350,17 @@ function Index() {
               </p>
               <Button
                 asChild
-                className="mt-7 h-12 rounded-full px-7 text-sm font-semibold shadow-neon bg-primary text-primary-foreground hover:bg-primary/90"
+                className="mt-7 h-12 rounded-full px-7 text-sm font-semibold shadow-neon bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
               >
-                <a href="#coleccion">Ver Nueva Colección</a>
+                <a
+                  href="#coleccion"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection("coleccion");
+                  }}
+                >
+                  Ver Nueva Colección
+                </a>
               </Button>
             </div>
           </div>
@@ -355,7 +379,11 @@ function Index() {
                 <a
                   href="#coleccion"
                   key={product.category}
-                  className="group flex w-[88px] shrink-0 snap-start flex-col items-center gap-3 sm:w-auto"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection("coleccion");
+                  }}
+                  className="group flex w-[88px] shrink-0 snap-start flex-col items-center gap-3 sm:w-auto cursor-pointer"
                 >
                   <span className="relative block aspect-square w-[78px] overflow-hidden rounded-full border-2 border-primary/40 p-1 transition-transform group-hover:scale-105 sm:w-28">
                     <span className="relative block size-full overflow-hidden rounded-full">
@@ -379,7 +407,11 @@ function Index() {
             </div>
             <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
               {products.map((product) => (
-                <article key={product.id} className="group min-w-0">
+                <article
+                  key={product.id}
+                  className="group min-w-0 flex flex-col justify-between cursor-pointer"
+                  onClick={() => addProduct(product.id)}
+                >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-[1.4rem] bg-muted sm:rounded-[2rem]">
                     <ProductCrop id={product.id} alt={product.name} />
                     <span className="absolute left-3 top-3 rounded-full bg-background/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider backdrop-blur-md text-primary">
@@ -387,21 +419,36 @@ function Index() {
                     </span>
                     <Button
                       size="icon"
-                      className="absolute bottom-3 right-3 size-10 rounded-full shadow-neon sm:size-12 bg-primary text-primary-foreground hover:bg-primary/90"
-                      onClick={() => addProduct(product.id)}
+                      className="absolute bottom-3 right-3 size-10 rounded-full shadow-neon sm:size-12 bg-primary text-primary-foreground hover:bg-primary/90 transition-transform group-hover:scale-110"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addProduct(product.id);
+                      }}
                       aria-label={`Añadir ${product.name} al carrito`}
                     >
                       <Plus />
                     </Button>
                   </div>
-                  <div className="px-1 pt-3">
-                    <p className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {product.category}
-                    </p>
-                    <h3 className="mt-1 truncate text-sm font-semibold sm:text-base">
-                      {product.name}
-                    </h3>
-                    <p className="mt-1 text-sm font-semibold">${product.price.toFixed(2)}</p>
+                  <div className="px-1 pt-3 flex flex-col flex-1 justify-between">
+                    <div>
+                      <p className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                        {product.category}
+                      </p>
+                      <h3 className="mt-1 truncate text-sm font-semibold sm:text-base group-hover:text-primary transition-colors">
+                        {product.name}
+                      </h3>
+                      <p className="mt-1 text-sm font-semibold">${product.price.toFixed(2)}</p>
+                    </div>
+                    <Button
+                      className="mt-3 w-full rounded-full h-10 text-xs font-semibold bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addProduct(product.id);
+                      }}
+                    >
+                      <ShoppingBag className="mr-1.5 size-3.5" />
+                      Añadir al carrito
+                    </Button>
                   </div>
                 </article>
               ))}
@@ -426,9 +473,17 @@ function Index() {
             <Button
               asChild
               variant="outline"
-              className="h-12 w-fit rounded-full border-primary/40 bg-background/60 px-7 hover:bg-primary hover:text-primary-foreground transition-colors"
+              className="h-12 w-fit rounded-full border-primary/40 bg-background/60 px-7 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
             >
-              <a href="#coleccion">Descubrir prendas</a>
+              <a
+                href="#coleccion"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection("coleccion");
+                }}
+              >
+                Descubrir prendas
+              </a>
             </Button>
           </div>
         </section>
@@ -483,6 +538,17 @@ function Index() {
           </nav>
         </div>
       </footer>
+
+      {itemCount > 0 && (
+        <Button
+          size="lg"
+          className="fixed bottom-22 right-5 z-30 rounded-full bg-primary text-primary-foreground shadow-2xl hover:bg-primary/90 px-5 h-12 flex items-center gap-2 animate-bounce"
+          onClick={() => setCartOpen(true)}
+        >
+          <ShoppingBag className="size-5" />
+          <span className="font-semibold text-sm">Ver Carrito ({itemCount})</span>
+        </Button>
+      )}
 
       <Button
         asChild
