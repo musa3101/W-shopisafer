@@ -54,3 +54,4 @@
 
 ### 📌 Qué queda pendiente para la PRÓXIMA SESIÓN
 - ☁️ **Verificación de despliegue**: Comprobar la URL activa en Cloudflare Workers (`https://isafer.mynextbymusa.workers.dev`).
+- ⚠️ **Nota Importante de Despliegue**: El proyecto no está conectado a despliegues automáticos (CI/CD) de GitHub a Cloudflare. Cada vez que se realicen cambios y el usuario apruebe, se debe ejecutar manualmente el comando **`npm run deploy`** en la terminal local para compilar y subir los archivos a Cloudflare.
