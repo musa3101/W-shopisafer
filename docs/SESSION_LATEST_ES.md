@@ -11,16 +11,17 @@
 2. **Optimización de Renderizado y Build**:
    - Corregidas las propiedades de `ProductCrop` en `src/routes/index.tsx`.
    - Verificado el build de producción (`npm run build`) con prerenderizado SSR correcto.
+3. **Sincronización en GitHub**:
+   - Código subido y sincronizado en ramas `dev` y `main` para despliegue automático en Cloudflare.
 
 ### 📂 Archivos modificados
-- `src/lib/i18n.tsx` (nuevo)
-- `src/components/LanguageSelector.tsx` (nuevo)
+- `src/lib/i18n.tsx`
+- `src/components/LanguageSelector.tsx`
 - `src/routes/__root.tsx`
 - `src/routes/index.tsx`
 - `docs/SESSION_LATEST_ES.md`
 - `docs/ROADMAP.md`
 
-### 📌 Estado actual
-- La web carga por defecto en **Inglés de EE. UU. (`en-US`)** al abrir por URL.
-- El usuario/cliente puede cambiar instantáneamente a **Español (`es`)** con un solo clic.
-- Compilación e integración comprobadas exitosamente.
+### 📌 Qué queda pendiente para la PRÓXIMA SESIÓN
+- 💳 **Integrar pasarela de pago Stripe**: Implementación de checkout con tarjeta de crédito mediante Stripe / InsForge Payments.
+- 📸 Reemplazar imágenes de catálogo por fotos oficiales de Isafer.

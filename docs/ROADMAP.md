@@ -13,5 +13,5 @@
 - [ ] Verificación de despliegue activo en Cloudflare Pages / Workers.
 
 ## 🔵 Próximas Mejoras Prioritarias
+- [ ] **Integrar pasarela de pago Stripe**: Configuración de checkout para pagos con tarjeta de crédito (Stripe / InsForge Payments).
 - [ ] Reemplazar imágenes de catálogo por fotografías de estudio oficiales de los productos de Isafer.
-- [ ] Conectar pasarela de pago directa o flujos avanzados InsForge.
