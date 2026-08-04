@@ -19,22 +19,28 @@ import {
   Clock,
   Truck,
   Flame,
+  CreditCard,
+  Grid,
+  ChevronRight,
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import heroImage from "@/assets/rosse-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
-import { createOrder, fetchProducts, BackendProduct } from "@/services/insforgeService";
+import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail } from "@/services/insforgeService";
+import { fetchUserFavorites, addFavorite, removeFavorite, syncGuestFavorites } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { CustomerAccountModal } from "@/components/CustomerAccountModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { TrendingCarousel } from "@/components/TrendingCarousel";
+import { insforge } from "@/lib/insforge";
 import {
   Sheet,
   SheetClose,
@@ -73,6 +79,7 @@ interface ProductItem {
   position?: string;
   image?: string;
   description: string;
+  stripe_price_id?: string;
 }
 
 const products: ProductItem[] = [
@@ -214,7 +221,7 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
 }
 
 function Index() {
-  const { t } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const [productsList, setProductsList] = useState<ProductItem[]>(products);
   const [cart, setCart] = useState<Cart>({});
   const [cartOpen, setCartOpen] = useState(false);
@@ -223,6 +230,13 @@ function Index() {
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [favorites, setFavorites] = useState<Record<string | number, boolean>>({});
+  const [favDialogOpen, setFavDialogOpen] = useState(false);
+  const [pendingFavProduct, setPendingFavProduct] = useState<string | null>(null);
+  const [favoritesDrawerOpen, setFavoritesDrawerOpen] = useState(false);
+  const [showCookiesBanner, setShowCookiesBanner] = useState(false);
+  const [showGeoBanner, setShowGeoBanner] = useState(false);
+  const [geoCountry, setGeoCountry] = useState("España");
+  const [targetLang, setTargetLang] = useState<"es" | "en">("es");
   const [isCatalogExpanded, setIsCatalogExpanded] = useState(false);
 
   const { user, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
@@ -252,6 +266,7 @@ function Index() {
             tag: bp.badge || "Destacado",
             image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
             description: bp.description || "",
+            stripe_price_id: bp.stripe_price_id,
           };
         });
         setProductsList(mapped);
@@ -266,8 +281,76 @@ function Index() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+
+    if (payment === "success") {
+      setCart({});
+      toast.success("🎉 ¡Pago Exitoso! Tu orden se está procesando.", {
+        duration: 8000,
+        description: "Muchas gracias por tu compra. Te enviaremos un correo para coordinar tu envío.",
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (payment === "cancel") {
+      toast.info("Pago cancelado. Los artículos siguen en tu bolsa. 💖", {
+        duration: 5000,
+      });
+      setCartOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
     setIsCatalogExpanded(false);
   }, [activeCategory]);
+
+  // Verificar consentimiento de cookies
+  useEffect(() => {
+    const consent = localStorage.getItem("isafer_cookies_consent");
+    if (!consent) {
+      const timer = setTimeout(() => {
+        setShowCookiesBanner(true);
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleCookiesConsent = (type: "accepted" | "rejected") => {
+    localStorage.setItem("isafer_cookies_consent", type);
+    setShowCookiesBanner(false);
+    if (type === "accepted") {
+      toast.success("¡Gracias por aceptar nuestras cookies! 💖");
+    }
+  };
+
+  // Verificar procedencia e idioma del cliente para sugerir cambio
+  useEffect(() => {
+    const geoConsent = localStorage.getItem("isafer_geo_consent");
+    if (!geoConsent) {
+      const navLang = navigator.language || (navigator as any).userLanguage || "";
+      const prefersSpanish = navLang.toLowerCase().startsWith("es");
+
+      // Caso 1: Web en Inglés, pero navegador prefiere Español (es de España/Latam)
+      if (language === "en" && prefersSpanish) {
+        setGeoCountry("España");
+        setTargetLang("es");
+        const timer = setTimeout(() => {
+          setShowGeoBanner(true);
+        }, 3500); // Aparece 2.3s después del de cookies para no pisarse
+        return () => clearTimeout(timer);
+      }
+
+      // Caso 2: Web en Español, pero navegador prefiere Inglés (es de USA/Global)
+      if (language === "es" && !prefersSpanish) {
+        setGeoCountry("USA");
+        setTargetLang("en");
+        const timer = setTimeout(() => {
+          setShowGeoBanner(true);
+        }, 3500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [language]);
 
   const itemCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
   const subtotal = useMemo(
@@ -275,14 +358,125 @@ function Index() {
     [cart, productsList],
   );
 
-  const toggleFavorite = (id: string | number) => {
-    setFavorites((prev) => {
-      const next = { ...prev, [id]: !prev[id] };
-      toast(next[id] ? "Añadido a favoritos 💖" : "Eliminado de favoritos", {
-        duration: 2000,
-      });
-      return next;
-    });
+  // Cargar favoritos al inicio y sincronizar si el usuario inicia sesión
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (user) {
+        // Cargar desde PostgreSQL
+        const userFavs = await fetchUserFavorites(user.id);
+        const favsMap: Record<string, boolean> = {};
+        userFavs.forEach((fid) => {
+          favsMap[fid] = true;
+        });
+        setFavorites(favsMap);
+
+        // Sincronizar temporales de LocalStorage
+        const stored = localStorage.getItem("isafer_guest_favorites");
+        if (stored) {
+          try {
+            const guestFavs = JSON.parse(stored) as string[];
+            if (guestFavs.length > 0) {
+              await syncGuestFavorites(user.id, guestFavs);
+              const mergedFavs = await fetchUserFavorites(user.id);
+              const mergedMap: Record<string, boolean> = {};
+              mergedFavs.forEach((fid) => {
+                mergedMap[fid] = true;
+              });
+              setFavorites(mergedMap);
+              toast.success("¡Tus favoritos temporales se han sincronizado con tu cuenta! 💖");
+            }
+          } catch (e) {
+            console.error("Error al sincronizar favoritos:", e);
+          }
+          localStorage.removeItem("isafer_guest_favorites");
+        }
+      } else {
+        // Cargar desde LocalStorage
+        const stored = localStorage.getItem("isafer_guest_favorites");
+        if (stored) {
+          try {
+            const guestFavs = JSON.parse(stored) as string[];
+            const favsMap: Record<string, boolean> = {};
+            guestFavs.forEach((fid) => {
+              favsMap[fid] = true;
+            });
+            setFavorites(favsMap);
+          } catch (e) {
+            console.error("Error al leer favoritos temporales:", e);
+          }
+        } else {
+          setFavorites({});
+        }
+      }
+    };
+
+    loadFavorites();
+  }, [user]);
+
+  const toggleFavorite = async (id: string | number) => {
+    const productId = String(id);
+    const isFav = !!favorites[productId];
+
+    if (user) {
+      // 1. Conectado (Guardar en base de datos)
+      if (isFav) {
+        setFavorites((prev) => {
+          const next = { ...prev };
+          delete next[productId];
+          return next;
+        });
+        const success = await removeFavorite(user.id, productId);
+        if (success) {
+          toast("Eliminado de favoritos 💔", { duration: 2000 });
+        } else {
+          setFavorites((prev) => ({ ...prev, [productId]: true }));
+          toast.error("No se pudo eliminar de favoritos");
+        }
+      } else {
+        setFavorites((prev) => ({ ...prev, [productId]: true }));
+        const success = await addFavorite(user.id, productId);
+        if (success) {
+          toast("¡Añadido a tus favoritos! 💖", { duration: 2000 });
+        } else {
+          setFavorites((prev) => {
+            const next = { ...prev };
+            delete next[productId];
+            return next;
+          });
+          toast.error("No se pudo guardar en favoritos");
+        }
+      }
+    } else {
+      // 2. Invitado (Guardar en LocalStorage y abrir modal estilo Pull&Bear)
+      const stored = localStorage.getItem("isafer_guest_favorites");
+      let guestFavs: string[] = [];
+      if (stored) {
+        try {
+          guestFavs = JSON.parse(stored);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      if (isFav) {
+        guestFavs = guestFavs.filter((fid) => fid !== productId);
+        localStorage.setItem("isafer_guest_favorites", JSON.stringify(guestFavs));
+        setFavorites((prev) => {
+          const next = { ...prev };
+          delete next[productId];
+          return next;
+        });
+        toast("Eliminado de favoritos 💔", { duration: 2000 });
+      } else {
+        guestFavs.push(productId);
+        localStorage.setItem("isafer_guest_favorites", JSON.stringify(guestFavs));
+        setFavorites((prev) => ({ ...prev, [productId]: true }));
+        
+        // Abrir diálogo de invitación
+        setPendingFavProduct(productId);
+        setFavDialogOpen(true);
+      }
+    }
   };
 
   const addProduct = (id: string | number) => {
@@ -345,17 +539,118 @@ function Index() {
     setCartOpen(false);
     toast.success("¡Redirigiendo a WhatsApp!");
 
+    const customerEmail = user?.email || "cliente@isaferboutique.com";
+    const customerName = user?.email ? user.email.split("@")[0] : "Cliente Web (WhatsApp)";
+    const itemsMapped = activeItems.map((p) => ({
+      product_id: String(p.id),
+      name: p.name,
+      price: p.price,
+      quantity: cart[p.id],
+    }));
+
     createOrder({
-      customer_name: user?.email ? user.email.split("@")[0] : "Cliente Web (WhatsApp)",
-      customer_email: user?.email || "cliente@isaferboutique.com",
+      customer_name: customerName,
+      customer_email: customerEmail,
       total_amount: subtotal,
-      items: activeItems.map((p) => ({
-        product_id: String(p.id),
-        name: p.name,
-        price: p.price,
+      items: itemsMapped,
+    })
+      .then((res) => {
+        if (res.success && res.data?.id) {
+          sendOrderConfirmationEmail({
+            customerName,
+            customerEmail,
+            totalAmount: subtotal,
+            items: itemsMapped,
+            orderId: res.data.id,
+          });
+        }
+      })
+      .catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
+  };
+
+  const handleStripeCheckout = async () => {
+    const activeItems = productsList.filter((p) => cart[p.id]);
+
+    if (activeItems.length === 0) {
+      toast.error("Tu bolsa está vacía");
+      return;
+    }
+
+    // Verificar si todos los items seleccionados tienen un Stripe Price ID asignado
+    const itemsWithoutPrice = activeItems.filter((p) => !p.stripe_price_id);
+    if (itemsWithoutPrice.length > 0) {
+      toast.error(
+        `El artículo "${itemsWithoutPrice[0].name}" no se puede pagar con tarjeta todavía. Contacta con nosotros por WhatsApp.`,
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    toast.loading("Creando pedido y preparando pago seguro...");
+
+    try {
+      // 1. Crear el pedido en estado 'pending' en la base de datos de InsForge
+      const orderRes = await createOrder({
+        customer_name: user?.email ? user.email.split("@")[0] : "Cliente Web (Stripe)",
+        customer_email: user?.email || "cliente@isaferboutique.com",
+        total_amount: subtotal,
+        items: activeItems.map((p) => ({
+          product_id: String(p.id),
+          name: p.name,
+          price: p.price,
+          quantity: cart[p.id],
+        })),
+        stripe_session_id: 'pending_session',
+      });
+
+      if (!orderRes.success || !orderRes.data?.id) {
+        toast.dismiss();
+        toast.error(`No se pudo registrar el pedido previo: ${orderRes.error || "Inténtalo de nuevo"}`);
+        return;
+      }
+
+      const createdOrderId = orderRes.data.id;
+
+      // 2. Crear la sesión de Stripe Checkout pasando el order_id en metadata
+      const lineItems = activeItems.map((p) => ({
+        priceId: p.stripe_price_id!,
         quantity: cart[p.id],
-      })),
-    }).catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
+      }));
+
+      const { data, error } = await insforge.payments.stripe.createCheckoutSession("test", {
+        mode: "payment",
+        lineItems,
+        successUrl: `${window.location.origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${window.location.origin}/?payment=cancel`,
+        customerEmail: user?.email || undefined,
+        metadata: {
+          order_id: createdOrderId,
+        },
+      });
+
+      if (error) {
+        toast.dismiss();
+        console.error("Error al crear sesión de checkout con Stripe:", error);
+        toast.error(`Error al procesar pago: ${error.message || "Inténtalo de nuevo"}`);
+        return;
+      }
+
+      if (data?.checkoutSession?.url) {
+        // 3. Actualizar la orden con el ID real de la sesión de Stripe
+        await updateOrderStripeSession(createdOrderId, data.checkoutSession.id);
+
+        toast.dismiss();
+        toast.success("¡Redirigiendo a Stripe!");
+        window.location.assign(data.checkoutSession.url);
+      } else {
+        toast.dismiss();
+        toast.error("No se recibió la URL de pago de Stripe");
+      }
+    } catch (err: any) {
+      toast.dismiss();
+      console.error("Excepción en Stripe checkout:", err);
+      toast.error("Error de conexión al procesar el pago");
+    }
   };
 
   const filteredProducts = useMemo(() => {
@@ -388,23 +683,27 @@ function Index() {
                   <Menu className="size-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[88%] max-w-sm border-r border-zinc-150 bg-white p-6 text-zinc-800 flex flex-col justify-between">
+              <SheetContent
+                side="left"
+                className="w-[88%] max-w-sm border-r border-rose-100 bg-gradient-to-b from-[#fffafb] to-white p-6 text-zinc-800 flex flex-col justify-between shadow-2xl [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300"
+              >
                 <div>
-                  <SheetHeader className="text-left pb-4 border-b border-zinc-100">
+                  <SheetHeader className="text-left pb-5 border-b border-rose-100/50">
                     <SheetTitle className="p-0">
                       <IsaferLogo variant="header" size="md" />
                     </SheetTitle>
-                    <SheetDescription className="text-zinc-500 text-xs mt-2">
-                      Ropa Femenina & Licras Moldeadoras · Brooklyn, NY
+                    <SheetDescription className="text-zinc-500 text-[10px] font-bold tracking-widest uppercase mt-2">
+                      Brooklyn's finest active & shapewear
                     </SheetDescription>
                   </SheetHeader>
+                  
                   <nav className="mt-6 flex flex-col">
                     {[
-                      ["Nueva Colección", "#coleccion"],
-                      ["Categorías Bento", "#categorias"],
-                      ["El Sello Isafer", "#estilo"],
-                      ["Visítanos en Brooklyn", "#visitanos"],
-                    ].map(([label, href]) => (
+                      ["Nueva Colección", "#coleccion", Sparkles],
+                      ["Categorías Bento", "#categorias", Grid],
+                      ["El Sello Isafer", "#estilo", Heart],
+                      ["Visítanos en Brooklyn", "#visitanos", MapPin],
+                    ].map(([label, href, Icon]) => (
                       <SheetClose asChild key={label}>
                         <a
                           href={href}
@@ -412,73 +711,90 @@ function Index() {
                             e.preventDefault();
                             scrollToSection(href.substring(1));
                           }}
-                          className="flex items-center justify-between border-b border-zinc-100 py-4 text-xs font-bold uppercase tracking-widest text-zinc-700 hover:text-primary transition-colors cursor-pointer group"
+                          className="flex items-center justify-between border-b border-rose-100/30 py-4 text-xs font-bold uppercase tracking-widest text-zinc-700 hover:text-rose-600 transition-all duration-300 group cursor-pointer"
                         >
-                          <span>{label}</span>
-                          <Plus className="size-3.5 text-zinc-400 group-hover:text-primary transition-colors" />
+                          <span className="flex items-center gap-3">
+                            <Icon className="w-4 h-4 text-rose-400 group-hover:text-rose-600 group-hover:scale-110 transition-all duration-300" />
+                            {label}
+                          </span>
+                          <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-rose-600 group-hover:translate-x-1 transition-all duration-300" />
                         </a>
                       </SheetClose>
                     ))}
                   </nav>
                 </div>
 
-                <div className="mt-auto space-y-6 pt-6 border-t border-zinc-100">
+                <div className="mt-auto space-y-6 pt-6 border-t border-rose-100/50">
                   {/* Language Selector (mobile only) */}
                   <div className="flex flex-col gap-2 md:hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">Idioma / Language</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Idioma / Language</span>
                     <div className="flex justify-start">
                       <LanguageSelector />
                     </div>
                   </div>
 
-                  {/* Account button (mobile only) */}
-                  <div className="flex flex-col gap-2 md:hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-450">Mi Cuenta</span>
+                  {/* Account Card (mobile only) */}
+                  <div className="flex flex-col gap-2.5 md:hidden">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 font-mono">Mi Cuenta</span>
                     {user ? (
                       <SheetClose asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full flex items-center justify-start gap-2.5 rounded-full border-rose-100/50 bg-[#fff8fa] text-zinc-700 hover:text-primary hover:bg-rose-50 text-xs font-semibold px-4 py-2.5 h-auto"
+                        <button
+                          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50/20 p-3.5 text-left text-xs hover:bg-rose-50/50 transition-all duration-300 group cursor-pointer"
                           onClick={() => {
                             if (isAdmin) setAdminModalOpen(true);
                             else setCustomerModalOpen(true);
                           }}
                         >
-                          {isAdmin ? <ShieldCheck className="size-4 text-amber-500" /> : <UserCheck className="size-4 text-primary" />}
-                          <span className="truncate">{user.email}</span>
-                        </Button>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-sm shadow-rose-200/50">
+                              {user.email ? user.email.slice(0, 2).toUpperCase() : "US"}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-extrabold text-zinc-800 text-[10px] uppercase tracking-wider flex items-center gap-1">
+                                {isAdmin ? (
+                                  <ShieldCheck className="size-3.5 text-amber-500 inline" />
+                                ) : (
+                                  <UserCheck className="size-3.5 text-rose-500 inline" />
+                                )}
+                                Panel {isAdmin ? "Administradora" : "Cliente"}
+                              </p>
+                              <p className="text-zinc-500 text-[9px] truncate mt-0.5">{user.email}</p>
+                            </div>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-rose-450 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
                       </SheetClose>
                     ) : (
                       <SheetClose asChild>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full flex items-center justify-start gap-2.5 rounded-full border-rose-100/50 bg-[#fff8fa] text-zinc-700 hover:text-primary hover:bg-rose-50 text-xs font-semibold px-4 py-2.5 h-auto"
+                          className="w-full flex items-center justify-start gap-2.5 rounded-2xl border-rose-100 bg-[#fffbfd] text-zinc-700 hover:text-rose-650 hover:bg-rose-50/40 text-xs font-bold px-4 py-3 h-auto shadow-xs cursor-pointer"
                           onClick={() => setAuthDialogOpen(true)}
                         >
-                          <User className="size-4 text-primary" /> Iniciar Sesión / Registrarse
+                          <User className="size-4 text-rose-500" /> Iniciar Sesión / Registrarse
                         </Button>
                       </SheetClose>
                     )}
                   </div>
 
-                  <div className="space-y-3">
+                  {/* Social Networks Contacts */}
+                  <div className="space-y-3 pt-2">
                     <a
                       href="https://www.instagram.com/shopisafer"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2.5 text-xs tracking-wider uppercase text-zinc-500 hover:text-primary transition-colors"
+                      className="flex items-center gap-3 text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-rose-600 transition-colors group"
                     >
-                      <Instagram className="size-4 text-primary" /> @shopisafer
+                      <Instagram className="size-4 text-rose-500 group-hover:scale-110 transition-transform" /> @shopisafer
                     </a>
                     <a
                       href="https://wa.me/19296772514"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center gap-2.5 text-xs tracking-wider uppercase text-zinc-500 hover:text-emerald-500 transition-colors"
+                      className="flex items-center gap-3 text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-emerald-600 transition-colors group"
                     >
-                      <MessageCircle className="size-4 text-emerald-400" /> +1 (929) 677-2514
+                      <MessageCircle className="size-4 text-emerald-500 group-hover:scale-110 transition-transform" /> +1 (929) 677-2514
                     </a>
                   </div>
                 </div>
@@ -528,6 +844,89 @@ function Index() {
                 </Button>
               )}
             </div>
+
+            {/* Botón de Favoritos en el Navbar */}
+            <Sheet open={favoritesDrawerOpen} onOpenChange={setFavoritesDrawerOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer mr-1.5"
+                  aria-label="Mis Favoritos"
+                >
+                  <Heart className={`size-5 ${Object.keys(favorites).length > 0 ? "fill-rose-500 text-rose-500 animate-in zoom-in-50" : ""}`} />
+                  {Object.keys(favorites).length > 0 && (
+                    <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-rose-600 text-[9px] font-black text-white">
+                      {Object.keys(favorites).length}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="flex w-[92%] flex-col border-rose-100 bg-[#fffcfd] p-6 text-zinc-800 sm:max-w-md [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300">
+                <SheetHeader className="text-left border-b border-rose-100 pb-4">
+                  <SheetTitle className="font-serif text-2xl font-black text-zinc-900 flex items-center justify-between">
+                    <span>Mis Favoritos 💖</span>
+                  </SheetTitle>
+                  <SheetDescription className="text-xs text-zinc-500 uppercase tracking-widest font-mono">
+                    Tus prendas preferidas en Isafer Boutique
+                  </SheetDescription>
+                </SheetHeader>
+
+                {Object.keys(favorites).length === 0 ? (
+                  <div className="flex flex-1 flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-300">
+                      <Heart className="w-8 h-8 stroke-[1.2]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-extrabold text-zinc-800">Tu lista está vacía</p>
+                      <p className="text-xs text-zinc-500 mt-1 max-w-[220px] mx-auto">
+                        Haz clic en el corazón de cualquier prenda para guardarla aquí.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-4">
+                    {productsList
+                      .filter((p) => favorites[p.id])
+                      .map((p) => (
+                        <div key={p.id} className="flex gap-4 p-3 rounded-2xl border border-rose-100/50 bg-white/50 shadow-xs relative group">
+                          <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 shrink-0">
+                            <ProductCrop product={p} />
+                          </div>
+                          <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                            <div>
+                              <h4 className="font-extrabold text-xs text-zinc-800 truncate">{p.name}</h4>
+                              <p className="text-[10px] text-zinc-400 mt-0.5">{p.category}</p>
+                              <p className="font-mono text-xs font-black text-rose-600 mt-1.5">${p.price.toFixed(2)} USD</p>
+                            </div>
+                            
+                            <Button
+                              size="sm"
+                              className="w-full mt-2 h-8 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white shadow-xs cursor-pointer"
+                              onClick={() => {
+                                addProduct(p.id);
+                                setFavoritesDrawerOpen(false);
+                              }}
+                            >
+                              <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Añadir a bolsa
+                            </Button>
+                          </div>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-2 h-7 w-7 p-0 rounded-full text-zinc-400 hover:text-rose-650 hover:bg-rose-50 cursor-pointer"
+                            onClick={() => toggleFavorite(p.id)}
+                            aria-label="Quitar de favoritos"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </SheetContent>
+            </Sheet>
 
             {/* Cart Trigger */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
@@ -630,14 +1029,21 @@ function Index() {
                       <span className="text-xl font-mono text-amber-400">${subtotal.toFixed(2)} USD</span>
                     </div>
                     <Button
-                      className="h-12 w-full rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-950/50 gap-2 cursor-pointer"
+                      className="h-12 w-full rounded-full text-xs font-semibold uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-950/20 gap-2 cursor-pointer transition-all active:scale-95 border border-rose-500/20"
+                      onClick={handleStripeCheckout}
+                    >
+                      <CreditCard className="size-4" />
+                      Pagar con Tarjeta (Stripe)
+                    </Button>
+                    <Button
+                      className="h-12 w-full rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-950/50 gap-2 cursor-pointer transition-all active:scale-95 border border-emerald-500/20"
                       onClick={handleCheckout}
                     >
                       <MessageCircle className="size-4 fill-white" />
-                      Pedir Directo por WhatsApp
+                      Pedir por WhatsApp (Respaldo)
                     </Button>
                     <p className="text-center text-[10px] text-zinc-500 tracking-wide">
-                      🔒 Pedido directo sin comisiones · Confirmación inmediata en Brooklyn
+                      🔒 Pago seguro encriptado con Stripe & InsForge
                     </p>
                   </div>
                 )}
@@ -877,17 +1283,21 @@ function Index() {
                         {product.tag}
                       </span>
 
-                      {/* Wishlist Heart */}
+                      {/* Wishlist Heart - Estilo Pull&Bear */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(product.id);
                         }}
-                        className="absolute right-3 top-3 size-9 rounded-full bg-zinc-950/60 backdrop-blur-md flex items-center justify-center text-white hover:text-red-400 transition-colors"
+                        className="absolute right-3 top-3 size-9 rounded-full bg-white/90 hover:bg-white shadow-xs backdrop-blur-xs flex items-center justify-center border border-zinc-200/50 transition-all duration-300 active:scale-75 group/fav cursor-pointer"
                         aria-label="Guardar en favoritos"
                       >
                         <Heart
-                          className={`size-4 ${favorites[product.id] ? "fill-red-500 text-red-500" : ""}`}
+                          className={`size-4 transition-all duration-350 ${
+                            favorites[product.id]
+                              ? "fill-rose-500 text-rose-500 scale-110 animate-pulse"
+                              : "text-zinc-700 fill-transparent group-hover/fav:text-rose-500 group-hover/fav:scale-110"
+                          }`}
                         />
                       </button>
 
@@ -1293,6 +1703,133 @@ function Index() {
         onOpenChange={setAdminModalOpen}
         onProductsUpdated={loadProductsFromInsForge}
       />
+
+      {/* Modal de Favoritos Pull&Bear Style */}
+      <Dialog open={favDialogOpen} onOpenChange={setFavDialogOpen}>
+        <DialogContent className="w-[92vw] max-w-md bg-white border border-rose-100 p-6 rounded-3xl text-center shadow-2xl [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-4 [&>button]:top-4 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none">
+          <DialogHeader className="space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 animate-bounce">
+              <Heart className="w-6 h-6 fill-rose-500 text-rose-500" />
+            </div>
+            <DialogTitle className="text-lg font-serif font-black text-zinc-900 tracking-tight">
+              Añadido a la lista de Mis Favoritos
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-500 leading-relaxed px-2">
+              Hemos añadido tu prenda a una lista temporal. Inicia sesión en tu cuenta o regístrate para que podamos almacenar tus favoritos por más tiempo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-2.5 mt-5">
+            <Button
+              className="w-full rounded-2xl h-11 text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 shadow-md cursor-pointer"
+              onClick={() => {
+                setFavDialogOpen(false);
+                setAuthDialogOpen(true);
+              }}
+            >
+              Acceder o crear cuenta nueva
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full rounded-2xl h-11 text-xs font-bold uppercase tracking-widest border-rose-100 text-zinc-500 hover:bg-rose-50/50 cursor-pointer"
+              onClick={() => setFavDialogOpen(false)}
+            >
+              Continuar como invitado
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Banner de Cookies Estilo Pull&Bear */}
+      {showCookiesBanner && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-rose-100 p-5 sm:p-6 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] animate-in slide-in-from-bottom duration-500">
+          <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-5 text-left">
+            <div className="flex-1 space-y-2">
+              <p className="text-[11px] sm:text-xs text-zinc-600 leading-relaxed font-medium">
+                Utilizamos cookies propias y de terceros para conocer los usos de nuestra tienda online y poder mejorarla, adaptar el contenido a tus gustos y personalizar nuestros anuncios, marketing y publicaciones en redes sociales. Puedes aceptarlas todas, rechazarlas o elegir tu configuración pulsando los botones correspondientes. Ten en cuenta que rechazar las cookies puede afectar a tu experiencia de compra. Para más información puedes consultar nuestra{" "}
+                <a href="#cookies" className="underline font-bold text-zinc-900 hover:text-rose-600 transition-colors">
+                  Política de Cookies
+                </a>.
+              </p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto px-6 h-11 rounded-xl text-xs font-bold uppercase tracking-widest border-zinc-300 text-zinc-700 hover:bg-rose-50/30 cursor-pointer"
+                onClick={() => handleCookiesConsent("rejected")}
+              >
+                Configuración de Cookies
+              </Button>
+              <Button
+                className="w-full sm:w-auto px-6 h-11 rounded-xl text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 cursor-pointer"
+                onClick={() => handleCookiesConsent("rejected")}
+              >
+                Rechazar Cookies
+              </Button>
+              <Button
+                className="w-full sm:w-auto px-6 h-11 rounded-xl text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 cursor-pointer"
+                onClick={() => handleCookiesConsent("accepted")}
+              >
+                Aceptar Cookies
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Banner de Geolocalización / Idioma Estilo Pull&Bear */}
+      {showGeoBanner && (
+        <div className="fixed bottom-6 left-6 z-45 bg-white border border-rose-100 p-5 rounded-3xl shadow-2xl max-w-[90vw] sm:max-w-sm animate-in fade-in slide-in-from-bottom duration-300">
+          <div className="space-y-4 text-left">
+            <div className="flex items-center justify-between gap-3 border-b border-rose-50 pb-2">
+              <span className="text-xs font-extrabold text-zinc-800 tracking-tight">
+                {targetLang === "es" ? "Estás navegando en España" : "You are browsing from USA"}
+              </span>
+              <button
+                onClick={() => {
+                  setLanguage(targetLang);
+                  localStorage.setItem("isafer_geo_consent", "saved");
+                  setShowGeoBanner(false);
+                  toast.success(targetLang === "es" ? "Idioma cambiado a Español 🇪🇸" : "Language changed to English 🇺🇸");
+                }}
+                className="text-[10px] font-bold text-zinc-400 underline hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                {targetLang === "es" ? "Cambiar ubicación" : "Change location"}
+              </button>
+            </div>
+            
+            <p className="text-[11px] text-zinc-500 font-medium">
+              {targetLang === "es" 
+                ? "¿Quieres guardar tu ubicación y cambiar el idioma a Español?"
+                : "Would you like to save your location and switch language to English?"}
+            </p>
+
+            <div className="flex gap-2.5 pt-1">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-2xl h-10 text-xs font-bold uppercase tracking-widest border-rose-100 text-zinc-500 hover:bg-rose-50/50 cursor-pointer"
+                onClick={() => {
+                  localStorage.setItem("isafer_geo_consent", "dismissed");
+                  setShowGeoBanner(false);
+                }}
+              >
+                No
+              </Button>
+              <Button
+                className="flex-1 rounded-2xl h-10 text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 shadow-md cursor-pointer"
+                onClick={() => {
+                  setLanguage(targetLang);
+                  localStorage.setItem("isafer_geo_consent", "saved");
+                  setShowGeoBanner(false);
+                  toast.success(targetLang === "es" ? "Idioma y ubicación guardados 🌍" : "Location and language saved 🌍");
+                }}
+              >
+                {targetLang === "es" ? "Sí" : "Yes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
