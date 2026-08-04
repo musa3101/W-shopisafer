@@ -9,6 +9,9 @@ import {
   ShoppingBag,
   Sparkles,
   Trash2,
+  User,
+  ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +21,10 @@ import productsImage from "@/assets/rosse-products.jpg";
 import logoHeader from "@/assets/logo-header.svg";
 import logoFooter from "@/assets/logo-footer.svg";
 import { createOrder } from "@/services/insforgeService";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthDialog } from "@/components/AuthDialog";
+import { CustomerAccountModal } from "@/components/CustomerAccountModal";
+import { AdminDashboardModal } from "@/components/AdminDashboardModal";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
