@@ -17,6 +17,7 @@ import heroImage from "@/assets/rosse-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
 import logoHeader from "@/assets/logo-header.svg";
 import logoFooter from "@/assets/logo-footer.svg";
+import { createOrder } from "@/services/insforgeService";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -101,22 +102,40 @@ function Index() {
     toast.info(`${productName} eliminado del carrito`);
   };
 
-  const handleCheckout = () => {
-    const itemsText = products
-      .filter((p) => cart[p.id])
-      .map((p) => `- ${cart[p.id]}x ${p.name} ($${(p.price * cart[p.id]).toFixed(2)})`)
-      .join("%0A");
+  const handleCheckout = async () => {
+    const activeItems = products.filter((p) => cart[p.id]);
 
-    if (!itemsText) {
+    if (activeItems.length === 0) {
       toast.error("El carrito está vacío");
       return;
     }
 
+    const itemsText = activeItems
+      .map((p) => `- ${cart[p.id]}x ${p.name} ($${(p.price * cart[p.id]).toFixed(2)})`)
+      .join("%0A");
+
     const subtotalFormatted = subtotal.toFixed(2);
+    
+    // Registrar pedido en el backend de InsForge
+    try {
+      await createOrder({
+        customer_name: "Cliente Web (WhatsApp)",
+        customer_email: "cliente@isaferboutique.com",
+        total_amount: subtotal,
+        items: activeItems.map((p) => ({
+          name: p.name,
+          price: p.price,
+          quantity: cart[p.id],
+        })),
+      });
+      toast.success("Pedido guardado en la base de datos de InsForge ⚡");
+    } catch (err) {
+      console.error("No se pudo registrar en InsForge:", err);
+    }
+
     const text = `Hola Isafer Boutique, me gustaría realizar el siguiente pedido:%0A%0A${itemsText}%0A%0ASubtotal: $${subtotalFormatted}%0A%0A¿Me confirmas disponibilidad?`;
     window.open(`https://wa.me/19296772514?text=${text}`, "_blank");
     setCartOpen(false);
-    toast.success("Redirigiendo a WhatsApp para finalizar tu pedido...");
   };
 
   return (
