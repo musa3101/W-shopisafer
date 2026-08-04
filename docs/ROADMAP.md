@@ -7,10 +7,11 @@
 - [x] Solución de compilación e integración de plugins en `vite.config.ts` para Cloudflare.
 - [x] Configuración de `wrangler.jsonc` para URL sencilla: `https://isafer.mynextbymusa.workers.dev`.
 - [x] Subida del código al repositorio remoto GitHub (`musa3101/W-shopisafer`).
+- [x] Implementación de internacionalización (i18n) aplicando skill `i18nstack` (Inglés EE. UU. por defecto y Español seleccionable).
 
 ## 🟡 Tareas en Progreso
-- [ ] Despliegue activo en Cloudflare Pages / Workers.
+- [ ] Verificación de despliegue activo en Cloudflare Pages / Workers.
 
 ## 🔵 Próximas Mejoras Prioritarias
-- [ ] Reemplazar imágenes de fondo y catálogo por fotos oficiales de los productos de Isafer.
-- [ ] Selector multidioma (Español / Inglés).
+- [ ] Reemplazar imágenes de catálogo por fotografías de estudio oficiales de los productos de Isafer.
+- [ ] Conectar pasarela de pago directa o flujos avanzados InsForge.

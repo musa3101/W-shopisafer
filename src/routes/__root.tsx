@@ -18,16 +18,16 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground font-display">Página no encontrada</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          La página que buscas no existe o ha sido movida.
         </p>
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            Volver a la tienda
           </Link>
         </div>
       </div>
@@ -45,11 +45,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+        <h1 className="text-xl font-semibold tracking-tight text-foreground font-display">
+          No se pudo cargar la página
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Ha ocurrido un detalle inesperado. Puedes intentar de nuevo o volver al inicio.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -57,15 +57,15 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/90 cursor-pointer"
           >
-            Try again
+            Reintentar
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-full border border-input bg-background px-6 py-2 text-xs font-bold uppercase tracking-wider text-foreground transition-colors hover:bg-accent cursor-pointer"
           >
-            Go home
+            Ir al inicio
           </a>
         </div>
       </div>
@@ -78,34 +78,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "Isafer Boutique | Sexy, Elegante y Moldeadora · Brooklyn, NY" },
       {
         name: "description",
-        content: "Moda femenina seleccionada con mimo en Rossé Boutique, Palma de Mallorca.",
+        content: "Descubre la colección más exclusiva de ropa femenina, licras moldeadoras premium y vestidos sensuales en Isafer Boutique, Brooklyn, Nueva York.",
       },
-      { name: "author", content: "Rossé Boutique" },
-      { property: "og:title", content: "Lovable App" },
+      { name: "author", content: "Isafer Boutique Brooklyn" },
+      { property: "og:title", content: "Isafer Boutique | Realza tu figura con elegancia" },
       {
         property: "og:description",
-        content: "Moda femenina seleccionada con mimo en Rossé Boutique, Palma de Mallorca.",
+        content: "Moda femenina sensual y moldeadora. Showroom exclusivo en Brooklyn, NY.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@rosseboutiquebyd" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:site", content: "@shopisafer" },
+      { name: "twitter:title", content: "Isafer Boutique Brooklyn" },
       {
         name: "twitter:description",
-        content: "Moda femenina seleccionada con mimo en Rossé Boutique, Palma de Mallorca.",
-      },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/340ebff3-b130-4079-99b8-fc9f5f5d58a0/id-preview-f78fa573--1b124151-486c-41ef-b546-5733cc1054b1.lovable.app-1781464973287.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/340ebff3-b130-4079-99b8-fc9f5f5d58a0/id-preview-f78fa573--1b124151-486c-41ef-b546-5733cc1054b1.lovable.app-1781464973287.png",
+        content: "Moda femenina sensual y moldeadora. Showroom exclusivo en Brooklyn, NY.",
       },
     ],
     links: [
@@ -117,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Syne:wght@400..800&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap",
       },
     ],
   }),
@@ -129,7 +119,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <head>
         <HeadContent />
       </head>
@@ -141,14 +131,17 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { LanguageProvider } from "../lib/i18n";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster position="bottom-center" />
+      <LanguageProvider>
+        <Outlet />
+        <Toaster position="bottom-center" />
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

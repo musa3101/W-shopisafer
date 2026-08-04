@@ -3,21 +3,24 @@
 ## 📅 Fecha: 4 de Agosto, 2026
 
 ### 📝 Qué se ha hecho hoy
-1. **Configuración de Cloudflare y URL limpia**:
-   - Creado y configurado el archivo `wrangler.jsonc` en la raíz del proyecto definiendo la propiedad `"name": "isafer"`.
-   - Esto simplifica automáticamente la URL de Cloudflare Workers/Pages a: **`https://isafer.mynextbymusa.workers.dev`**.
-2. **Build y Despliegue**:
-   - Resuelto el conflicto de plugins Vite (`plugins: [...]`) para la compilación automática en Cloudflare.
-   - Sincronizadas y subidas las ramas **`dev`** y **`main`** al repositorio GitHub `musa3101/W-shopisafer`.
+1. **Sistema Multidioma (i18n) con Skill `i18nstack`**:
+   - Creado el módulo `src/lib/i18n.tsx` con soporte para **Inglés (US) por defecto** y **Español**.
+   - Creado el selector visual `src/components/LanguageSelector.tsx` con diseño Barbie Luxe (`🇺🇸 EN` / `🇪🇸 ES`) en la barra de navegación.
+   - Envuelta la aplicación global en `<LanguageProvider>` en `src/routes/__root.tsx`.
+   - Traducidos dinámicamente los componentes principales (Header, Hero Section, Banner Marquee, Filtros del Catálogo, Tarjetas de Productos, Bolsa de Compras y Footer).
+2. **Optimización de Renderizado y Build**:
+   - Corregidas las propiedades de `ProductCrop` en `src/routes/index.tsx`.
+   - Verificado el build de producción (`npm run build`) con prerenderizado SSR correcto.
 
 ### 📂 Archivos modificados
-- `wrangler.jsonc` (nuevo)
-- `vite.config.ts`
-- `src/styles.css`
+- `src/lib/i18n.tsx` (nuevo)
+- `src/components/LanguageSelector.tsx` (nuevo)
+- `src/routes/__root.tsx`
 - `src/routes/index.tsx`
 - `docs/SESSION_LATEST_ES.md`
 - `docs/ROADMAP.md`
 
 ### 📌 Estado actual
-- Repositorio limpio y sincronizado.
-- Cloudflare desplegará automáticamente la URL sencilla en la siguiente compilación.
+- La web carga por defecto en **Inglés de EE. UU. (`en-US`)** al abrir por URL.
+- El usuario/cliente puede cambiar instantáneamente a **Español (`es`)** con un solo clic.
+- Compilación e integración comprobadas exitosamente.

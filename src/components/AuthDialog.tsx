@@ -126,12 +126,20 @@ export function AuthDialog({
           </TabsContent>
 
           <TabsContent value="admin" className="space-y-4 pt-4">
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+              <p className="font-semibold flex items-center gap-1 text-slate-900 dark:text-white">
+                <ShieldCheck className="w-4 h-4 text-rose-600" /> Credenciales de Acceso Dueña:
+              </p>
+              <p>• <strong>Usuario / Email:</strong> <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-rose-600 font-mono">admin</code></p>
+              <p>• <strong>Contraseña:</strong> <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-rose-600 font-mono">admin</code></p>
+            </div>
+
             <form onSubmit={handleAdminSubmit} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">Email de Administración</label>
+                <label className="text-xs font-semibold text-muted-foreground">Usuario o Email de Administración</label>
                 <Input
-                  type="email"
-                  placeholder="admin@rosseboutique.com"
+                  type="text"
+                  placeholder="admin"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   className="rounded-xl"
