@@ -1701,7 +1701,9 @@ function Index() {
               <button
                 onClick={() => {
                   setFullScreenMenuOpen(false);
-                  setFavoritesDrawerOpen(true);
+                  setTimeout(() => {
+                    setFavoritesDrawerOpen(true);
+                  }, 200);
                 }}
                 className="w-full py-3.5 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group cursor-pointer"
               >
@@ -1775,10 +1777,13 @@ function Index() {
                   <button
                     onClick={() => {
                       setFullScreenMenuOpen(false);
-                      if (isAdmin) setAdminModalOpen(true);
-                      else setCustomerModalOpen(true);
+                      setTimeout(() => {
+                        if (isAdmin) setAdminModalOpen(true);
+                        else setCustomerModalOpen(true);
+                      }, 200);
                     }}
-                    className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-wider bg-zinc-950 text-white hover:bg-zinc-900 transition-colors cursor-pointer flex items-center justify-center border border-zinc-800"
+                    style={{ backgroundColor: '#09090b', color: '#ffffff' }}
+                    className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-zinc-900 transition-colors cursor-pointer flex items-center justify-center border border-zinc-800"
                   >
                     Abrir Panel
                   </button>
@@ -1799,7 +1804,9 @@ function Index() {
                 className="w-full flex items-center justify-center gap-2 rounded-2xl border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3 shadow-xs cursor-pointer"
                 onClick={() => {
                   setFullScreenMenuOpen(false);
-                  setAuthDialogOpen(true);
+                  setTimeout(() => {
+                    setAuthDialogOpen(true);
+                  }, 200);
                 }}
               >
                 <User className="size-4 text-rose-500" /> Acceder o Crear Cuenta VIP
@@ -1838,7 +1845,11 @@ function Index() {
         onOpenChange={setAuthDialogOpen}
         onGoogleSignIn={signInWithGoogle}
         onAdminLogin={signInWithPassword}
-        onSuccessAdmin={() => setAdminModalOpen(true)}
+        onSuccessAdmin={() => {
+          setTimeout(() => {
+            setAdminModalOpen(true);
+          }, 200);
+        }}
       />
       <CustomerAccountModal
         user={user}
@@ -2018,7 +2029,9 @@ function Index() {
               className="w-full rounded-2xl h-11 text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 shadow-md cursor-pointer"
               onClick={() => {
                 setFavDialogOpen(false);
-                setAuthDialogOpen(true);
+                setTimeout(() => {
+                  setAuthDialogOpen(true);
+                }, 200);
               }}
             >
               {t("fav_modal_login_btn")}
