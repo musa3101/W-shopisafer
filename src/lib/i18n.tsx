@@ -95,6 +95,59 @@ export interface Translations {
   // Trending Section
   trending_title: string;
   trending_subtitle: string;
+
+  // Navigation Menu Items
+  nav_menu_collection: string;
+  nav_menu_categories: string;
+  nav_menu_seal: string;
+  nav_menu_visit: string;
+
+  // Favorites Modal & Drawer
+  fav_modal_title: string;
+  fav_modal_desc: string;
+  fav_modal_login_btn: string;
+  fav_modal_guest_btn: string;
+  fav_drawer_title: string;
+  fav_drawer_empty: string;
+  fav_drawer_empty_sub: string;
+
+  // Cookies & Geo Banners
+  cookies_text: string;
+  cookies_policy_link: string;
+  cookies_settings_btn: string;
+  cookies_reject_btn: string;
+  cookies_accept_btn: string;
+  geo_title_es: string;
+  geo_title_en: string;
+  geo_change_loc_es: string;
+  geo_change_loc_en: string;
+  geo_desc_es: string;
+  geo_desc_en: string;
+  geo_no: string;
+  geo_yes_es: string;
+  geo_yes_en: string;
+
+  // Auth Dialog
+  auth_title: string;
+  auth_subtitle: string;
+  auth_tab_client: string;
+  auth_tab_admin: string;
+  auth_client_desc: string;
+  auth_google_btn: string;
+  auth_admin_desc: string;
+  auth_admin_user_label: string;
+  auth_admin_pass_label: string;
+  auth_admin_submit: string;
+
+  // Newsletter & Fullscreen Menu
+  newsletter_title: string;
+  newsletter_subtitle: string;
+  newsletter_placeholder: string;
+  newsletter_btn: string;
+  footer_payments_title: string;
+  mobile_menu_close: string;
+  mobile_menu_search: string;
+  mobile_menu_title: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -191,6 +244,59 @@ const translations: Record<Language, Translations> = {
     // Trending Section
     trending_title: "Trending Now",
     trending_subtitle: "Our most popular styles handpicked for you.",
+
+    // Navigation Menu Items
+    nav_menu_collection: "New Collection",
+    nav_menu_categories: "Bento Categories",
+    nav_menu_seal: "The Isafer Seal",
+    nav_menu_visit: "Visit Brooklyn",
+
+    // Favorites Modal & Drawer
+    fav_modal_title: "Added to My Wishlist",
+    fav_modal_desc: "We saved your outfit to a temporary wishlist. Sign in or create an account to store your favorites permanently!",
+    fav_modal_login_btn: "Sign In or Register",
+    fav_modal_guest_btn: "Continue as Guest",
+    fav_drawer_title: "My Favorites Wishlist",
+    fav_drawer_empty: "No favorites saved yet",
+    fav_drawer_empty_sub: "Tap the heart icon on any outfit to save it here.",
+
+    // Cookies & Geo Banners
+    cookies_text: "We use cookies to analyze traffic, personalize your shopping experience, and deliver relevant promotions. You can accept, decline, or manage your preferences.",
+    cookies_policy_link: "Cookie Policy",
+    cookies_settings_btn: "Cookie Settings",
+    cookies_reject_btn: "Decline Cookies",
+    cookies_accept_btn: "Accept Cookies",
+    geo_title_es: "Browsing from Spain",
+    geo_title_en: "Browsing from USA",
+    geo_change_loc_es: "Change location",
+    geo_change_loc_en: "Change location",
+    geo_desc_es: "Would you like to switch the language to Spanish?",
+    geo_desc_en: "Would you like to save your location and switch language to English?",
+    geo_no: "No",
+    geo_yes_es: "Yes, Switch to Spanish 🇪🇸",
+    geo_yes_en: "Yes, Switch to English 🇺🇸",
+
+    // Auth Dialog
+    auth_title: "My Account · Isafer Boutique",
+    auth_subtitle: "Track your orders or log into the boutique admin portal.",
+    auth_tab_client: "Customers (Google)",
+    auth_tab_admin: "Boutique Owner",
+    auth_client_desc: "Quickly sign in with Google to check order history and shipping updates.",
+    auth_google_btn: "Sign in with Google",
+    auth_admin_desc: "Boutique Owner Credentials:",
+    auth_admin_user_label: "Admin Email or Username",
+    auth_admin_pass_label: "Password",
+    auth_admin_submit: "Enter Admin Panel",
+
+    // Newsletter & Fullscreen Menu
+    newsletter_title: "JOIN THE BARBIE LUXE CLUB 💖",
+    newsletter_subtitle: "Get 10% OFF on your first order & secret drop alerts.",
+    newsletter_placeholder: "Enter your email address...",
+    newsletter_btn: "Join VIP Club",
+    footer_payments_title: "100% Guaranteed Safe Checkout",
+    mobile_menu_close: "Close Menu",
+    mobile_menu_search: "Search outfits, shapewear...",
+    mobile_menu_title: "BARBIE LUXE NAVIGATION",
   },
   es: {
     // Navigation & Header
@@ -285,6 +391,59 @@ const translations: Record<Language, Translations> = {
     // Trending Section
     trending_title: "Tendencias de la Semana",
     trending_subtitle: "Nuestros estilos más populares elegidos para ti.",
+
+    // Navigation Menu Items
+    nav_menu_collection: "Nueva Colección",
+    nav_menu_categories: "Categorías Bento",
+    nav_menu_seal: "El Sello Isafer",
+    nav_menu_visit: "Visítanos en Brooklyn",
+
+    // Favorites Modal & Drawer
+    fav_modal_title: "Añadido a la lista de Mis Favoritos",
+    fav_modal_desc: "Hemos añadido tu prenda a una lista temporal. Inicia sesión en tu cuenta o regístrate para que podamos almacenar tus favoritos por más tiempo.",
+    fav_modal_login_btn: "Acceder o crear cuenta nueva",
+    fav_modal_guest_btn: "Continuar como invitado",
+    fav_drawer_title: "Mi Lista de Favoritos",
+    fav_drawer_empty: "Aún no tienes favoritos guardados",
+    fav_drawer_empty_sub: "Pulsa el icono de corazón en cualquier prenda para guardarla aquí.",
+
+    // Cookies & Geo Banners
+    cookies_text: "Utilizamos cookies propias y de terceros para conocer los usos de nuestra tienda online y poder mejorarla, adaptar el contenido a tus gustos y personalizar nuestros anuncios, marketing y publicaciones en redes sociales. Puedes aceptarlas todas, rechazarlas o elegir tu configuración pulsando los botones correspondientes.",
+    cookies_policy_link: "Política de Cookies",
+    cookies_settings_btn: "Configuración de Cookies",
+    cookies_reject_btn: "Rechazar Cookies",
+    cookies_accept_btn: "Aceptar Cookies",
+    geo_title_es: "Estás navegando en España",
+    geo_title_en: "You are browsing from USA",
+    geo_change_loc_es: "Cambiar ubicación",
+    geo_change_loc_en: "Change location",
+    geo_desc_es: "¿Quieres guardar tu ubicación y cambiar el idioma a Español?",
+    geo_desc_en: "Would you like to save your location and switch language to English?",
+    geo_no: "No",
+    geo_yes_es: "Sí, cambiar a Español 🇪🇸",
+    geo_yes_en: "Yes, switch to English 🇺🇸",
+
+    // Auth Dialog
+    auth_title: "Mi Cuenta · Isafer Boutique",
+    auth_subtitle: "Accede a tu historial de pedidos o entra al panel de administración de la tienda.",
+    auth_tab_client: "Clientas (Google)",
+    auth_tab_admin: "Dueña / Admin",
+    auth_client_desc: "Inicia sesión rápidamente con tu cuenta de Google para consultar el estado de tus compras y pedidos realizados.",
+    auth_google_btn: "Iniciar sesión con Google",
+    auth_admin_desc: "Credenciales de Acceso Dueña:",
+    auth_admin_user_label: "Usuario o Email de Administración",
+    auth_admin_pass_label: "Contraseña",
+    auth_admin_submit: "Entrar al Panel de Control",
+
+    // Newsletter & Fullscreen Menu
+    newsletter_title: "ÚNETE AL CLUB BARBIE LUXE 💖",
+    newsletter_subtitle: "Consigue 10% OFF en tu primer pedido y avisos VIP de lanzamientos secretos.",
+    newsletter_placeholder: "Escribe tu correo electrónico...",
+    newsletter_btn: "Unirme VIP",
+    footer_payments_title: "Pagos 100% Seguros Garantizados",
+    mobile_menu_close: "Cerrar Menú",
+    mobile_menu_search: "Buscar prendas, fajas...",
+    mobile_menu_title: "NAVEGACIÓN BARBIE LUXE",
   },
 };
 
@@ -338,3 +497,4 @@ export const useTranslation = () => {
   }
   return context;
 };
+

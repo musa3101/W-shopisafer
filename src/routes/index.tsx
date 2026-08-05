@@ -22,6 +22,11 @@ import {
   CreditCard,
   Grid,
   ChevronRight,
+  X,
+  Search,
+  Mail,
+  Lock,
+  Shield,
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -238,6 +243,9 @@ function Index() {
   const [geoCountry, setGeoCountry] = useState("España");
   const [targetLang, setTargetLang] = useState<"es" | "en">("es");
   const [isCatalogExpanded, setIsCatalogExpanded] = useState(false);
+  const [fullScreenMenuOpen, setFullScreenMenuOpen] = useState(false);
+  const [menuSearchQuery, setMenuSearchQuery] = useState("");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const { user, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
 
@@ -670,136 +678,17 @@ function Index() {
       {/* 2. HEADER NAVBAR */}
       <header className="sticky top-0 z-40 border-b border-rose-100 bg-[#fff8fa]/95 text-zinc-800 backdrop-blur-xl transition-all">
         <div className="relative mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-8">
-          {/* Left Menu Drawer Trigger */}
+          {/* Left Menu Trigger for Fullscreen Menu */}
           <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full text-zinc-700 hover:text-primary hover:bg-rose-100/50"
-                  aria-label="Abrir menú de navegación"
-                >
-                  <Menu className="size-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="w-[88%] max-w-sm border-r border-rose-100 bg-gradient-to-b from-[#fffafb] to-white p-6 text-zinc-800 flex flex-col justify-between shadow-2xl [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300"
-              >
-                <div>
-                  <SheetHeader className="text-left pb-5 border-b border-rose-100/50">
-                    <SheetTitle className="p-0">
-                      <IsaferLogo variant="header" size="md" />
-                    </SheetTitle>
-                    <SheetDescription className="text-zinc-500 text-[10px] font-bold tracking-widest uppercase mt-2">
-                      Brooklyn's finest active & shapewear
-                    </SheetDescription>
-                  </SheetHeader>
-                  
-                  <nav className="mt-6 flex flex-col">
-                    {[
-                      ["Nueva Colección", "#coleccion", Sparkles],
-                      ["Categorías Bento", "#categorias", Grid],
-                      ["El Sello Isafer", "#estilo", Heart],
-                      ["Visítanos en Brooklyn", "#visitanos", MapPin],
-                    ].map(([label, href, Icon]) => (
-                      <SheetClose asChild key={label}>
-                        <a
-                          href={href}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            scrollToSection(href.substring(1));
-                          }}
-                          className="flex items-center justify-between border-b border-rose-100/30 py-4 text-xs font-bold uppercase tracking-widest text-zinc-700 hover:text-rose-600 transition-all duration-300 group cursor-pointer"
-                        >
-                          <span className="flex items-center gap-3">
-                            <Icon className="w-4 h-4 text-rose-400 group-hover:text-rose-600 group-hover:scale-110 transition-all duration-300" />
-                            {label}
-                          </span>
-                          <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-rose-600 group-hover:translate-x-1 transition-all duration-300" />
-                        </a>
-                      </SheetClose>
-                    ))}
-                  </nav>
-                </div>
-
-                <div className="mt-auto space-y-6 pt-6 border-t border-rose-100/50">
-                  {/* Language Selector (mobile only) */}
-                  <div className="flex flex-col gap-2 md:hidden">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Idioma / Language</span>
-                    <div className="flex justify-start">
-                      <LanguageSelector />
-                    </div>
-                  </div>
-
-                  {/* Account Card (mobile only) */}
-                  <div className="flex flex-col gap-2.5 md:hidden">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 font-mono">Mi Cuenta</span>
-                    {user ? (
-                      <SheetClose asChild>
-                        <button
-                          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50/20 p-3.5 text-left text-xs hover:bg-rose-50/50 transition-all duration-300 group cursor-pointer"
-                          onClick={() => {
-                            if (isAdmin) setAdminModalOpen(true);
-                            else setCustomerModalOpen(true);
-                          }}
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-sm shadow-rose-200/50">
-                              {user.email ? user.email.slice(0, 2).toUpperCase() : "US"}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="font-extrabold text-zinc-800 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                                {isAdmin ? (
-                                  <ShieldCheck className="size-3.5 text-amber-500 inline" />
-                                ) : (
-                                  <UserCheck className="size-3.5 text-rose-500 inline" />
-                                )}
-                                Panel {isAdmin ? "Administradora" : "Cliente"}
-                              </p>
-                              <p className="text-zinc-500 text-[9px] truncate mt-0.5">{user.email}</p>
-                            </div>
-                          </div>
-                          <ArrowRight className="w-3.5 h-3.5 text-rose-450 group-hover:translate-x-0.5 transition-transform" />
-                        </button>
-                      </SheetClose>
-                    ) : (
-                      <SheetClose asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full flex items-center justify-start gap-2.5 rounded-2xl border-rose-100 bg-[#fffbfd] text-zinc-700 hover:text-rose-650 hover:bg-rose-50/40 text-xs font-bold px-4 py-3 h-auto shadow-xs cursor-pointer"
-                          onClick={() => setAuthDialogOpen(true)}
-                        >
-                          <User className="size-4 text-rose-500" /> Iniciar Sesión / Registrarse
-                        </Button>
-                      </SheetClose>
-                    )}
-                  </div>
-
-                  {/* Social Networks Contacts */}
-                  <div className="space-y-3 pt-2">
-                    <a
-                      href="https://www.instagram.com/shopisafer"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-3 text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-rose-600 transition-colors group"
-                    >
-                      <Instagram className="size-4 text-rose-500 group-hover:scale-110 transition-transform" /> @shopisafer
-                    </a>
-                    <a
-                      href="https://wa.me/19296772514"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-3 text-[10px] font-bold tracking-widest uppercase text-zinc-500 hover:text-emerald-600 transition-colors group"
-                    >
-                      <MessageCircle className="size-4 text-emerald-500 group-hover:scale-110 transition-transform" /> +1 (929) 677-2514
-                    </a>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full text-zinc-700 hover:text-rose-600 hover:bg-rose-100/50 cursor-pointer"
+              onClick={() => setFullScreenMenuOpen(true)}
+              aria-label="Abrir menú de navegación"
+            >
+              <Menu className="size-5" />
+            </Button>
           </div>
 
           {/* Center Brand Logo (Absolute Center) */}
@@ -1578,95 +1467,169 @@ function Index() {
         </section>
       </main>
 
-      {/* 8. FOOTER */}
-      <footer className="border-t border-rose-950/40 bg-[#0c080a] px-5 pb-12 pt-16 text-zinc-300 shadow-[0_-4px_20px_rgba(219,39,119,0.05)]">
-        <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-4 gap-10">
-          <div className="md:col-span-2 flex flex-col items-center text-center md:items-start md:text-left">
-            <div className="relative group inline-flex items-center justify-center mb-2">
-              {/* Glowing pink halo / neon arch */}
-              <div className="absolute -inset-1.5 bg-primary/20 rounded-2xl blur opacity-75 group-hover:opacity-100 group-hover:bg-primary/30 transition-all duration-300"></div>
-              {/* Rounded logo container */}
-              <div className="relative p-1.5 bg-zinc-950 border border-primary/30 rounded-2xl shadow-[0_0_15px_rgba(219,39,119,0.25)]">
+      {/* 8. FOOTER E-COMMERCE ENRIQUECIDO (Bershka / Fashion Nova Style) */}
+      <footer className="border-t border-zinc-900 bg-zinc-950 text-zinc-300 pt-16 pb-12 transition-all">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          {/* VIP Newsletter Box */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-rose-950/40 to-zinc-900 border border-rose-500/20 p-8 sm:p-12 mb-16 shadow-2xl">
+            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left">
+              <div className="space-y-2 max-w-xl">
+                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-mono font-bold tracking-widest uppercase">
+                  <Sparkles className="size-3 text-rose-400" /> {t("newsletter_title")}
+                </span>
+                <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                  {t("newsletter_subtitle")}
+                </h3>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (newsletterEmail) {
+                    toast.success("¡Bienvenida al Club Barbie Luxe! 💖", {
+                      description: "Te hemos enviado tu cupón VIP de 10% OFF.",
+                    });
+                    setNewsletterEmail("");
+                  }
+                }}
+                className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0 max-w-md"
+              >
+                <div className="relative flex-1">
+                  <Mail className="absolute left-4 top-3.5 size-4 text-zinc-500" />
+                  <input
+                    type="email"
+                    required
+                    placeholder={t("newsletter_placeholder")}
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/90 py-3 pl-11 pr-4 text-xs text-white placeholder-zinc-500 focus:border-rose-500 focus:outline-none"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-3 shadow-lg cursor-pointer"
+                >
+                  {t("newsletter_btn")}
+                </Button>
+              </form>
+            </div>
+          </div>
+
+          {/* 4 Columns Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-zinc-900">
+            {/* Col 1: Brand Info */}
+            <div className="space-y-4 text-center md:text-left">
+              <div className="inline-flex justify-center md:justify-start">
                 <IsaferLogo variant="footer" size="md" />
               </div>
+              <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
+                {t("footer_tagline")} Diseñado en Brooklyn, NY para empoderar la elegancia y seguridad femenina.
+              </p>
+              <div className="pt-2 flex items-center justify-center md:justify-start gap-3">
+                <a
+                  href="https://www.instagram.com/shopisafer"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="size-4" />
+                </a>
+                <a
+                  href="https://wa.me/19296772514"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/40 transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="size-4" />
+                </a>
+              </div>
             </div>
-            <p className="mt-4 text-xs text-zinc-400 max-w-sm leading-relaxed">
-              Boutique femenina exclusiva en Brooklyn, Nueva York. Especialistas en licras moldeadoras de alta compresión, vestidos sensuales y outfits de noche.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center md:justify-start items-center gap-3 text-xs font-semibold">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-amber-300">
-                📍 Brooklyn, NY
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-zinc-900 border border-primary/20 text-primary">
-                🇺🇸 Envíos a todo USA
-              </span>
+
+            {/* Col 2: Shop Links */}
+            <div className="space-y-4 text-center md:text-left">
+              <h4 className="font-serif text-sm font-bold uppercase tracking-widest text-white">
+                {t("footer_links_title")}
+              </h4>
+              <ul className="space-y-2.5 text-xs text-zinc-400">
+                <li>
+                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }} className="hover:text-rose-400 transition-colors">
+                    Fajas & Licras Moldeadoras
+                  </a>
+                </li>
+                <li>
+                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }} className="hover:text-rose-400 transition-colors">
+                    Vestidos Glam & Noche
+                  </a>
+                </li>
+                <li>
+                  <a href="#spray" onClick={(e) => { e.preventDefault(); scrollToSection("spray"); }} className="hover:text-rose-400 transition-colors">
+                    Aerosol de Autodefensa Chic
+                  </a>
+                </li>
+                <li>
+                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }} className="hover:text-rose-400 transition-colors">
+                    Conjuntos & Tops Luxe
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Customer Support */}
+            <div className="space-y-4 text-center md:text-left">
+              <h4 className="font-serif text-sm font-bold uppercase tracking-widest text-white">
+                {t("footer_help_title")}
+              </h4>
+              <ul className="space-y-2.5 text-xs text-zinc-400 flex flex-col items-center md:items-start">
+                <li className="flex items-center gap-2">
+                  <Truck className="size-3.5 text-rose-400" /> Envíos Express (USA 24-48h)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="size-3.5 text-emerald-400" /> Devoluciones 30 Días
+                </li>
+                <li className="flex items-center gap-2">
+                  <Clock className="size-3.5 text-amber-400" /> Atención Lun-Sáb (9am - 8pm)
+                </li>
+                <li>
+                  <a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="text-emerald-400 underline hover:text-emerald-300 transition-colors font-semibold">
+                    Escribir a Camila por WhatsApp
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: Safe Payments & Location */}
+            <div className="space-y-4 text-center md:text-left">
+              <h4 className="font-serif text-sm font-bold uppercase tracking-widest text-white">
+                {t("footer_payments_title")}
+              </h4>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                Pagos encriptados SSL de 256 bits procesados en tiempo real con Stripe Checkout o WhatsApp.
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 pt-1">
+                <span className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-extrabold text-white flex items-center gap-1.5">
+                  <CreditCard className="size-3.5 text-rose-400" /> Stripe Checkout
+                </span>
+                <span className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-bold text-zinc-300">
+                  Visa / MasterCard
+                </span>
+                <span className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-bold text-emerald-400">
+                  WhatsApp Orders
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center text-center md:items-start md:text-left">
-            <h4 className="font-display text-sm font-bold uppercase tracking-wider text-white mb-4">
-              Navegación
-            </h4>
-            <ul className="space-y-3.5 text-xs text-zinc-400">
-              <li>
-                <a href="#coleccion" onClick={(e) => { e.preventDefault(); scrollToSection("coleccion"); }} className="hover:text-primary transition-colors">
-                  Nueva Colección
-                </a>
-              </li>
-              <li>
-                <a href="#categorias" onClick={(e) => { e.preventDefault(); scrollToSection("categorias"); }} className="hover:text-primary transition-colors">
-                  Licras Moldeadoras
-                </a>
-              </li>
-              <li>
-                <a href="#estilo" onClick={(e) => { e.preventDefault(); scrollToSection("estilo"); }} className="hover:text-primary transition-colors">
-                  El Sello Isafer
-                </a>
-              </li>
-              <li>
-                <a href="#visitanos" onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }} className="hover:text-primary transition-colors">
-                  Showroom Brooklyn
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="flex flex-col items-center text-center md:items-start md:text-left">
-            <h4 className="font-display text-sm font-bold uppercase tracking-wider text-white mb-4">
-              Redes & Contacto
-            </h4>
-            <div className="space-y-3.5 text-xs text-zinc-400 flex flex-col items-center md:items-start">
-              <a
-                href="https://www.instagram.com/shopisafer"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2.5 hover:text-primary transition-colors"
-              >
-                <Instagram className="size-4 text-primary" /> @shopisafer (Instagram)
-              </a>
-              <a
-                href="https://www.tiktok.com/@shop_isafer1"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2.5 hover:text-amber-400 transition-colors"
-              >
-                <Sparkles className="size-4 text-amber-400" /> @shop_isafer1 (TikTok)
-              </a>
-              <a
-                href="https://wa.me/19296772514"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2.5 hover:text-emerald-400 transition-colors"
-              >
-                <MessageCircle className="size-4 text-emerald-400" /> WhatsApp Oficial
-              </a>
+          {/* Subfooter */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+            <p>{t("footer_rights")} Brooklyn, New York, NY 11201.</p>
+            <div className="flex items-center gap-6 text-[11px]">
+              <a href="#privacy" className="hover:text-zinc-300 transition-colors">Privacidad</a>
+              <a href="#terms" className="hover:text-zinc-300 transition-colors font-medium">Términos</a>
+              <a href="#cookies" className="hover:text-zinc-300 transition-colors">Cookies</a>
             </div>
           </div>
-        </div>
-
-        <div className="mx-auto max-w-7xl mt-12 pt-8 border-t border-zinc-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-          <p>© {new Date().getFullYear()} Isafer Boutique. Todos los derechos reservados. Brooklyn, NY.</p>
-          <p className="text-[10px] tracking-widest uppercase">Designed with MYNEXT Design System</p>
         </div>
       </footer>
 
@@ -1683,6 +1646,126 @@ function Index() {
       )}
 
 
+
+      {/* Full-Screen Mobile Menu Overlay (Bershka & Pull&Bear Style) */}
+      {fullScreenMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-[#fffafb]/98 backdrop-blur-2xl p-6 sm:p-10 flex flex-col justify-between overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-6 border-b border-rose-100">
+            <IsaferLogo variant="header" size="md" />
+            <div className="flex items-center gap-3">
+              <LanguageSelector />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full bg-rose-100/60 text-zinc-900 hover:bg-rose-200/60 w-10 h-10 shadow-sm cursor-pointer"
+                onClick={() => setFullScreenMenuOpen(false)}
+                aria-label={t("mobile_menu_close")}
+              >
+                <X className="w-5 h-5 text-rose-600" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Quick Search inside menu */}
+          <div className="my-6">
+            <div className="relative">
+              <Search className="absolute left-4 top-3.5 size-4 text-zinc-400" />
+              <input
+                type="text"
+                placeholder={t("mobile_menu_search")}
+                value={menuSearchQuery}
+                onChange={(e) => setMenuSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setFullScreenMenuOpen(false);
+                    scrollToSection("coleccion");
+                  }
+                }}
+                className="w-full rounded-2xl border border-rose-200 bg-white py-3 pl-11 pr-4 text-xs shadow-xs focus:border-rose-400 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Editorial Nav Category Links */}
+          <nav className="flex flex-col gap-2 my-auto py-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 mb-2 font-mono">
+              {t("mobile_menu_title")}
+            </p>
+
+            {[
+              { label: t("catalog_filter_all"), category: "Todos", num: "15", icon: Sparkles },
+              { label: t("catalog_filter_shapewear"), category: "Licras", num: "05", icon: Flame },
+              { label: t("catalog_filter_dresses"), category: "Vestidos", num: "04", icon: Heart },
+              { label: t("catalog_filter_protection"), category: "Gas Pimienta", num: "02", icon: ShieldCheck },
+              { label: t("catalog_filter_sets"), category: "Tops & Sets", num: "04", icon: Grid },
+            ].map((item, idx) => (
+              <a
+                key={item.category}
+                href="#coleccion"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveCategory(item.category);
+                  setFullScreenMenuOpen(false);
+                  scrollToSection("coleccion");
+                }}
+                className="group flex items-center justify-between py-3.5 border-b border-rose-100/50 text-left cursor-pointer transition-all hover:pl-2"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs font-bold text-rose-300 group-hover:text-rose-600">
+                    0{idx + 1}
+                  </span>
+                  <span className="font-serif text-xl sm:text-2xl font-bold uppercase tracking-tight text-zinc-800 group-hover:text-rose-600 transition-colors">
+                    {item.label}
+                  </span>
+                </div>
+                <span className="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-[10px] font-mono font-bold text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                  {item.num} items
+                </span>
+              </a>
+            ))}
+          </nav>
+
+          {/* Footer Section of Menu */}
+          <div className="pt-6 border-t border-rose-100 space-y-4">
+            {user ? (
+              <button
+                className="w-full flex items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 text-left text-xs hover:bg-rose-50/80 transition-all duration-300 group cursor-pointer"
+                onClick={() => {
+                  setFullScreenMenuOpen(false);
+                  if (isAdmin) setAdminModalOpen(true);
+                  else setCustomerModalOpen(true);
+                }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
+                    {user.email ? user.email.slice(0, 2).toUpperCase() : "US"}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-extrabold text-zinc-800 text-[11px] uppercase tracking-wider flex items-center gap-1">
+                      {isAdmin ? <ShieldCheck className="size-3.5 text-amber-500" /> : <UserCheck className="size-3.5 text-rose-500" />}
+                      {isAdmin ? "Panel Administradora 💖" : "Mi Perfil Cliente 👤"}
+                    </p>
+                    <p className="text-zinc-500 text-[10px] truncate">{user.email}</p>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-rose-500 group-hover:translate-x-1 transition-transform" />
+              </button>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3.5 shadow-sm cursor-pointer"
+                onClick={() => {
+                  setFullScreenMenuOpen(false);
+                  setAuthDialogOpen(true);
+                }}
+              >
+                <User className="size-4 text-rose-500" /> Acceder o Crear Cuenta VIP
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Dialogs */}
       <AuthDialog
@@ -1712,10 +1795,10 @@ function Index() {
               <Heart className="w-6 h-6 fill-rose-500 text-rose-500" />
             </div>
             <DialogTitle className="text-lg font-serif font-black text-zinc-900 tracking-tight">
-              Añadido a la lista de Mis Favoritos
+              {t("fav_modal_title")}
             </DialogTitle>
             <DialogDescription className="text-xs text-zinc-500 leading-relaxed px-2">
-              Hemos añadido tu prenda a una lista temporal. Inicia sesión en tu cuenta o regístrate para que podamos almacenar tus favoritos por más tiempo.
+              {t("fav_modal_desc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -1727,14 +1810,14 @@ function Index() {
                 setAuthDialogOpen(true);
               }}
             >
-              Acceder o crear cuenta nueva
+              {t("fav_modal_login_btn")}
             </Button>
             <Button
               variant="outline"
               className="w-full rounded-2xl h-11 text-xs font-bold uppercase tracking-widest border-rose-100 text-zinc-500 hover:bg-rose-50/50 cursor-pointer"
               onClick={() => setFavDialogOpen(false)}
             >
-              Continuar como invitado
+              {t("fav_modal_guest_btn")}
             </Button>
           </div>
         </DialogContent>
@@ -1746,9 +1829,9 @@ function Index() {
           <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-5 text-left">
             <div className="flex-1 space-y-2">
               <p className="text-[11px] sm:text-xs text-zinc-600 leading-relaxed font-medium">
-                Utilizamos cookies propias y de terceros para conocer los usos de nuestra tienda online y poder mejorarla, adaptar el contenido a tus gustos y personalizar nuestros anuncios, marketing y publicaciones en redes sociales. Puedes aceptarlas todas, rechazarlas o elegir tu configuración pulsando los botones correspondientes. Ten en cuenta que rechazar las cookies puede afectar a tu experiencia de compra. Para más información puedes consultar nuestra{" "}
+                {t("cookies_text")}{" "}
                 <a href="#cookies" className="underline font-bold text-zinc-900 hover:text-rose-600 transition-colors">
-                  Política de Cookies
+                  {t("cookies_policy_link")}
                 </a>.
               </p>
             </div>
@@ -1759,31 +1842,32 @@ function Index() {
                 className="w-full sm:w-auto px-6 h-11 rounded-xl text-xs font-bold uppercase tracking-widest border-zinc-300 text-zinc-700 hover:bg-rose-50/30 cursor-pointer"
                 onClick={() => handleCookiesConsent("rejected")}
               >
-                Configuración de Cookies
+                {t("cookies_settings_btn")}
               </Button>
               <Button
                 className="w-full sm:w-auto px-6 h-11 rounded-xl text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 cursor-pointer"
                 onClick={() => handleCookiesConsent("rejected")}
               >
-                Rechazar Cookies
+                {t("cookies_reject_btn")}
               </Button>
               <Button
                 className="w-full sm:w-auto px-6 h-11 rounded-xl text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 cursor-pointer"
                 onClick={() => handleCookiesConsent("accepted")}
               >
-                Aceptar Cookies
+                {t("cookies_accept_btn")}
               </Button>
             </div>
           </div>
         </div>
       )}
+
       {/* Banner de Geolocalización / Idioma Estilo Pull&Bear */}
       {showGeoBanner && (
         <div className="fixed bottom-6 left-6 z-45 bg-white border border-rose-100 p-5 rounded-3xl shadow-2xl max-w-[90vw] sm:max-w-sm animate-in fade-in slide-in-from-bottom duration-300">
           <div className="space-y-4 text-left">
             <div className="flex items-center justify-between gap-3 border-b border-rose-50 pb-2">
               <span className="text-xs font-extrabold text-zinc-800 tracking-tight">
-                {targetLang === "es" ? "Estás navegando en España" : "You are browsing from USA"}
+                {targetLang === "es" ? t("geo_title_es") : t("geo_title_en")}
               </span>
               <button
                 onClick={() => {
@@ -1794,14 +1878,12 @@ function Index() {
                 }}
                 className="text-[10px] font-bold text-zinc-400 underline hover:text-rose-600 transition-colors cursor-pointer"
               >
-                {targetLang === "es" ? "Cambiar ubicación" : "Change location"}
+                {targetLang === "es" ? t("geo_change_loc_es") : t("geo_change_loc_en")}
               </button>
             </div>
             
             <p className="text-[11px] text-zinc-500 font-medium">
-              {targetLang === "es" 
-                ? "¿Quieres guardar tu ubicación y cambiar el idioma a Español?"
-                : "Would you like to save your location and switch language to English?"}
+              {targetLang === "es" ? t("geo_desc_es") : t("geo_desc_en")}
             </p>
 
             <div className="flex gap-2.5 pt-1">
@@ -1813,7 +1895,7 @@ function Index() {
                   setShowGeoBanner(false);
                 }}
               >
-                No
+                {t("geo_no")}
               </Button>
               <Button
                 className="flex-1 rounded-2xl h-10 text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 shadow-md cursor-pointer"
@@ -1824,7 +1906,7 @@ function Index() {
                   toast.success(targetLang === "es" ? "Idioma y ubicación guardados 🌍" : "Location and language saved 🌍");
                 }}
               >
-                {targetLang === "es" ? "Sí" : "Yes"}
+                {targetLang === "es" ? t("geo_yes_es") : t("geo_yes_en")}
               </Button>
             </div>
           </div>

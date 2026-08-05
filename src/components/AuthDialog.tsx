@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "@/lib/i18n";
 
 interface AuthDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ export function AuthDialog({
   onAdminLogin,
   onSuccessAdmin,
 }: AuthDialogProps) {
+  const { t } = useTranslation();
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -72,27 +74,27 @@ export function AuthDialog({
             <User className="w-6 h-6 text-rose-600" />
           </div>
           <DialogTitle className="text-2xl font-serif text-foreground">
-            Mi Cuenta · Rossé Boutique
+            {t("auth_title")}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Accede a tu historial de pedidos o entra al panel de administración de la tienda.
+            {t("auth_subtitle")}
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="client" className="w-full mt-4">
           <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted p-1">
             <TabsTrigger value="client" className="rounded-lg text-xs font-medium py-2">
-              <User className="w-3.5 h-3.5 mr-1.5" /> Clientas (Google)
+              <User className="w-3.5 h-3.5 mr-1.5" /> {t("auth_tab_client")}
             </TabsTrigger>
             <TabsTrigger value="admin" className="rounded-lg text-xs font-medium py-2">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Dueña / Admin
+              <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> {t("auth_tab_admin")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="client" className="space-y-4 pt-4">
             <div className="text-center space-y-2">
               <p className="text-xs text-muted-foreground">
-                Inicia sesión rápidamente con tu cuenta de Google para consultar el estado de tus compras y pedidos realizados.
+                {t("auth_client_desc")}
               </p>
             </div>
 
@@ -121,22 +123,22 @@ export function AuthDialog({
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>{isLoading ? "Conectando..." : "Iniciar sesión con Google"}</span>
+              <span>{isLoading ? "..." : t("auth_google_btn")}</span>
             </Button>
           </TabsContent>
 
           <TabsContent value="admin" className="space-y-4 pt-4">
             <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 space-y-1">
               <p className="font-semibold flex items-center gap-1 text-slate-900 dark:text-white">
-                <ShieldCheck className="w-4 h-4 text-rose-600" /> Credenciales de Acceso Dueña:
+                <ShieldCheck className="w-4 h-4 text-rose-600" /> {t("auth_admin_desc")}
               </p>
-              <p>• <strong>Usuario / Email:</strong> <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-rose-600 font-mono">admin</code></p>
-              <p>• <strong>Contraseña:</strong> <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-rose-600 font-mono">admin</code></p>
+              <p>• <strong>Email / User:</strong> <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-rose-600 font-mono">admin</code></p>
+              <p>• <strong>Password:</strong> <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-rose-600 font-mono">admin</code></p>
             </div>
 
             <form onSubmit={handleAdminSubmit} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">Usuario o Email de Administración</label>
+                <label className="text-xs font-semibold text-muted-foreground">{t("auth_admin_user_label")}</label>
                 <Input
                   type="text"
                   placeholder="admin"
@@ -148,7 +150,7 @@ export function AuthDialog({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">Contraseña</label>
+                <label className="text-xs font-semibold text-muted-foreground">{t("auth_admin_pass_label")}</label>
                 <Input
                   type="password"
                   placeholder="••••••••"
@@ -165,7 +167,7 @@ export function AuthDialog({
                 className="w-full py-5 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 transition-all flex items-center justify-center gap-2 mt-2"
               >
                 <LogIn className="w-4 h-4" />
-                <span>{isLoading ? "Iniciando..." : "Entrar al Panel de Control"}</span>
+                <span>{isLoading ? "..." : t("auth_admin_submit")}</span>
               </Button>
             </form>
           </TabsContent>
@@ -174,3 +176,4 @@ export function AuthDialog({
     </Dialog>
   );
 }
+
