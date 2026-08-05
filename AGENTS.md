@@ -20,3 +20,9 @@ Key patterns:
 - Reference users with `auth.users(id)`; use `auth.uid()` in RLS policies.
 - For storage uploads, persist both the returned `url` and `key`.
 <!-- INSFORGE:END -->
+
+## Reglas de Sesión Adicionales
+
+### Carpeta de Referencia y Capturas
+- **Uso:** El usuario colocará archivos de referencia, capturas de pantalla, grabaciones de pantalla, etc., en la carpeta `/Users/musa/Downloads/sopisafer/carpeta de referencia` durante la sesión.
+- **Fin de Sesión:** Al finalizar la sesión (cuando el usuario mencione **@final**, **@end**, **terminar**, o similar), además de actualizar la documentación (`docs/SESSION_LATEST_ES.md` y `docs/ROADMAP.md`), se debe **borrar obligatoriamente todo el contenido** dentro de `/Users/musa/Downloads/sopisafer/carpeta de referencia`, dejándola completamente vacía para futuras sesiones.

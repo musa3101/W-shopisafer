@@ -166,10 +166,12 @@ export async function deleteProduct(id: string) {
  */
 export async function createOrder(order: OrderInput) {
   try {
-    const { data, error } = await insforge.database
+    const orderId = crypto.randomUUID();
+    const { error } = await insforge.database
       .from('orders')
       .insert([
         {
+          id: orderId,
           customer_name: order.customer_name,
           customer_email: order.customer_email,
           customer_phone: order.customer_phone || '',
@@ -179,16 +181,14 @@ export async function createOrder(order: OrderInput) {
           status: 'pending',
           stripe_session_id: order.stripe_session_id || '',
         },
-      ])
-      .select('id')
-      .single();
+      ]);
 
     if (error) {
       console.error('Error al guardar pedido en InsForge:', error);
       return { success: false, error: error.message };
     }
 
-    return { success: true, data: data as { id: string } };
+    return { success: true, data: { id: orderId } };
   } catch (err: any) {
     console.error('Excepción al crear pedido en InsForge:', err);
     return { success: false, error: err.message || 'Error de conexión' };

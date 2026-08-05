@@ -1,5 +1,14 @@
--- Migration 01: Configuración de Políticas de Seguridad RLS (Row Level Security)
--- Isafer Boutique - InsForge Backend
+-- Función helper SECURITY DEFINER para evitar el error "permission denied for table users"
+-- Esta función corre con los privilegios del creador (postgres/admin) y puede consultar auth.users
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM auth.users
+    WHERE id = auth.uid() AND is_project_admin = true
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -------------------------------------------------------
 -- 1. TABLA: favorites
@@ -44,7 +53,16 @@ CREATE POLICY "Allow individual user or admin to read orders" ON orders
 FOR SELECT TO public
 USING (
   customer_email = (auth.jwt() ->> 'email')
-  OR (auth.jwt() ->> 'role' = 'admin')
+  OR public.is_admin()
+  OR current_user IN ('insforge_admin', 'postgres', 'service_role')
+);
+
+-- Permitir a administradores actualizar órdenes (cambiar estado, etc.)
+DROP POLICY IF EXISTS "Allow admin to update orders" ON orders;
+CREATE POLICY "Allow admin to update orders" ON orders
+FOR UPDATE TO public
+USING (
+  public.is_admin()
   OR current_user IN ('insforge_admin', 'postgres', 'service_role')
 );
 
@@ -63,3 +81,22 @@ DROP POLICY IF EXISTS "Allow public select on categories" ON categories;
 CREATE POLICY "Allow public select on categories" ON categories
 FOR SELECT TO public
 USING (true);
+
+-- Permitir edición/inserción de productos sólo a administradores o service role
+DROP POLICY IF EXISTS "Allow admin to manage products" ON products;
+CREATE POLICY "Allow admin to manage products" ON products
+FOR ALL TO public
+USING (
+  public.is_admin()
+  OR current_user IN ('insforge_admin', 'postgres', 'service_role')
+);
+
+-- Permitir edición/inserción de categorías sólo a administradores o service role
+DROP POLICY IF EXISTS "Allow admin to manage categories" ON categories;
+CREATE POLICY "Allow admin to manage categories" ON categories
+FOR ALL TO public
+USING (
+  public.is_admin()
+  OR current_user IN ('insforge_admin', 'postgres', 'service_role')
+);
+

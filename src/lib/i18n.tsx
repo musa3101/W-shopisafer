@@ -148,6 +148,39 @@ export interface Translations {
   mobile_menu_close: string;
   mobile_menu_search: string;
   mobile_menu_title: string;
+
+  // Footer Updates
+  footer_privacy: string;
+  footer_terms: string;
+  footer_cookies: string;
+  footer_credits: string;
+  
+  // Legal Dialogs Content
+  legal_close_btn: string;
+  
+  legal_privacy_intro: string;
+  legal_privacy_sec1_title: string;
+  legal_privacy_sec1_text: string;
+  legal_privacy_sec2_title: string;
+  legal_privacy_sec2_text: string;
+  legal_privacy_sec3_title: string;
+  legal_privacy_sec3_text: string;
+
+  legal_terms_intro: string;
+  legal_terms_sec1_title: string;
+  legal_terms_sec1_text: string;
+  legal_terms_sec2_title: string;
+  legal_terms_sec2_text: string;
+  legal_terms_sec3_title: string;
+  legal_terms_sec3_text: string;
+
+  legal_cookies_intro: string;
+  legal_cookies_sec1_title: string;
+  legal_cookies_sec1_text: string;
+  legal_cookies_sec2_title: string;
+  legal_cookies_sec2_text: string;
+  legal_cookies_sec3_title: string;
+  legal_cookies_sec3_text: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -297,6 +330,39 @@ const translations: Record<Language, Translations> = {
     mobile_menu_close: "Close Menu",
     mobile_menu_search: "Search outfits, shapewear...",
     mobile_menu_title: "BARBIE LUXE NAVIGATION",
+
+    // Footer Updates
+    footer_privacy: "Privacy Policy",
+    footer_terms: "Terms of Service",
+    footer_cookies: "Cookie Policy",
+    footer_credits: "Created by",
+
+    // Legal Dialogs Content
+    legal_close_btn: "Close",
+    
+    legal_privacy_intro: "At Isafer Boutique, we value and respect your privacy. This policy describes how we collect, use, and protect your personal information.",
+    legal_privacy_sec1_title: "1. Data Collection",
+    legal_privacy_sec1_text: "We collect information you provide when placing an order, registering, or subscribing, including your name, email, shipping address, and payment info.",
+    legal_privacy_sec2_title: "2. Security & Payments",
+    legal_privacy_sec2_text: "All payment transactions are securely processed through Stripe Checkout with 256-bit SSL encryption. We do not store credit card details on our servers.",
+    legal_privacy_sec3_title: "3. Information Sharing",
+    legal_privacy_sec3_text: "We never sell or rent your personal information to third parties. Your data is used exclusively to fulfill orders and improve our store experience.",
+
+    legal_terms_intro: "Welcome to Isafer Boutique. By using our website and purchasing our products, you agree to comply with and be bound by the following terms of service.",
+    legal_terms_sec1_title: "1. Order Processing",
+    legal_terms_sec1_text: "All orders are subject to availability and acceptance. We reserve the right to cancel or limit order quantities at our discretion.",
+    legal_terms_sec2_title: "2. Shipping & Delivery",
+    legal_terms_sec2_text: "Shipping times are estimates. While we aim for prompt delivery, we are not responsible for delays caused by shipping carriers or customs.",
+    legal_terms_sec3_title: "3. Returns & Exchanges",
+    legal_terms_sec3_text: "Due to the intimate nature of shapewear, returns are accepted only for unused, unopened items in original packaging within 14 days of delivery.",
+
+    legal_cookies_intro: "Isafer Boutique uses cookies and tracking technologies to optimize your browsing and shopping experience on our online boutique.",
+    legal_cookies_sec1_title: "1. What are Cookies?",
+    legal_cookies_sec1_text: "Cookies are small text files stored on your device that help us remember your preferences, cart items, and analyze site traffic.",
+    legal_cookies_sec2_title: "2. How We Use Them",
+    legal_cookies_sec2_text: "We use essential cookies for basic store functionality (like maintaining your shopping cart), and analytical cookies to measure site performance.",
+    legal_cookies_sec3_title: "3. Managing Your Choices",
+    legal_cookies_sec3_text: "You can choose to decline cookies using our cookies banner or disable them in your browser settings. However, some features of the shop may not function properly.",
   },
   es: {
     // Navigation & Header
@@ -444,6 +510,39 @@ const translations: Record<Language, Translations> = {
     mobile_menu_close: "Cerrar Menú",
     mobile_menu_search: "Buscar prendas, fajas...",
     mobile_menu_title: "NAVEGACIÓN BARBIE LUXE",
+
+    // Footer Updates
+    footer_privacy: "Política de Privacidad",
+    footer_terms: "Términos y Condiciones",
+    footer_cookies: "Política de Cookies",
+    footer_credits: "Creado por",
+
+    // Legal Dialogs Content
+    legal_close_btn: "Cerrar",
+    
+    legal_privacy_intro: "En Isafer Boutique, valoramos y respetamos tu privacidad. Esta política describe cómo recopilamos, utilizamos y protegemos tu información personal.",
+    legal_privacy_sec1_title: "1. Recopilación de Datos",
+    legal_privacy_sec1_text: "Recopilamos la información que nos proporcionas al realizar un pedido, registrarte o suscribirte, incluyendo tu nombre, correo electrónico, dirección de envío y datos de pago.",
+    legal_privacy_sec2_title: "2. Seguridad y Pagos",
+    legal_privacy_sec2_text: "Todas las transacciones de pago se procesan de forma segura a través de Stripe Checkout con cifrado SSL de 256 bits. No almacenamos datos de tarjetas en nuestros servidores.",
+    legal_privacy_sec3_title: "3. Compartir Información",
+    legal_privacy_sec3_text: "Nunca vendemos ni alquilamos tu información personal a terceros. Tus datos se utilizan exclusivamente para procesar pedidos y mejorar tu experiencia en nuestra tienda.",
+
+    legal_terms_intro: "Bienvenido a Isafer Boutique. Al utilizar nuestro sitio web y comprar nuestros productos, aceptas cumplir y estar sujeto a los siguientes términos de servicio.",
+    legal_terms_sec1_title: "1. Procesamiento de Pedidos",
+    legal_terms_sec1_text: "Todos los pedidos están sujetos a disponibilidad y aceptación. Nos reservamos el derecho de cancelar o limitar las cantidades de los pedidos a nuestra discreción.",
+    legal_terms_sec2_title: "2. Envíos y Entregas",
+    legal_terms_sec2_text: "Los plazos de envío son estimados. Aunque nuestro objetivo es realizar entregas rápidas, no nos hacemos responsables de los retrasos causados por las empresas de transporte o aduanas.",
+    legal_terms_sec3_title: "3. Devoluciones y Cambios",
+    legal_terms_sec3_text: "Debido a la naturaleza íntima de las fajas, solo se aceptan devoluciones de artículos sin usar y sin abrir en su embalaje original dentro de los 14 días posteriores a la entrega.",
+
+    legal_cookies_intro: "Isafer Boutique utiliza cookies y tecnologías de seguimiento para optimizar tu experiencia de navegación y compra en nuestra tienda online.",
+    legal_cookies_sec1_title: "1. ¿Qué son las Cookies?",
+    legal_cookies_sec1_text: "Las cookies son pequeños archivos de texto almacenados en tu dispositivo que nos ayudan a recordar tus preferencias, artículos de la bolsa y analizar el tráfico web.",
+    legal_cookies_sec2_title: "2. Cómo las Utilizamos",
+    legal_cookies_sec2_text: "Utilizamos cookies esenciales para el funcionamiento básico de la tienda (como mantener tu bolsa de compra) y cookies analíticas para medir el rendimiento de la web.",
+    legal_cookies_sec3_title: "3. Gestión de tus Preferencias",
+    legal_cookies_sec3_text: "Puedes optar por rechazar las cookies utilizando nuestro banner de cookies o desactivarlas en la configuración de tu navegador. Sin embargo, algunas funciones podrían no ir bien.",
   },
 };
 

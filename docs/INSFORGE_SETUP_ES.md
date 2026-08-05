@@ -55,6 +55,15 @@ En el Dashboard de InsForge (`https://i5jqzbx6.us-east.insforge.app`), en la sec
 
 ---
 
+## 3.1. Políticas de Seguridad RLS (Row Level Security)
+Para aplicar las políticas de seguridad en la base de datos de InsForge, ejecuta el archivo SQL ubicado en [`docs/sql/01_rls_security_policies.sql`](file:///Users/musa/Downloads/sopisafer/docs/sql/01_rls_security_policies.sql) en el **SQL Editor** del Dashboard de InsForge.
+
+- **`favorites`**: Solo el usuario autenticado puede seleccionar, insertar y eliminar sus propios favoritos (`auth.uid() = user_id`).
+- **`orders`**: Inserción pública permitida para checkouts de invitados. Lectura restringida únicamente al propietario del pedido (por coincidencia de email `auth.jwt() ->> 'email'`) o a administradores.
+- **`products` y `categories`**: Lectura pública permitida para mostrar el catálogo en la web. Modificación y eliminación restringida a administradores (`role = 'admin'`).
+
+---
+
 ## 4. Guía para la Entrega a la Dueña
 
 Cuando le entregues la web a la dueña:

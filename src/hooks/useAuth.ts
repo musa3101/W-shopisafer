@@ -55,21 +55,15 @@ export function useAuth() {
   };
 
   const signInWithPassword = async (email: string, password: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPass = password.trim();
+    let cleanEmail = email.trim().toLowerCase();
+    let cleanPass = password.trim();
 
-    // Credenciales por defecto para la dueña (admin / admin o admin@rosseboutique.com / admin)
-    if (
-      (cleanEmail === "admin" || cleanEmail === "admin@rosseboutique.com" || cleanEmail === "isafer@admin.com") &&
-      (cleanPass === "admin" || cleanPass === "admin123" || cleanPass === "123456")
-    ) {
-      const adminUser: UserProfile = {
-        id: "owner-admin-id",
-        email: "admin@rosseboutique.com",
-        name: "Dueña · Isafer Boutique",
-      };
-      setUser(adminUser);
-      return { success: true, data: { user: adminUser } };
+    // Mapear atajos de administrador a la cuenta real en PostgreSQL de InsForge
+    if (cleanEmail === "admin" || cleanEmail === "isafer@admin.com") {
+      cleanEmail = "admin@rosseboutique.com";
+    }
+    if (cleanPass === "admin" || cleanPass === "123456") {
+      cleanPass = "admin123";
     }
 
     try {
@@ -81,10 +75,12 @@ export function useAuth() {
       if (data?.user) {
         const profile = (data.user as any).profile || {};
         const meta = (data.user as any).metadata || {};
+        const isAdminUser = cleanEmail === "admin@rosseboutique.com";
+        
         setUser({
           id: data.user.id,
           email: data.user.email,
-          name: profile.name || meta.full_name || data.user.email?.split('@')[0],
+          name: isAdminUser ? "Dueña · Isafer Boutique" : (profile.name || meta.full_name || data.user.email?.split('@')[0]),
           avatar_url: profile.avatar_url || meta.avatar_url,
         });
       }

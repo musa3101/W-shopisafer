@@ -20,11 +20,16 @@
 - [x] **Banner de Cookies Estilo Pull&Bear / Bershka**: Banner regulatorio responsivo en la base de la pantalla con aparición temporizada a 1.2 segundos, tres botones corporativos e integración de persistencia en `LocalStorage`.
 - [x] **Banner de Ubicación e Idioma Dinámico (Pull&Bear Style)**: Banner regulatorio responsivo flotante en la esquina inferior de la pantalla. Detecta automáticamente la preferencia de idioma del navegador del cliente y propone cambiar la ubicación e idioma (Español <-> Inglés) con almacenamiento persistente en `LocalStorage`.
 - [x] **Envío Automático de Correos de Pedido (Gmail)**: Sincronización del envío de confirmaciones detalladas al email real del cliente tanto para pagos aprobados con tarjeta (mediante el Webhook de Stripe en backend) como para pedidos solicitados por WhatsApp (a través del frontend integrado).
-- [x] **Notificación por WhatsApp de Nuevos Pedidos a la Dueña**: Integrada la API de CallMeBot en el webhook de Stripe para notificar automáticamente al número de Camila (`19296772514`) cuando se completa una compra con tarjeta en la web.
+- [x] **Notificación por WhatsApp de Nuevos Pedidos a la Dueña**: Integrada la API de CallMeBot en el webhook de Stripe para notificar automáticamente al número de Camila (`19296772514`) when a purchase is completed.
 - [x] **Keep-Alive de InsForge en segundo plano**: Creado el workflow de GitHub Actions `.github/workflows/keep-alive.yml` que hace un ping automático por API cada 30 minutos de forma 100% gratuita y externa para mantener el servidor siempre despierto y rápido.
+- [x] **Políticas de Seguridad RLS en PostgreSQL InsForge**: Definición y configuración de políticas RLS en [`docs/sql/01_rls_security_policies.sql`](file:///Users/musa/Downloads/sopisafer/docs/sql/01_rls_security_policies.sql) para restringir accesos a `favorites`, `orders`, `products` y `categories`.
+- [x] **Ajustes de Privacidad Corporativa en Web Pública**: Removidas referencias al nombre de la dueña ("Camila") de la web pública de cara al cliente; mantenido exclusivamente en el panel de administración privado.
+- [x] **Modal de Políticas Legales Interactivo**: Implementación de diálogo emergente con políticas de Privacidad, Términos y Cookies integradas y accesibles desde el footer y el banner de cookies.
+- [x] **Créditos y enlaces de Marca**: Configuración de créditos de desarrollador en el footer con redirección a [MYNEXT](https://mynextbymusa.com/).
 
 ## 🟡 Tareas en Progreso
-- [ ] Verificación de despliegue activo en Cloudflare Pages / Workers (`https://isafer.mynextbymusa.workers.dev`).
+- [ ] Verificación de despliegue activo en Cloudflare Workers (`https://isafer.mynextbymusa.workers.dev`).
 
 ## 🔵 Próximas Mejoras Prioritarias
-- [ ] Incorporación de RLS avanzado en la base de datos de InsForge para control de accesos de clientes.
+- [ ] Despliegue de actualización a producción en Cloudflare mediante `npm run deploy`.
+- [ ] 🎠 **Hero con carrusel de fotos dinámico**: Implementación de transición fluida de imágenes en la sección Hero de la página de inicio.

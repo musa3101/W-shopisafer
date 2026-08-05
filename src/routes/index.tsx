@@ -27,6 +27,8 @@ import {
   Mail,
   Lock,
   Shield,
+  FileText,
+  Cookie,
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -55,6 +57,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -244,8 +252,10 @@ function Index() {
   const [targetLang, setTargetLang] = useState<"es" | "en">("es");
   const [isCatalogExpanded, setIsCatalogExpanded] = useState(false);
   const [fullScreenMenuOpen, setFullScreenMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [menuSearchQuery, setMenuSearchQuery] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [legalType, setLegalType] = useState<"privacy" | "terms" | "cookies" | null>(null);
 
   const { user, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
 
@@ -706,116 +716,18 @@ function Index() {
             </a>
           </div>
 
-          {/* Right Action Icons: Auth, Language & Cart */}
+          {/* Right Action Icons: Search & Cart */}
           <div className="flex items-center gap-1.5 sm:gap-3">
-            {/* Desktop Action Icons */}
-            <div className="hidden md:flex items-center gap-2 sm:gap-3">
-              <LanguageSelector />
-              {user ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="inline-flex items-center gap-2 rounded-full border border-rose-100 text-zinc-700 hover:text-primary hover:bg-rose-100/30 text-xs font-semibold px-4"
-                  onClick={() => (isAdmin ? setAdminModalOpen(true) : setCustomerModalOpen(true))}
-                >
-                  {isAdmin ? <ShieldCheck className="size-4 text-amber-500" /> : <UserCheck className="size-4 text-emerald-500" />}
-                  <span className="truncate max-w-[100px]">{user.email?.split("@")[0]}</span>
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full text-zinc-700 hover:text-primary hover:bg-rose-100/30"
-                  onClick={() => setAuthDialogOpen(true)}
-                  aria-label="Cuenta de cliente"
-                >
-                  <User className="size-5" />
-                </Button>
-              )}
-            </div>
-
-            {/* Botón de Favoritos en el Navbar */}
-            <Sheet open={favoritesDrawerOpen} onOpenChange={setFavoritesDrawerOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer mr-1.5"
-                  aria-label="Mis Favoritos"
-                >
-                  <Heart className={`size-5 ${Object.keys(favorites).length > 0 ? "fill-rose-500 text-rose-500 animate-in zoom-in-50" : ""}`} />
-                  {Object.keys(favorites).length > 0 && (
-                    <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-rose-600 text-[9px] font-black text-white">
-                      {Object.keys(favorites).length}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="flex w-[92%] flex-col border-rose-100 bg-[#fffcfd] p-6 text-zinc-800 sm:max-w-md [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300">
-                <SheetHeader className="text-left border-b border-rose-100 pb-4">
-                  <SheetTitle className="font-serif text-2xl font-black text-zinc-900 flex items-center justify-between">
-                    <span>Mis Favoritos 💖</span>
-                  </SheetTitle>
-                  <SheetDescription className="text-xs text-zinc-500 uppercase tracking-widest font-mono">
-                    Tus prendas preferidas en Isafer Boutique
-                  </SheetDescription>
-                </SheetHeader>
-
-                {Object.keys(favorites).length === 0 ? (
-                  <div className="flex flex-1 flex-col items-center justify-center text-center space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-300">
-                      <Heart className="w-8 h-8 stroke-[1.2]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-extrabold text-zinc-800">Tu lista está vacía</p>
-                      <p className="text-xs text-zinc-500 mt-1 max-w-[220px] mx-auto">
-                        Haz clic en el corazón de cualquier prenda para guardarla aquí.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-4">
-                    {productsList
-                      .filter((p) => favorites[p.id])
-                      .map((p) => (
-                        <div key={p.id} className="flex gap-4 p-3 rounded-2xl border border-rose-100/50 bg-white/50 shadow-xs relative group">
-                          <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 shrink-0">
-                            <ProductCrop product={p} />
-                          </div>
-                          <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                            <div>
-                              <h4 className="font-extrabold text-xs text-zinc-800 truncate">{p.name}</h4>
-                              <p className="text-[10px] text-zinc-400 mt-0.5">{p.category}</p>
-                              <p className="font-mono text-xs font-black text-rose-600 mt-1.5">${p.price.toFixed(2)} USD</p>
-                            </div>
-                            
-                            <Button
-                              size="sm"
-                              className="w-full mt-2 h-8 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white shadow-xs cursor-pointer"
-                              onClick={() => {
-                                addProduct(p.id);
-                                setFavoritesDrawerOpen(false);
-                              }}
-                            >
-                              <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Añadir a bolsa
-                            </Button>
-                          </div>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-2 top-2 h-7 w-7 p-0 rounded-full text-zinc-400 hover:text-rose-650 hover:bg-rose-50 cursor-pointer"
-                            onClick={() => toggleFavorite(p.id)}
-                            aria-label="Quitar de favoritos"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </SheetContent>
-            </Sheet>
+            {/* Botón de Búsqueda */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer mr-0.5"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Buscar productos"
+            >
+              <Search className="size-5" />
+            </Button>
 
             {/* Cart Trigger */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
@@ -1593,7 +1505,7 @@ function Index() {
                 </li>
                 <li>
                   <a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="text-emerald-400 underline hover:text-emerald-300 transition-colors font-semibold">
-                    Escribir a Camila por WhatsApp
+                    Atención por WhatsApp
                   </a>
                 </li>
               </ul>
@@ -1622,12 +1534,41 @@ function Index() {
           </div>
 
           {/* Subfooter */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-            <p>{t("footer_rights")} Brooklyn, New York, NY 11201.</p>
+          <div className="pt-8 border-t border-zinc-900/60 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+            <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+              <p>{t("footer_rights")} Brooklyn, New York, NY 11201.</p>
+              <span className="hidden sm:inline text-zinc-800">|</span>
+              <p>
+                {t("footer_credits")}{" "}
+                <a 
+                  href="https://mynextbymusa.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors underline decoration-dotted underline-offset-4"
+                >
+                  MYNEXT
+                </a>
+              </p>
+            </div>
             <div className="flex items-center gap-6 text-[11px]">
-              <a href="#privacy" className="hover:text-zinc-300 transition-colors">Privacidad</a>
-              <a href="#terms" className="hover:text-zinc-300 transition-colors font-medium">Términos</a>
-              <a href="#cookies" className="hover:text-zinc-300 transition-colors">Cookies</a>
+              <button 
+                onClick={() => setLegalType("privacy")} 
+                className="hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-0 p-0 text-[11px] font-medium"
+              >
+                {t("footer_privacy")}
+              </button>
+              <button 
+                onClick={() => setLegalType("terms")} 
+                className="hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-0 p-0 text-[11px] font-medium"
+              >
+                {t("footer_terms")}
+              </button>
+              <button 
+                onClick={() => setLegalType("cookies")} 
+                className="hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-0 p-0 text-[11px] font-medium"
+              >
+                {t("footer_cookies")}
+              </button>
             </div>
           </div>
         </div>
@@ -1648,29 +1589,21 @@ function Index() {
 
 
       {/* Full-Screen Mobile Menu Overlay (Bershka & Pull&Bear Style) */}
-      {fullScreenMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-[#fffafb]/98 backdrop-blur-2xl p-6 sm:p-10 flex flex-col justify-between overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+      {/* Left Drawer Mobile/Desktop Navigation Menu (Camila Sevilla Style) */}
+      <Sheet open={fullScreenMenuOpen} onOpenChange={setFullScreenMenuOpen}>
+        <SheetContent
+          side="left"
+          className="flex w-[85%] sm:max-w-md flex-col border-rose-100 bg-[#fffcfd] p-6 text-zinc-800 [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300"
+        >
           {/* Header */}
-          <div className="flex items-center justify-between pb-6 border-b border-rose-100">
+          <div className="flex items-center justify-between pb-4 border-b border-rose-100 mt-2">
             <IsaferLogo variant="header" size="md" />
-            <div className="flex items-center gap-3">
-              <LanguageSelector />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full bg-rose-100/60 text-zinc-900 hover:bg-rose-200/60 w-10 h-10 shadow-sm cursor-pointer"
-                onClick={() => setFullScreenMenuOpen(false)}
-                aria-label={t("mobile_menu_close")}
-              >
-                <X className="w-5 h-5 text-rose-600" />
-              </Button>
-            </div>
           </div>
 
           {/* Quick Search inside menu */}
-          <div className="my-6">
+          <div className="my-4">
             <div className="relative">
-              <Search className="absolute left-4 top-3.5 size-4 text-zinc-400" />
+              <Search className="absolute left-4 top-3 size-4 text-zinc-400" />
               <input
                 type="text"
                 placeholder={t("mobile_menu_search")}
@@ -1682,79 +1615,188 @@ function Index() {
                     scrollToSection("coleccion");
                   }
                 }}
-                className="w-full rounded-2xl border border-rose-200 bg-white py-3 pl-11 pr-4 text-xs shadow-xs focus:border-rose-400 focus:outline-none"
+                className="w-full rounded-2xl border border-rose-100 bg-[#fffafb] py-2.5 pl-11 pr-4 text-xs font-semibold focus:border-rose-300 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Editorial Nav Category Links */}
-          <nav className="flex flex-col gap-2 my-auto py-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-rose-400 mb-2 font-mono">
-              {t("mobile_menu_title")}
-            </p>
-
-            {[
-              { label: t("catalog_filter_all"), category: "Todos", num: "15", icon: Sparkles },
-              { label: t("catalog_filter_shapewear"), category: "Licras", num: "05", icon: Flame },
-              { label: t("catalog_filter_dresses"), category: "Vestidos", num: "04", icon: Heart },
-              { label: t("catalog_filter_protection"), category: "Gas Pimienta", num: "02", icon: ShieldCheck },
-              { label: t("catalog_filter_sets"), category: "Tops & Sets", num: "04", icon: Grid },
-            ].map((item, idx) => (
+          {/* Navigation Links Area */}
+          <div className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-4">
+            <nav className="flex flex-col font-sans">
+              {/* Enlace Inicio */}
               <a
-                key={item.category}
-                href="#coleccion"
+                href="#inicio"
                 onClick={(e) => {
                   e.preventDefault();
-                  setActiveCategory(item.category);
                   setFullScreenMenuOpen(false);
-                  scrollToSection("coleccion");
+                  scrollToSection("inicio");
                 }}
-                className="group flex items-center justify-between py-3.5 border-b border-rose-100/50 text-left cursor-pointer transition-all hover:pl-2"
+                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-rose-300 group-hover:text-rose-600">
-                    0{idx + 1}
-                  </span>
-                  <span className="font-serif text-xl sm:text-2xl font-bold uppercase tracking-tight text-zinc-800 group-hover:text-rose-600 transition-colors">
-                    {item.label}
-                  </span>
-                </div>
-                <span className="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-[10px] font-mono font-bold text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-colors">
-                  {item.num} items
-                </span>
+                {t("nav_home") || "Inicio"}
               </a>
-            ))}
-          </nav>
 
-          {/* Footer Section of Menu */}
-          <div className="pt-6 border-t border-rose-100 space-y-4">
-            {user ? (
+              {/* Acordeón de Categorías de la Tienda */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="categories" className="border-b border-rose-50/60 py-1">
+                  <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 hover:no-underline py-2">
+                    {t("nav_categories") || "Colección / Categorías"}
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
+                    {[
+                      { label: t("catalog_filter_all"), category: "Todos", icon: Sparkles },
+                      { label: t("catalog_filter_shapewear"), category: "Licras", icon: Flame },
+                      { label: t("catalog_filter_dresses"), category: "Vestidos", icon: Heart },
+                      { label: t("catalog_filter_sets"), category: "Tops & Sets", icon: Grid },
+                      { label: "Bodys & Corsets", category: "Bodys & Corsets", icon: Sparkles },
+                      { label: "Accesorios & Glam", category: "Accesorios & Glam", icon: Star },
+                    ].map((item) => (
+                      <a
+                        key={item.category}
+                        href="#coleccion"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setActiveCategory(item.category);
+                          setFullScreenMenuOpen(false);
+                          scrollToSection("coleccion");
+                        }}
+                        className="flex items-center justify-between py-2 text-xs font-semibold text-zinc-650 hover:text-rose-600 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <item.icon className="size-3.5 text-rose-300" />
+                          {item.label}
+                        </span>
+                        <ChevronRight className="size-3 text-zinc-450" />
+                      </a>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="safety" className="border-b border-rose-50/60 py-1">
+                  <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 hover:no-underline py-2">
+                    {t("catalog_filter_protection") || "Defensa Personal"}
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
+                    <a
+                      href="#coleccion"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setActiveCategory("Gas Pimienta");
+                        setFullScreenMenuOpen(false);
+                        scrollToSection("coleccion");
+                      }}
+                      className="flex items-center justify-between py-2 text-xs font-semibold text-zinc-650 hover:text-rose-600 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <ShieldCheck className="size-3.5 text-rose-300" />
+                        Gas Pimienta & Alarmas
+                      </span>
+                      <ChevronRight className="size-3 text-zinc-450" />
+                    </a>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              {/* Botón de Favoritos */}
               <button
-                className="w-full flex items-center justify-between gap-3 rounded-2xl border border-rose-100 bg-rose-50/40 p-4 text-left text-xs hover:bg-rose-50/80 transition-all duration-300 group cursor-pointer"
                 onClick={() => {
                   setFullScreenMenuOpen(false);
-                  if (isAdmin) setAdminModalOpen(true);
-                  else setCustomerModalOpen(true);
+                  setFavoritesDrawerOpen(true);
                 }}
+                className="w-full py-3.5 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group cursor-pointer"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
+                <span className="flex items-center gap-2">
+                  Mis Favoritos 💖
+                  {Object.keys(favorites).length > 0 && (
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-rose-105 text-[10px] font-black text-rose-600">
+                      {Object.keys(favorites).length}
+                    </span>
+                  )}
+                </span>
+                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+
+              {/* Enlaces de Utilidad */}
+              <a
+                href="https://wa.me/19294848383?text=Hola,%20quisiera%20saber%20el%20estado%20de%20mi%20pedido%20de%20Isafer%20Boutique"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setFullScreenMenuOpen(false)}
+                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
+              >
+                <span>Seguimiento de Pedido 📦</span>
+                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+
+              <a
+                href="https://wa.me/19294848383?text=Hola,%20necesito%20ayuda%20con%20una%20compra%20en%20Isafer%20Boutique"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setFullScreenMenuOpen(false)}
+                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
+              >
+                <span>Centro de Ayuda 💬</span>
+                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+
+              <a
+                href="#historia"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFullScreenMenuOpen(false);
+                  scrollToSection("historia");
+                }}
+                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
+              >
+                <span>Nuestra Historia ✨</span>
+                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+            </nav>
+          </div>
+
+          {/* Footer Section of Menu */}
+          <div className="pt-4 border-t border-rose-100 space-y-4">
+            {/* User Account / Profile */}
+            {user ? (
+              <div className="rounded-2xl border border-rose-100 bg-rose-50/30 p-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-xs shrink-0">
                     {user.email ? user.email.slice(0, 2).toUpperCase() : "US"}
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-extrabold text-zinc-800 text-[11px] uppercase tracking-wider flex items-center gap-1">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-extrabold text-zinc-800 text-[10px] uppercase tracking-wider flex items-center gap-1">
                       {isAdmin ? <ShieldCheck className="size-3.5 text-amber-500" /> : <UserCheck className="size-3.5 text-rose-500" />}
-                      {isAdmin ? "Panel Administradora 💖" : "Mi Perfil Cliente 👤"}
+                      {isAdmin ? "Panel Administradora" : "Mi Perfil Cliente"}
                     </p>
-                    <p className="text-zinc-500 text-[10px] truncate">{user.email}</p>
+                    <p className="text-zinc-500 text-[9px] truncate">{user.email}</p>
                   </div>
                 </div>
-                <ArrowRight className="w-4 h-4 text-rose-500 group-hover:translate-x-1 transition-transform" />
-              </button>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => {
+                      setFullScreenMenuOpen(false);
+                      if (isAdmin) setAdminModalOpen(true);
+                      else setCustomerModalOpen(true);
+                    }}
+                    className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-wider bg-zinc-950 text-white hover:bg-zinc-900 transition-colors cursor-pointer flex items-center justify-center border border-zinc-800"
+                  >
+                    Abrir Panel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFullScreenMenuOpen(false);
+                      signOut();
+                    }}
+                    className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-wider border border-rose-200 text-rose-650 bg-white hover:bg-rose-50/40 transition-colors cursor-pointer flex items-center justify-center"
+                  >
+                    Salir
+                  </button>
+                </div>
+              </div>
             ) : (
               <Button
                 variant="outline"
-                className="w-full flex items-center justify-center gap-2 rounded-2xl border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3.5 shadow-sm cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3 shadow-xs cursor-pointer"
                 onClick={() => {
                   setFullScreenMenuOpen(false);
                   setAuthDialogOpen(true);
@@ -1763,9 +1805,32 @@ function Index() {
                 <User className="size-4 text-rose-500" /> Acceder o Crear Cuenta VIP
               </Button>
             )}
+
+            {/* Instagram box widget */}
+            <a
+              href="https://instagram.com/shopisafer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-2xl border border-rose-100/80 bg-white hover:bg-rose-50/20 transition-colors group"
+            >
+              <div className="size-9 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0 group-hover:scale-105 transition-transform">
+                <Instagram className="size-5" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-450">Instagram Oficial</p>
+                <p className="text-xs font-extrabold text-zinc-855 group-hover:text-rose-600 transition-colors">@shopisafer</p>
+              </div>
+              <ChevronRight className="size-4 text-zinc-450 ml-auto group-hover:translate-x-0.5 transition-transform" />
+            </a>
+
+            {/* Language Selector (At the very bottom as requested) */}
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Idioma / Language</span>
+              <LanguageSelector />
+            </div>
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
 
       {/* Dialogs */}
       <AuthDialog
@@ -1786,6 +1851,152 @@ function Index() {
         onOpenChange={setAdminModalOpen}
         onProductsUpdated={loadProductsFromInsForge}
       />
+
+      {/* Dialog de Búsqueda Minimalista */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="w-[92vw] max-w-lg bg-white border border-rose-100 p-6 rounded-3xl text-left shadow-2xl [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-serif font-black text-zinc-950">
+              Buscar Prenda
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-500 font-mono uppercase tracking-widest mt-1">
+              Colección Isafer Boutique
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="relative mt-4">
+            <Search className="absolute left-4 top-3.5 size-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Escribe el nombre de la prenda o categoría..."
+              value={menuSearchQuery}
+              onChange={(e) => setMenuSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setSearchOpen(false);
+                  scrollToSection("coleccion");
+                }
+              }}
+              className="w-full rounded-2xl border border-rose-100 bg-[#fffafb] py-3.5 pl-11 pr-4 text-xs font-semibold focus:border-rose-400 focus:outline-none"
+              autoFocus
+            />
+          </div>
+
+          {menuSearchQuery.trim() && (
+            <div className="mt-4 max-h-[250px] overflow-y-auto space-y-2 pr-1">
+              <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">Resultados sugeridos:</p>
+              {productsList
+                .filter((p) => p.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) || p.category.toLowerCase().includes(menuSearchQuery.toLowerCase()))
+                .slice(0, 5)
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center gap-3 p-2 rounded-xl border border-rose-100/50 hover:bg-rose-50/20 cursor-pointer transition-colors"
+                    onClick={() => {
+                      setSearchOpen(false);
+                      setActiveCategory("Todos");
+                      setTimeout(() => {
+                        scrollToSection("coleccion");
+                      }, 100);
+                    }}
+                  >
+                    <div className="w-10 h-12 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
+                      <ProductCrop product={p} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-zinc-800 truncate">{p.name}</h4>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">{p.category}</p>
+                    </div>
+                    <p className="font-mono text-xs font-black text-rose-600">${p.price.toFixed(2)}</p>
+                  </div>
+                ))}
+              {productsList.filter((p) => p.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) || p.category.toLowerCase().includes(menuSearchQuery.toLowerCase())).length === 0 && (
+                <p className="text-xs text-zinc-500 text-center py-4">No se encontraron prendas con "{menuSearchQuery}"</p>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2.5 mt-5">
+            <Button
+              className="w-full rounded-2xl h-11 text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 shadow-md cursor-pointer"
+              onClick={() => {
+                setSearchOpen(false);
+                scrollToSection("coleccion");
+              }}
+            >
+              Ver todos los resultados
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drawer de Favoritos Reubicado */}
+      <Sheet open={favoritesDrawerOpen} onOpenChange={setFavoritesDrawerOpen}>
+        <SheetContent className="flex w-[92%] flex-col border-rose-100 bg-[#fffcfd] p-6 text-zinc-800 sm:max-w-md [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300">
+          <SheetHeader className="text-left border-b border-rose-100 pb-4">
+            <SheetTitle className="font-serif text-2xl font-black text-zinc-900 flex items-center justify-between">
+              <span>Mis Favoritos 💖</span>
+            </SheetTitle>
+            <SheetDescription className="text-xs text-zinc-500 uppercase tracking-widest font-mono">
+              Tus prendas preferidas en Isafer Boutique
+            </SheetDescription>
+          </SheetHeader>
+
+          {Object.keys(favorites).length === 0 ? (
+            <div className="flex flex-1 flex-col items-center justify-center text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-300">
+                <Heart className="w-8 h-8 stroke-[1.2]" />
+              </div>
+              <div>
+                <p className="text-sm font-extrabold text-zinc-800">Tu lista está vacía</p>
+                <p className="text-xs text-zinc-500 mt-1 max-w-[220px] mx-auto">
+                  Haz clic en el corazón de cualquier prenda para guardarla aquí.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-4">
+              {productsList
+                .filter((p) => favorites[p.id])
+                .map((p) => (
+                  <div key={p.id} className="flex gap-4 p-3 rounded-2xl border border-rose-100/50 bg-white/50 shadow-xs relative group">
+                    <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 shrink-0">
+                      <ProductCrop product={p} />
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                      <div>
+                        <h4 className="font-extrabold text-xs text-zinc-800 truncate">{p.name}</h4>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">{p.category}</p>
+                        <p className="font-mono text-xs font-black text-rose-600 mt-1.5">${p.price.toFixed(2)} USD</p>
+                      </div>
+                      
+                      <Button
+                        size="sm"
+                        className="w-full mt-2 h-8 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white shadow-xs cursor-pointer"
+                        onClick={() => {
+                          addProduct(p.id);
+                          setFavoritesDrawerOpen(false);
+                        }}
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Añadir a bolsa
+                      </Button>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-2 h-7 w-7 p-0 rounded-full text-zinc-400 hover:text-rose-650 hover:bg-rose-50 cursor-pointer"
+                      onClick={() => toggleFavorite(p.id)}
+                      aria-label="Quitar de favoritos"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Modal de Favoritos Pull&Bear Style */}
       <Dialog open={favDialogOpen} onOpenChange={setFavDialogOpen}>
@@ -1823,6 +2034,108 @@ function Index() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog para Políticas Legales (Privacidad, Términos, Cookies) */}
+      <Dialog open={legalType !== null} onOpenChange={(open) => !open && setLegalType(null)}>
+        <DialogContent className="w-[92vw] max-w-2xl bg-white border border-rose-100 p-6 rounded-3xl text-left shadow-2xl [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif font-black text-zinc-950 flex items-center gap-2">
+              {legalType === "privacy" && (
+                <>
+                  <ShieldCheck className="size-6 text-rose-500 animate-pulse" />
+                  {t("footer_privacy")}
+                </>
+              )}
+              {legalType === "terms" && (
+                <>
+                  <FileText className="size-6 text-rose-500 animate-pulse" />
+                  {t("footer_terms")}
+                </>
+              )}
+              {legalType === "cookies" && (
+                <>
+                  <Cookie className="size-6 text-rose-500 animate-pulse" />
+                  {t("footer_cookies")}
+                </>
+              )}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-400 font-mono uppercase tracking-widest mt-1">
+              Isafer Boutique · Legal Information
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 max-h-[50vh] overflow-y-auto pr-2 space-y-4 text-sm text-zinc-600 leading-relaxed font-sans scrollbar-thin scrollbar-thumb-zinc-200">
+            {legalType === "privacy" && (
+              <>
+                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">{t("legal_privacy_intro")}</p>
+                <div className="space-y-4 mt-2">
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_privacy_sec1_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_privacy_sec1_text")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_privacy_sec2_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_privacy_sec2_text")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_privacy_sec3_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_privacy_sec3_text")}</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {legalType === "terms" && (
+              <>
+                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">{t("legal_terms_intro")}</p>
+                <div className="space-y-4 mt-2">
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_terms_sec1_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_terms_sec1_text")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_terms_sec2_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_terms_sec2_text")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_terms_sec3_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_terms_sec3_text")}</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {legalType === "cookies" && (
+              <>
+                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">{t("legal_cookies_intro")}</p>
+                <div className="space-y-4 mt-2">
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_cookies_sec1_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_cookies_sec1_text")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_cookies_sec2_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_cookies_sec2_text")}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_cookies_sec3_title")}</h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_cookies_sec3_text")}</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <Button 
+              className="bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-extrabold uppercase tracking-widest px-6 h-11 cursor-pointer"
+              onClick={() => setLegalType(null)}
+            >
+              {t("legal_close_btn")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Banner de Cookies Estilo Pull&Bear */}
       {showCookiesBanner && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-rose-100 p-5 sm:p-6 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] animate-in slide-in-from-bottom duration-500">
@@ -1830,9 +2143,12 @@ function Index() {
             <div className="flex-1 space-y-2">
               <p className="text-[11px] sm:text-xs text-zinc-600 leading-relaxed font-medium">
                 {t("cookies_text")}{" "}
-                <a href="#cookies" className="underline font-bold text-zinc-900 hover:text-rose-600 transition-colors">
+                <button 
+                  onClick={() => setLegalType("cookies")} 
+                  className="underline font-bold text-zinc-900 hover:text-rose-600 transition-colors bg-transparent border-0 p-0 cursor-pointer text-[11px] sm:text-xs font-semibold inline"
+                >
                   {t("cookies_policy_link")}
-                </a>.
+                </button>.
               </p>
             </div>
             
