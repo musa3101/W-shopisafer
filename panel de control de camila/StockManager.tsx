@@ -87,9 +87,13 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
   };
 
   // Filter products
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
-                          (p.description && p.description.toLowerCase().includes(search.toLowerCase()));
+  const safeProducts = products || [];
+  const filteredProducts = safeProducts.filter((p) => {
+    if (!p) return false;
+    const name = (p.name || "").toLowerCase();
+    const desc = (p.description || "").toLowerCase();
+    const query = (search || "").toLowerCase();
+    const matchesSearch = name.includes(query) || desc.includes(query);
     
     const state = getProductState(p.id, p);
     if (filterType === "out") {
@@ -124,19 +128,19 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
             onClick={() => setFilterType("all")}
             className={`flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${filterType === "all" ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
           >
-            Todas ({products.length})
+            Todas ({safeProducts.length})
           </button>
           <button
             onClick={() => setFilterType("low")}
             className={`flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${filterType === "low" ? "bg-amber-450 text-black" : "text-zinc-400 hover:text-zinc-200"}`}
           >
-            Stock Bajo ({products.filter(p => p.stock > 0 && p.stock < 5).length})
+            Stock Bajo ({safeProducts.filter(p => (p?.stock || 0) > 0 && (p?.stock || 0) < 5).length})
           </button>
           <button
             onClick={() => setFilterType("out")}
             className={`flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${filterType === "out" ? "bg-rose-600 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
           >
-            Sin Stock ({products.filter(p => p.stock === 0).length})
+            Sin Stock ({safeProducts.filter(p => (p?.stock || 0) === 0).length})
           </button>
         </div>
       </div>

@@ -20,6 +20,7 @@ import { BentoMetrics } from "./BentoMetrics";
 import { StockManager } from "./StockManager";
 import { OrderManager } from "./OrderManager";
 import { ProductCreator } from "./ProductCreator";
+import { AdminErrorBoundary } from "./AdminErrorBoundary";
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -185,7 +186,7 @@ export function AdminDashboard({ onClose, onProductsUpdated }: AdminDashboardPro
               <p className="text-sm font-bold uppercase tracking-widest text-zinc-400">Sincronizando con InsForge...</p>
             </div>
           ) : (
-            <>
+            <AdminErrorBoundary onReset={() => loadData(true)}>
               {activeTab === "summary" && <BentoMetrics products={products} orders={orders} />}
               {activeTab === "inventory" && <StockManager products={products} onProductsUpdated={handleProductsUpdated} />}
               {activeTab === "orders" && <OrderManager orders={orders} onOrderUpdated={handleProductsUpdated} />}
@@ -198,7 +199,7 @@ export function AdminDashboard({ onClose, onProductsUpdated }: AdminDashboardPro
                   onCancel={() => setActiveTab("inventory")}
                 />
               )}
-            </>
+            </AdminErrorBoundary>
           )}
         </section>
       </main>
