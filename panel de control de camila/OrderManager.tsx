@@ -85,6 +85,7 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
 
     const matchesSearch = name.includes(query) || email.includes(query) || id.includes(query);
 
+    if (activeTab === "all") return matchesSearch && o.status !== "pending";
     if (activeTab === "pending") return matchesSearch && o.status === "pending";
     if (activeTab === "processing") return matchesSearch && o.status === "processing";
     if (activeTab === "shipped_delivered") return matchesSearch && (o.status === "shipped" || o.status === "delivered");
@@ -149,13 +150,13 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
               onClick={() => setActiveTab("all")}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "all" ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
             >
-              Todos ({orders.length})
+              Todos ({orders.filter((o) => o.status !== "pending").length})
             </button>
             <button
               onClick={() => setActiveTab("pending")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "pending" ? "bg-amber-450 text-black" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "pending" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
             >
-              Pendientes ({orders.filter(o => o.status === "pending").length})
+              Abandonados ({orders.filter((o) => o.status === "pending").length})
             </button>
             <button
               onClick={() => setActiveTab("processing")}

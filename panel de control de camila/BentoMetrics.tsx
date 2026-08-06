@@ -39,22 +39,25 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
   const safeOrders = orders || [];
   const safeProducts = products || [];
 
+  // Filter out pending and cancelled orders for revenue calculation
+  const validOrders = safeOrders.filter((o) => o?.status !== "pending" && o?.status !== "cancelled");
+
   // Calculations
-  const totalRevenue = safeOrders.reduce((sum, o) => sum + (Number(o?.total_amount) || 0), 0);
-  const totalOrders = safeOrders.length;
+  const totalRevenue = validOrders.reduce((sum, o) => sum + (Number(o?.total_amount) || 0), 0);
+  const totalOrders = validOrders.length;
   const lowStockCount = safeProducts.filter((p) => (p?.stock || 0) < 5).length;
-  const stripeOrders = safeOrders.filter((o) => o?.stripe_session_id && o?.stripe_session_id !== 'pending_session');
+  const stripeOrders = validOrders.filter((o) => o?.stripe_session_id && o?.stripe_session_id !== 'pending_session');
   const stripeRevenue = stripeOrders.reduce((sum, o) => sum + (Number(o?.total_amount) || 0), 0);
   
   // Advanced Metrics
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  const maxOrderValue = safeOrders.reduce((max, o) => Math.max(max, Number(o?.total_amount) || 0), 0);
-  const completedOrders = safeOrders.filter(o => o?.status === 'delivered' || o?.status === 'shipped').length;
+  const maxOrderValue = validOrders.reduce((max, o) => Math.max(max, Number(o?.total_amount) || 0), 0);
+  const completedOrders = validOrders.filter(o => o?.status === 'delivered' || o?.status === 'shipped').length;
 
   // Format orders for chart based on time range
   const now = new Date();
   const getFilteredOrders = () => {
-    return safeOrders.filter(o => {
+    return validOrders.filter(o => {
       if (!o.created_at) return true;
       const orderDate = new Date(o.created_at);
       const diffTime = Math.abs(now.getTime() - orderDate.getTime());

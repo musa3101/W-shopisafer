@@ -53,10 +53,18 @@ export function AdminDashboard({ onClose, onProductsUpdated }: AdminDashboardPro
       
       const newOrders = ordersData || [];
       
-      // Detect new incoming orders
+      // Detect new incoming valid orders
       if (prevOrdersRef.current !== null) {
-        const prevIds = new Set(prevOrdersRef.current.map(o => o.id));
-        const brandNewOrders = newOrders.filter(o => o.id && !prevIds.has(o.id));
+        const prevValidIds = new Set(
+          prevOrdersRef.current
+            .filter((o) => o.status !== "pending" && o.status !== "cancelled")
+            .map((o) => o.id)
+        );
+        const currentValidOrders = newOrders.filter(
+          (o) => o.status !== "pending" && o.status !== "cancelled"
+        );
+
+        const brandNewOrders = currentValidOrders.filter((o) => o.id && !prevValidIds.has(o.id));
 
         if (brandNewOrders.length > 0) {
           const latestOrder = brandNewOrders[0];
