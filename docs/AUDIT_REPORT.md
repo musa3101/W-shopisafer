@@ -1,19 +1,19 @@
 # Reporte de Auditoría Técnica — Isafer Boutique 🧪
-*Generado automáticamente el 6/8/2026, 14:42:33*
+*Generado automáticamente el 6/8/2026, 21:50:48*
 
 ## 🖥️ 1. Disponibilidad de Páginas
-- **Página de Inicio (Home)** (/): ✓ **OK (HTTP 200)** en 182ms
-- **Pantalla de Login Brutalista** (/login): ✓ **OK (HTTP 200)** en 183ms
+- **Página de Inicio (Home)** (/): ✓ **OK (HTTP 200)** en 231ms
+- **Pantalla de Login Brutalista** (/login): ✓ **OK (HTTP 200)** en 220ms
 
 ## 🛢️ 2. Conectividad con el Backend (InsForge)
-- **Catálogo de Productos**: ✓ **Conectado vía SDK** en 779ms
+- **Catálogo de Productos**: ✓ **Conectado vía SDK** en 439ms
   - Total de productos registrados: **15**
 
 ### 🖼️ 3. Auditoría de Imágenes de Catálogo
-  - Prenda *"Body White Sculpt & Cargo Denim Set"*: ✓ Imagen en línea (HTTP 200)
   - Prenda *"Bolso Shoulder Crescent Leather Brown"*: ✓ Imagen en línea (HTTP 200)
   - Prenda *"Jumpsuit Seamless Zip Black"*: ✓ Imagen en línea (HTTP 200)
   - Prenda *"Set Passion Red Draped 2 Piezas"*: ✓ Imagen en línea (HTTP 200)
+  - Prenda *"Body White Sculpt & Cargo Denim Set"*: ✓ Imagen en línea (HTTP 200)
   - Prenda *"Set Tropical Resort Long Skirt 2 Piezas"*: ✓ Imagen en línea (HTTP 200)
   - Prenda *"Vestido Athletic Activewear Mini Black"*: ✓ Imagen en línea (HTTP 200)
   - Prenda *"Set Leopard Sequins Glam 2 Piezas"*: ✓ Imagen en línea (HTTP 200)

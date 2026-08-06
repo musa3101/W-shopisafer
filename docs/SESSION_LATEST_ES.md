@@ -17,20 +17,12 @@
    - Creado el endpoint `/api/health` ultraligero que hace un ping a Insforge.
    - Configurado un Cron Trigger en Cloudflare Workers (`wrangler.jsonc` y scheduled handler en `server.ts`) para ejecutarse cada 10 minutos, evitando que la base de datos PostgreSQL de Insforge (Free Tier) entre en pausa por inactividad.
 
-4. **Rediseño del Menú Desplegable Móvil de la Web Pública**:
-   - Aumentado el tamaño del logo de Isafer Boutique (`size="lg"`) para mayor legibilidad y elegancia.
-   - Añadida una línea divisoria muy sutil bajo el logo.
-   - Limpieza y reorganización del menú en un orden coherente:
-     1. Inicio
-     2. Catálogo / Colecciones (con acordeón de categorías)
-     3. Sobre Nosotros (scroll a historia)
-     4. Mis Favoritos 💕
-     5. Contacto
-   - Eliminadas las secciones redundantes de "Gas Pimienta".
-   - Modificado el botón de **Contacto** (anteriormente "Contacto / FAQ") para que haga scroll suave directamente a la sección física de Contacto en la tienda (`#visitanos`), en lugar de redirigir a un chat externo de WhatsApp.
-   - Eliminadas las menciones a "Preguntas Frecuentes / FAQ" del menú móvil por no estar disponibles actualmente.
-   - Rediseñado el botón de "Acceder o Crear Cuenta VIP" para que combine con el estilo boutique rosa fucsia.
-   - Simplificadas las tarjetas de Instagram y TikTok por una fila horizontal minimalista con perfiles enlazados.
+4. **Rediseño y Estructura del Menú Desplegable Móvil de la Web Pública**:
+   - **Header Fijo Blanco:** Se ha creado una cabecera superior rígida con fondo blanco puro y una línea divisoria sutil (`border-b border-rose-100/50`).
+   - **Logotipo Ampliado:** Se ha aumentado un **15%** el tamaño del logotipo oficial de "isafer boutique" (`scale-110`) dentro de esta barra para ganar jerarquía e identidad de marca.
+   - **Fondo con Contraste:** Cambiado el color de fondo general de todo el panel desplegable del menú a un tono crema nude muy suave (`bg-[#fdf9f7]`), lo que aporta calidez y hace que los contenidos y el header destaquen con volumen.
+   - **Pie de Menú Diferenciado:** Se ha encapsulado la zona inferior (tarjeta de cuenta VIP/Administración, enlaces de redes sociales oficiales y el selector de idioma) en un bloque diferenciado con fondo ligeramente más oscuro (`bg-[#f5ebe7]`) y una línea de separación superior limpia, dando un cierre estructurado y profesional.
+   - **Limpieza de Enlaces:** Reordenados los enlaces clave: 1. Inicio, 2. Catálogo (con acordeón), 3. Sobre Nosotros (scroll a historia), 4. Mis Favoritos, 5. Contacto (scroll suave directo a `#visitanos`). Se eliminaron FAQs y la sección de "Gas Pimienta" como enlace principal.
 
 5. **Optimización del Hero en Dispositivos Móviles**:
    - Suavizados los degradados oscuros del fondo del Hero en móviles (`bg-gradient-to-t` y `bg-gradient-to-r` reducidos considerablemente) para dar total protagonismo a las fotos.
@@ -38,18 +30,27 @@
    - Rediseñado el botón CTA "EXPLORAR COLECCIÓN" para que sea más compacto (`h-9 px-5 text-[10px]`), evitando tapar las fotografías del carrusel.
    - Preservados todos los efectos de transición fade-in/fade-out del carrusel de imágenes.
 
-6. **Rediseño del Carrito / Bolsa de Selección**:
+6. **Rediseño de Bolsa / Carrito de Compras**:
    - Reemplazado el fondo negro/oscuro por un Slide-over Drawer claro de color crema suave/blanco elegante (`bg-[#fffcfd]`), con bordes suaves de color rosa (`border-rose-100/50`).
-   - Cabecera limpia con el título "Tu Bolsa" y el contador de ítems entre paréntesis en rosa fucsia.
-   - Cambiado el botón de cierre agresivo por un aspa minimalista fina de color gris con hover rosa.
-   - Diseñado el **Estado Vacío** con un icono grande y suave de bolsa, un texto descriptivo limpio, y un botón destacado "EXPLORAR COLECCIÓN" para cerrar el carrito y explorar productos.
-   - Creado un diseño de tarjetas de productos más refinado y boutique (imágenes con borde rosa suave, textos estilizados, talla y color de la prenda, y un selector compacto y discreto de cantidad).
+   - Ajustada la posición del contador de artículos a la derecha de "Tu Bolsa" (`gap-2`) para prevenir cualquier solapamiento visual con la 'X' de cierre.
+   - Diseñado el **Estado Vacío** con un icono grande, texto y botón "EXPLORAR COLECCIÓN" para cerrar el carrito.
+   - Creado un diseño de tarjetas de productos más refinado y boutique (imágenes con borde rosa suave, talla/color y un selector compacto de cantidad).
    - Pie de carrito fijo con subtotal visible, botón de Checkout destacado en fucsia premium (`#ff007f`) y botón alternativo de WhatsApp.
+
+7. **Rediseño del Footer (Pie de Página)**:
+   - Cambiado el fondo a un negro mate boutique elegante (`#111111`) con borde superior sutil en gris oscuro (`border-zinc-800/60`), logrando una separación impecable con el resto del contenido blanco.
+   - Títulos en alto contraste (`text-zinc-100`) y textos secundarios altamente legibles en gris suave (`text-zinc-400`).
+   - Creada una disposición limpia de bloques:
+     * **Info & Redes:** Incorpora la insignia circular oficial de aro de neón de Camila (`IsaferLogo variant="footer" size="lg"`) que resalta de forma premium, junto a iconos de redes en círculos mate con hover fucsia, blanco y verde.
+     * **Colecciones:** Enlaces de categorías que redirigen/desplazan al catálogo.
+     * **Atención:** Métodos de servicio y dirección física (hace scroll a `#visitanos`).
+     * **Pagos:** Insignias de confianza rediseñadas con un formato uniforme minimalista rectangular en fondo carbón.
+   - **Copyright & Créditos:** Franja inferior reestructurada, destacando elegantemente el crédito **"Creado por MYNEXT"** en un fucsia vibrante (`#ff007f`) con subrayado punteado y enlaces de políticas en blanco hover.
 
 ---
 
 ## 🛠️ Archivos Creados y Modificados
-- `src/routes/index.tsx` [Rediseño de menú móvil, optimización de Hero, redirección de Contacto y rediseño de Bolsa]
+- `src/routes/index.tsx` [Menú móvil estructurado con cabecera y pie diferenciado, Hero, Bolsa de compras, alineación y rediseño de Footer]
 - `src/routes/admin/route.tsx` [Layout de admin minimalista con sidebar y protección]
 - `src/routes/admin/index.tsx` [Dashboard resumen con bento y métricas reales]
 - `src/routes/admin/pedidos.tsx` [Gestión real de pedidos con OrderManager]
@@ -69,5 +70,7 @@
 - Evitamos la suspensión automática de Insforge mediante el cron keep-alive.
 - Limpieza y reordenación del menú móvil público con estética boutique premium.
 - El enlace de "Contacto" del menú lateral ahora redirige correctamente a la sección de la tienda física (`#visitanos`).
-- Fotografías del Hero del inicio ahora destacan al 100% en pantallas móviles sin elementos que las obstruyan.
 - El carrito/bolsa ya no tiene fondo oscuro, adaptándose a la estética limpia fucsia/crema boutique, con un flujo dinámico elegante.
+- Solapamiento del contador de artículos con la 'X' de cierre del carrito totalmente solucionado.
+- El Footer ya no se funde con el contenido blanco, teniendo un contraste espectacular, orden y un acabado de lujo.
+- Fondo plano del menú móvil solucionado añadiendo cabecera rígida blanca con logo grande y bloque inferior de redes con contraste.
