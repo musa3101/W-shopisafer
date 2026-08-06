@@ -866,25 +866,32 @@ function Index() {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent className="flex w-[92%] flex-col border-zinc-800 bg-zinc-950 p-6 text-zinc-100 sm:max-w-md">
-                <SheetHeader className="text-left border-b border-zinc-800 pb-4">
-                  <SheetTitle className="font-display text-2xl font-bold text-zinc-100 flex items-center justify-between">
-                    <span>Tu Bolsa de Selección</span>
-                    <span className="text-xs font-mono font-normal text-amber-400">
-                      {itemCount} item{itemCount !== 1 ? "s" : ""}
+              <SheetContent className="flex w-[92%] sm:max-w-md flex-col border-rose-100/50 bg-[#fffcfd] p-6 text-zinc-800 [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300">
+                <SheetHeader className="text-left border-b border-rose-100/40 pb-4">
+                  <SheetTitle className="font-display text-2xl font-black text-zinc-900 flex items-center gap-2">
+                    <span>Tu Bolsa</span>
+                    <span className="text-sm font-mono font-bold text-rose-500">
+                      ({itemCount})
                     </span>
                   </SheetTitle>
-                  <SheetDescription className="text-zinc-400 text-xs">
-                    {itemCount ? "Finaliza tu pedido en 1 clic por WhatsApp oficial" : "Explora nuestra colección y añade tus prendas preferidas"}
+                  <SheetDescription className="text-zinc-500 text-xs">
+                    {itemCount ? "Finaliza tu pedido en 1 clic de forma segura" : "Explora nuestra colección y añade tus prendas preferidas"}
                   </SheetDescription>
                 </SheetHeader>
 
                 <div className="mt-6 flex-1 space-y-4 overflow-y-auto pr-1">
                   {itemCount === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-64 text-center text-zinc-500">
-                      <ShoppingBag className="size-12 mb-3 stroke-[1.2]" />
-                      <p className="text-sm font-medium">Tu bolsa de compras está vacía</p>
-                      <p className="text-xs mt-1 text-zinc-600">Añade licras o vestidos de la nueva colección</p>
+                    <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500 py-12">
+                      <ShoppingBag className="size-16 mb-4 text-rose-300 stroke-[1.2]" />
+                      <p className="text-sm font-extrabold uppercase tracking-wider text-zinc-805">Tu bolsa está vacía actualmente</p>
+                      <p className="text-xs mt-1.5 text-zinc-500">Explora y añade licras o vestidos de la nueva colección</p>
+                      <Button
+                        variant="outline"
+                        className="mt-6 w-full rounded-xl border border-rose-200 bg-white text-[#ff007f] hover:bg-rose-50/50 text-xs font-black uppercase tracking-widest py-3.5 shadow-sm cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
+                        onClick={() => setCartOpen(false)}
+                      >
+                        Explorar Colección
+                      </Button>
                     </div>
                   ) : (
                     productsList
@@ -892,49 +899,52 @@ function Index() {
                       .map((product) => (
                         <div
                           key={product.id}
-                          className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3"
+                          className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 rounded-xl border border-rose-100 bg-[#fffafb] p-3"
                         >
-                          <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-zinc-800">
+                          <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-zinc-100 border border-rose-100/50">
                             <ProductCrop product={product} />
                           </div>
                           <div className="min-w-0 flex flex-col justify-between">
                             <div>
-                              <p className="truncate font-semibold text-sm text-zinc-100">{product.name}</p>
-                              <p className="text-xs text-amber-400 font-mono font-medium mt-0.5">
+                              <p className="truncate font-extrabold text-sm text-zinc-900">{product.name}</p>
+                              <p className="text-xs text-zinc-400 mt-0.5 font-sans">Talla: Única · Color: Único</p>
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                              <p className="text-xs text-rose-600 font-mono font-black">
                                 ${product.price.toFixed(2)} USD
                               </p>
-                            </div>
-                            <div className="flex items-center gap-2 mt-2">
-                              <div className="flex items-center border border-zinc-700 rounded-full bg-zinc-800">
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center border border-rose-100 rounded-full bg-white shadow-xs">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 rounded-full text-zinc-650 hover:text-rose-600 hover:bg-rose-50/40"
+                                    onClick={() => updateProduct(product.id, -1)}
+                                    aria-label={`Quitar uno de ${product.name}`}
+                                  >
+                                    <Minus className="size-3" />
+                                  </Button>
+                                  <span className="w-5 text-center text-xs font-bold text-zinc-800">{cart[product.id]}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-7 rounded-full text-zinc-650 hover:text-rose-600 hover:bg-rose-50/40"
+                                    onClick={() => updateProduct(product.id, 1)}
+                                    aria-label={`Añadir uno de ${product.name}`}
+                                  >
+                                    <Plus className="size-3" />
+                                  </Button>
+                                </div>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="size-7 rounded-full text-zinc-300 hover:text-white"
-                                  onClick={() => updateProduct(product.id, -1)}
-                                  aria-label={`Quitar uno de ${product.name}`}
+                                  className="size-7 rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50/30"
+                                  onClick={() => removeProduct(product.id)}
+                                  aria-label={`Eliminar ${product.name}`}
                                 >
-                                  <Minus className="size-3" />
-                                </Button>
-                                <span className="w-5 text-center text-xs font-semibold">{cart[product.id]}</span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 rounded-full text-zinc-300 hover:text-white"
-                                  onClick={() => updateProduct(product.id, 1)}
-                                  aria-label={`Añadir uno de ${product.name}`}
-                                >
-                                  <Plus className="size-3" />
+                                  <Trash2 className="size-3.5" />
                                 </Button>
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="ml-auto size-7 rounded-full text-zinc-500 hover:text-red-400"
-                                onClick={() => removeProduct(product.id)}
-                                aria-label={`Eliminar ${product.name}`}
-                              >
-                                <Trash2 className="size-3.5" />
-                              </Button>
                             </div>
                           </div>
                         </div>
@@ -943,23 +953,23 @@ function Index() {
                 </div>
 
                 {itemCount > 0 && (
-                  <div className="border-t border-zinc-800 pt-5 space-y-3">
-                    <div className="flex items-center justify-between text-sm font-semibold">
-                      <span className="text-zinc-400">Subtotal estimado</span>
-                      <span className="text-xl font-mono text-amber-400">${subtotal.toFixed(2)} USD</span>
+                  <div className="border-t border-rose-100/40 pt-5 space-y-3">
+                    <div className="flex items-center justify-between text-sm font-bold">
+                      <span className="text-zinc-550">Subtotal</span>
+                      <span className="text-xl font-mono text-zinc-900">${subtotal.toFixed(2)} USD</span>
                     </div>
                     <Button
-                      className="w-full h-14 rounded-2xl bg-zinc-950 text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-2xl shadow-rose-500/20 hover:bg-zinc-800 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full h-14 rounded-2xl bg-[#ff007f] text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all cursor-pointer flex items-center justify-center gap-2"
                       onClick={handleStripeCheckout}
                       disabled={isCheckingOut}
                     >
                       <CreditCard className="size-4" />
-                      {isCheckingOut ? "Procesando..." : "Pagar con Tarjeta"}
+                      {isCheckingOut ? "Procesando..." : "Finalizar Compra"}
                     </Button>
 
                     <Button
                       variant="outline"
-                      className="w-full h-14 rounded-2xl border-emerald-200 bg-emerald-50 text-emerald-700 font-extrabold text-xs uppercase tracking-[0.2em] shadow-sm hover:bg-emerald-100 hover:text-emerald-800 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full h-14 rounded-2xl border-emerald-250 bg-emerald-50 text-emerald-700 font-extrabold text-xs uppercase tracking-[0.2em] shadow-sm hover:bg-emerald-100 hover:text-emerald-800 transition-all cursor-pointer flex items-center justify-center gap-2"
                       onClick={handleWhatsAppCheckout}
                     >
                       <MessageCircle className="size-4" />

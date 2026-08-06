@@ -23,6 +23,13 @@
   - [x] Reducidos los degradados del fondo oscuros en móvil para potenciar la visualización de fotos.
   - [x] Achicada la tipografía de títulos y compactados los espacios verticales y paddings del texto.
   - [x] Encogido el botón CTA principal "EXPLORAR COLECCIÓN" para que no interfiera con las imágenes.
+- [x] **Rediseño de Bolsa / Carrito de Compras**:
+  - [x] Eliminada la caja oscura del carrito, adoptando un Slide-over Drawer claro de color crema suave/blanco elegante (`bg-[#fffcfd]`) y bordes suaves de color rosa (`border-rose-100/50`).
+  - [x] Cabecera limpia con el título "Tu Bolsa" y el contador de ítems entre paréntesis.
+  - [x] Removida la cruz rosa agresiva por un aspa minimalista fina gris.
+  - [x] Rediseñado el Estado Vacío con un icono grande y suave, texto limpio y botón "Explorar Colección" para cerrar el carrito.
+  - [x] Creado diseño de tarjetas de productos más refinado (imágenes con borde rosa suave, talla/color y un selector de cantidad discreto y compacto).
+  - [x] Pie de carrito fijo con subtotal visible, botón de Checkout destacado en fucsia premium (`#ff007f`) y botón alternativo de WhatsApp.
 
 ## 🔄 Tareas en Progreso
 - [ ] Monitorización del Keep-Alive y comportamiento del Free Tier de Insforge.

@@ -38,10 +38,18 @@
    - Rediseñado el botón CTA "EXPLORAR COLECCIÓN" para que sea más compacto (`h-9 px-5 text-[10px]`), evitando tapar las fotografías del carrusel.
    - Preservados todos los efectos de transición fade-in/fade-out del carrusel de imágenes.
 
+6. **Rediseño del Carrito / Bolsa de Selección**:
+   - Reemplazado el fondo negro/oscuro por un Slide-over Drawer claro de color crema suave/blanco elegante (`bg-[#fffcfd]`), con bordes suaves de color rosa (`border-rose-100/50`).
+   - Cabecera limpia con el título "Tu Bolsa" y el contador de ítems entre paréntesis en rosa fucsia.
+   - Cambiado el botón de cierre agresivo por un aspa minimalista fina de color gris con hover rosa.
+   - Diseñado el **Estado Vacío** con un icono grande y suave de bolsa, un texto descriptivo limpio, y un botón destacado "EXPLORAR COLECCIÓN" para cerrar el carrito y explorar productos.
+   - Creado un diseño de tarjetas de productos más refinado y boutique (imágenes con borde rosa suave, textos estilizados, talla y color de la prenda, y un selector compacto y discreto de cantidad).
+   - Pie de carrito fijo con subtotal visible, botón de Checkout destacado en fucsia premium (`#ff007f`) y botón alternativo de WhatsApp.
+
 ---
 
 ## 🛠️ Archivos Creados y Modificados
-- `src/routes/index.tsx` [Rediseño de menú móvil, optimización de Hero en móviles y redirección de Contacto]
+- `src/routes/index.tsx` [Rediseño de menú móvil, optimización de Hero, redirección de Contacto y rediseño de Bolsa]
 - `src/routes/admin/route.tsx` [Layout de admin minimalista con sidebar y protección]
 - `src/routes/admin/index.tsx` [Dashboard resumen con bento y métricas reales]
 - `src/routes/admin/pedidos.tsx` [Gestión real de pedidos con OrderManager]
@@ -62,3 +70,4 @@
 - Limpieza y reordenación del menú móvil público con estética boutique premium.
 - El enlace de "Contacto" del menú lateral ahora redirige correctamente a la sección de la tienda física (`#visitanos`).
 - Fotografías del Hero del inicio ahora destacan al 100% en pantallas móviles sin elementos que las obstruyan.
+- El carrito/bolsa ya no tiene fondo oscuro, adaptándose a la estética limpia fucsia/crema boutique, con un flujo dinámico elegante.
