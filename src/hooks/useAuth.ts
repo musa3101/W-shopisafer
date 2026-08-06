@@ -44,23 +44,29 @@ export function useAuth() {
     getInitialSession();
 
     // Suscribirse a cambios de sesión de forma reactiva
-    const unsubscribe = insforge.auth.onAuthStateChange((event, session) => {
+    const unsubscribe = insforge.auth.onAuthStateChange(async (event: any) => {
       if (!active) return;
       console.log('useAuth reactivo - Evento detectado:', event);
-      if (session?.user) {
-        const profile = (session.user as any).profile || {};
-        const meta = (session.user as any).metadata || {};
-        const isAdminUser = session.user.email === "admin@rosseboutique.com";
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          name: isAdminUser ? "Dueña · Isafer Boutique" : (profile.name || meta.full_name || session.user.email?.split('@')[0]),
-          avatar_url: profile.avatar_url || meta.avatar_url,
-        });
-      } else {
+      try {
+        const { data } = await insforge.auth.getCurrentUser();
+        if (data?.user) {
+          const profile = (data.user as any).profile || {};
+          const meta = (data.user as any).metadata || {};
+          const isAdminUser = data.user.email === "admin@rosseboutique.com";
+          setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: isAdminUser ? "Dueña · Isafer Boutique" : (profile.name || meta.full_name || data.user.email?.split('@')[0]),
+            avatar_url: profile.avatar_url || meta.avatar_url,
+          });
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
         setUser(null);
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {

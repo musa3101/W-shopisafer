@@ -15,6 +15,7 @@ export interface Translations {
   nav_account: string;
   nav_cart: string;
   nav_admin: string;
+  nav_categories: string;
   
   // Hero Section
   hero_badge: string;
@@ -197,6 +198,7 @@ const translations: Record<Language, Translations> = {
     nav_account: "Account",
     nav_cart: "Cart",
     nav_admin: "Admin",
+    nav_categories: "Collection / Categories",
 
     // Hero Section
     hero_badge: "NEW BARBIE LUXE COLLECTION 👑",
@@ -377,6 +379,7 @@ const translations: Record<Language, Translations> = {
     nav_account: "Mi Cuenta",
     nav_cart: "Carrito",
     nav_admin: "Admin",
+    nav_categories: "Colección / Categorías",
 
     // Hero Section
     hero_badge: "NUEVA COLECCIÓN BARBIE LUXE 👑",
