@@ -31,10 +31,16 @@
 - [x] **Mejoras del Panel de Administración Móvil**: Menú flotante y redondeado para evitar el bloqueo del Home Indicator de iOS, y solución de la opacidad de los iconos Bento.
 - [x] **Etiqueta de Navegación Compacta**: Pestaña `"Añadir"` reducida para evitar desbordamientos de texto en vista móvil.
 - [x] **Agente de Pruebas y Auditoría**: Creación de `scripts/audit_web.js` y validación exitosa de los 15 productos y sus imágenes (0 rotas).
+- [x] **Autenticación Reactiva en Tiempo Real**: Integración de `onAuthStateChange` en `useAuth.ts` para actualización en caliente de la sesión sin recargar.
+- [x] **Header con Indicador de Carga Discreto**: Eliminado parpadeo de "Invitado" mientras se consulta la sesión.
+- [x] **Usabilidad Táctil de Tarjetas del Catálogo en Móvil**: Botones planos e interactivos "Añadir" en pantallas móviles sin requerir hover.
+- [x] **Hero con Carrusel Dinámico**: Transición suave de 4 imágenes editoriales de alta costura con desvanecimiento de 6 segundos.
+- [x] **Protección Contra Nulidad en Pedidos (Bug de Panel)**: Envolvimiento de datos con `(data || [])` para prevenir cuelgues del panel si la base de datos devuelve null.
+- [x] **Pruebas Autónomas con TestSprite CLI**: Creación de proyecto E2E en TestSprite y ejecución exitosa en la nube con veredicto **100% PASSED**.
 - [x] **Despliegue y Sincronización Automática**: Compilación, wrangler deploy a Cloudflare y git push a GitHub (`dev`).
 
 ## 🟡 Tareas en Progreso
-- [ ] 🎠 **Hero con carrusel de fotos dinámico**: Implementación de transición fluida de imágenes en la sección Hero de la página de inicio.
+- NINGUNA (Todo completado con éxito).
 
 ## 🔵 Próximas Mejoras Prioritarias
-- [ ] Pruebas y optimizaciones de velocidad del carrusel en dispositivos reales.
+- [ ] Incorporación de filtros de tallas (S, M, L) si se amplía el catálogo.

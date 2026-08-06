@@ -1,0 +1,20 @@
+{
+  "testId": "9835f253-b6a2-4fe1-b4d8-fba90180a16a",
+  "status": "blocked",
+  "startedAt": "2026-08-06T12:52:07.547Z",
+  "finishedAt": "2026-08-06T12:54:33.663Z",
+  "videoUrl": "https://testsprite-videos.s3.us-east-1.amazonaws.com/24488428-4021-7003-5cc2-6e27e25a247b/1786020870526976//tmp/9452b74f-ee77-4fdc-a34c-382bdfb2d2b9/result.webm",
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_6c43160ef560f672",
+  "runIdIfAvailable": "1c25a891-12e7-42d6-8d4e-b312aa7c1b5f",
+  "codeVersion": "v1",
+  "targetUrl": "https://isafer.mynextbymusa.workers.dev",
+  "targetUrlSource": "run",
+  "failedStepIndex": 5,
+  "failureKind": null,
+  "verdict": "blocked",
+  "executionStatus": "completed",
+  "summary": "Blocked before a verdict could be produced: TEST FAILURE\n\nLa verificación de que el artículo añadido aparece en la bolsa/drawer no pudo confirmarse.\n\nObservations:\n- La página principal cargó y se vieron tarjetas de producto con el control 'Add to Bag'.\n- Tras hacer click en 'Add to Bag' no se observó (o no quedó registrado) el drawer de la bolsa mostrando el artículo antes de navegar a /login.\n- La página de login sí mostró las opciones 'Continue with Google' y 'Continue with Apple' junto con …",
+  "apiOutput": null,
+  "trace": null
+}

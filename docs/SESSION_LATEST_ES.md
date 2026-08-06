@@ -1,36 +1,32 @@
 # Estado de la Sesión — Isafer Boutique
 
-## 📅 Fecha: 6 de Agosto, 2026
+## 📅 Fecha: 6 de Agosto, 2026 (Sesión de Tarde)
 
 ### 📝 Qué se ha hecho hoy
-1. **Ruta de Login Brutalista (Uiverse)**:
-   - Se reemplazó el antiguo modal de inicio de sesión por una ruta dedicada en `/login` basada en un formulario Brutalista de Uiverse.io.
-   - Cuenta con soporte para iniciar sesión con Google (cliente) y mediante Email/Contraseña (admin).
-   - Se reemplazó la opción de continuar con GitHub por **"Continuar con Apple"**.
-2. **Acceso Dinámico de Cuenta en Header (Navbar)**:
-   - Se inyectó un botón programático en la esquina superior derecha del header. Cambia según el estado de la sesión:
-     - **Invitado**: Icono de usuario (`User`) que navega a `/login`.
-     - **Cliente**: Icono rosa (`UserCheck`) que abre el modal de perfil de cliente.
-     - **Admin**: Icono dorado con animación de pulso (`ShieldCheck`) que abre el panel de control.
-3. **Optimización del Panel de Administración Móvil**:
-   - **Navegación Táctil**: Reemplazada la barra inferior del admin pegada a la pantalla (que sufría bloqueos de Safari y del Home Indicator de iOS) por una **barra de navegación flotante, elevada (`bottom-6`) y redondeada**. Responde al tacto al instante.
-   - **Etiqueta Compacta en Móvil**: Se modificó el nombre de la pestaña de `"Añadir Prenda"` a `"Añadir"` para evitar que el texto se trunque o se corte como `"AÑADIR PR..."` en pantallas angostas.
-   - **Corrección de Superposiciones**: Se ajustó la opacidad de los iconos de fondo en las tarjetas Bento (como el de ingresos totales en `BentoMetrics.tsx`) a un 3% (`opacity-[0.03]`) y se inyectó `z-index` estricto, solucionando la superposición del signo pesos gigante que tapaba los datos financieros en móviles.
-4. **Agente de Pruebas y Auditoría**:
-   - Se creó un script de auditoría (`scripts/audit_web.js`) que validó de forma autónoma la integridad de los endpoints, la conexión del catálogo en producción con la base de datos InsForge y la disponibilidad de las 15 imágenes de productos en el Storage (0 rotas).
-5. **Despliegue y Sincronización Automática**:
-   - Compilación y subida exitosa a **Cloudflare Workers**.
-   - Sincronización limpia de todos los cambios de Git a la rama `dev` de GitHub.
+1. **Autenticación Reactiva en Tiempo Real**:
+   - Se integró `insforge.auth.onAuthStateChange` en `useAuth.ts`. Ahora la sesión se propaga de inmediato entre todas las rutas `/login` y `/` sin necesidad de actualizar la página (CMD+R / F5).
+2. **Cargador Discreto en Navbar (Sin Parpadeo)**:
+   - Se añadió la gestión del estado `loading` de `useAuth` en el Header de `index.tsx`, mostrando un spinner fino en lugar de pintar al "Invitado" de forma prematura.
+3. **Optimización de Botones de Catálogo para Móviles**:
+   - En smartphones y tablets, el botón de añadir al carrito ya no es un overlay invisible por hover, sino un botón plano e interactivo que dice **"Añadir"** en la base de la tarjeta.
+4. **Carrusel de Fotos Dinámico en el Hero**:
+   - Implementado un carrusel auto-reproducible con transiciones suaves de opacidad (6 segundos) con 4 imágenes de alta resolución (Barbie Luxe / Alta Costura).
+5. **Corrección Ortográfica del Panel de Camila**:
+   - Se renombró la carpeta a `panel de control de camila` y se corrigieron todas las referencias de importación en `AdminDashboardModal.tsx`.
+6. **Protección Contra Nulidad en Pedidos (Bug del Panel Resuelto)**:
+   - Se protegió `fetchAllOrders` y `fetchCustomerOrders` en `insforgeService.ts` contra respuestas nulas de la base de datos de InsForge (`(data || []).map(...)`), eliminando cuelgues del panel de administración.
+7. **Integración Exitosas con TestSprite (API & CLI)**:
+   - Se registró la API key del usuario en TestSprite, se creó el proyecto en vivo `706e95e9-5b56-4ea5-b73e-2f02c3daf348` para `https://isafer.mynextbymusa.workers.dev`, y se ejecutó la suite de pruebas autónomas en la nube con veredicto **100% PASSED** (4/4 pasos exitosos).
 
 ### 📂 Archivos modificados
-- `src/routes/index.tsx` (Botón de perfil, redirección del drawer/modal de favoritos).
-- `src/routes/login.tsx` (Nueva ruta del login retro-brutalista de Uiverse).
-- `src/styles.css` (Clases CSS de Uiverse.io con variables de Barbie Luxe).
-- `panel de contro de camila/AdminDashboard.tsx` (Barra flotante y pestaña "Añadir" del admin móvil).
-- `panel de contro de camila/BentoMetrics.tsx` (Opacidades y z-index de las tarjetas Bento).
-- `scripts/audit_web.js` (Script de auditoría técnica).
+- `src/hooks/useAuth.ts` (Suscripción reactiva a `onAuthStateChange`).
+- `src/routes/index.tsx` (Navbar con spinner de carga, carrusel dinámico en Hero y botones táctiles del catálogo).
+- `src/services/insforgeService.ts` (Protección contra respuestas nulas en la consulta de pedidos).
+- `src/components/AdminDashboardModal.tsx` (Importación corregida tras renombrar la carpeta del panel).
+- `panel de control de camila/` (Renombrado oficial de carpeta y mantenida la coherencia de importaciones).
+- `test_spec.json` (Especificación del plan de pruebas E2E para TestSprite).
 - `docs/SESSION_LATEST_ES.md` (Este archivo de estado).
-- `docs/ROADMAP.md` (Actualización de roadmap).
+- `docs/ROADMAP.md` (Actualización de tareas completadas).
 
 ### 📌 Qué queda pendiente
-- 🎠 **Hero con carrusel de fotos dinámico**: Implementar el carrusel dinámico en la sección del Hero de la tienda principal.
+- Pruebas adicionales en dispositivos reales físicos iOS/Android si el usuario lo solicita.

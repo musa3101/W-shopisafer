@@ -1,0 +1,8 @@
+[
+  {
+    "kind": "snapshot",
+    "stepIndex": 6,
+    "summary": "Step 6 'Expected the login form's 'Continue with Apple' button to be visible.' failed. Error: TEST FAILURE\n\nLa verificación de que el artículo añadido aparece en la bolsa/drawer no pudo confirmarse.\n\nObservations:\n- La página principal cargó y se vieron tarjetas de producto con el control 'Add to Bag'.\n- Tras hacer click en 'Add to Bag' no se observó (o no quedó registrado) el drawer de la bolsa mostrando el artículo antes de navegar a /login.\n- La página de login sí mostró las opciones 'Continue with Google' y 'Continue with Apple' junto con los campos de Usuario/Email y Contraseña.",
+    "path": "steps/06-snapshot.html"
+  }
+]

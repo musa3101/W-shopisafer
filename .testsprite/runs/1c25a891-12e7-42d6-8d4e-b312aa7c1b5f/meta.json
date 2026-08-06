@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "cli-v1",
+  "snapshotId": "snap_6c43160ef560f672",
+  "testId": "9835f253-b6a2-4fe1-b4d8-fba90180a16a",
+  "projectId": "706e95e9-5b56-4ea5-b73e-2f02c3daf348",
+  "codeVersion": "v1",
+  "runIdIfAvailable": "1c25a891-12e7-42d6-8d4e-b312aa7c1b5f",
+  "targetUrl": "https://isafer.mynextbymusa.workers.dev",
+  "failedStepIndex": 5,
+  "failureKind": null,
+  "capturedAt": "2026-08-06T12:54:33.663Z",
+  "fetchedAt": "2026-08-06T12:55:29.584Z"
+}

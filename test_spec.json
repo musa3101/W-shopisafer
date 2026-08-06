@@ -1,0 +1,29 @@
+{
+  "projectId": "706e95e9-5b56-4ea5-b73e-2f02c3daf348",
+  "type": "frontend",
+  "name": "Prueba E2E de Catálogo y Autenticación Isafer Boutique",
+  "description": "Prueba completa de flujo: carga de catálogo, adición al carrito, verificación del drawer y navegación al formulario de inicio de sesión.",
+  "priority": "p1",
+  "planSteps": [
+    {
+      "type": "action",
+      "description": "Navigate to https://isafer.mynextbymusa.workers.dev and click 'Accept Cookies' button if present"
+    },
+    {
+      "type": "action",
+      "description": "Click on the add to cart button of the first product in the catalog"
+    },
+    {
+      "type": "assertion",
+      "description": "Assert that the cart drawer opens displaying the shopping bag items"
+    },
+    {
+      "type": "action",
+      "description": "Click on the user profile button in the top right navbar to navigate to /login"
+    },
+    {
+      "type": "assertion",
+      "description": "Assert that the login page displays the Google sign-in button and the login form"
+    }
+  ]
+}
