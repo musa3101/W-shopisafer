@@ -14,7 +14,7 @@ export function AdminDashboardModal({
 }: AdminDashboardModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-screen h-screen max-w-none m-0 rounded-none p-0 bg-zinc-950 border-0 flex flex-col overflow-hidden z-[9999]">
+      <DialogContent className="w-screen h-screen max-w-none m-0 rounded-none p-0 bg-zinc-950 border-0 flex flex-col overflow-y-auto overflow-x-hidden z-[9999] [webkit-overflow-scrolling:touch]">
         <AdminDashboard 
           onClose={() => onOpenChange(false)} 
           onProductsUpdated={onProductsUpdated} 
