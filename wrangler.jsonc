@@ -8,5 +8,8 @@
   ],
   "assets": {
     "directory": "./dist/client"
-  }
+  },
+  "crons": [
+    "*/10 * * * *"
+  ]
 }

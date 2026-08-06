@@ -816,7 +816,7 @@ function Index() {
                   variant="ghost"
                   size="icon"
                   className="rounded-full text-zinc-700 hover:text-amber-500 hover:bg-amber-100/30 transition-transform active:scale-95 cursor-pointer relative"
-                  onClick={() => setAdminModalOpen(true)}
+                  onClick={() => navigate({ to: "/admin" })}
                   title="Panel de Administración"
                   aria-label="Panel de Administración"
                 >
@@ -1011,34 +1011,36 @@ function Index() {
               </div>
             );
           })}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-zinc-950/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/40 to-transparent" />
+          {/* Degradados sutiles: muy ligeros en móvil para dar protagonismo a la foto, profundos en desktop */}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/20 to-transparent sm:from-zinc-950 sm:via-zinc-950/50 sm:to-zinc-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/40 via-transparent to-transparent sm:from-zinc-950/95 sm:via-zinc-950/40 sm:to-transparent" />
 
-          <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-32 sm:px-10 lg:px-16">
+          {/* Ajuste de márgenes de cabecera en móvil */}
+          <div className="relative mx-auto w-full max-w-7xl px-5 pb-10 pt-28 sm:px-10 lg:px-16">
             <div className="max-w-2xl">
-              {/* H1 Display Title */}
-              <h1 className="font-display text-4xl sm:text-6xl font-black leading-[1.0] tracking-tight text-white uppercase text-balance">
+              {/* Título Display adaptado a móviles */}
+              <h1 className="font-display text-[26px] sm:text-6xl font-black leading-[0.95] sm:leading-[1.0] tracking-tight text-white uppercase text-balance">
                 {t("hero_title_1").includes("y") ? "Sensual &" : "Sexy &"}
                 <br />
-                <span className="italic font-serif font-normal text-rose-400 drop-shadow-sm normal-case">
+                <span className="italic font-serif font-normal text-rose-400 drop-shadow-sm normal-case text-2xl sm:text-5xl">
                   {t("hero_title_1").includes("y") ? "Elegante" : "Elegant"}
                 </span>
               </h1>
 
-              <p className="mt-2.5 text-xs font-mono tracking-[0.25em] text-rose-300/90 uppercase font-bold">
+              <p className="mt-1.5 text-[9px] sm:text-xs font-mono tracking-[0.2em] sm:tracking-[0.25em] text-rose-300/90 uppercase font-bold">
                 Isafer Boutique · Brooklyn, NY
               </p>
 
-              {/* Body Text (hidden on mobile for total Hero clarity) */}
+              {/* Body Text (oculto en móvil para mayor claridad visual) */}
               <p className="mt-4 max-w-lg text-xs sm:text-sm leading-relaxed text-zinc-300/90 font-normal hidden sm:block">
                 {t("hero_subtitle")}
               </p>
 
-              {/* Refined Small CTA Button */}
-              <div className="mt-6 flex items-center">
+              {/* Botón CTA compacto en móvil */}
+              <div className="mt-4 sm:mt-6 flex items-center">
                 <Button
                   asChild
-                  className="h-10 rounded-full px-6 text-[11px] font-extrabold uppercase tracking-[0.18em] bg-rose-600 hover:bg-rose-500 text-white shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer border border-rose-400/30"
+                  className="h-9 sm:h-10 rounded-full px-5 sm:px-6 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.15em] sm:tracking-[0.18em] bg-rose-600 hover:bg-rose-500 text-white shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer border border-rose-400/30"
                 >
                   <a
                     href="#coleccion"
@@ -1697,22 +1699,19 @@ function Index() {
         </Button>
       )}
 
-
-
-      {/* Full-Screen Mobile Menu Overlay (Bershka & Pull&Bear Style) */}
-      {/* Left Drawer Mobile/Desktop Navigation Menu (Camila Sevilla Style) */}
+      {/* Left Drawer Mobile/Desktop Navigation Menu (Rediseñado) */}
       <Sheet open={fullScreenMenuOpen} onOpenChange={setFullScreenMenuOpen}>
         <SheetContent
           side="left"
-          className="flex w-[85%] sm:max-w-md flex-col border-rose-100 bg-[#fffcfd] p-6 text-zinc-800 [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300"
+          className="flex w-[85%] sm:max-w-md flex-col border-rose-100/50 bg-[#fffcfd] p-6 text-zinc-800 [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none [&>button>svg]:size-5 [&>button]:transition-all [&>button]:duration-300"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-rose-100 mt-2">
-            <IsaferLogo variant="header" size="md" />
+          {/* Header & Elegant Logo */}
+          <div className="flex items-center justify-between pb-4 border-b border-rose-100/40 mt-2">
+            <IsaferLogo variant="header" size="lg" className="hover:scale-100" />
           </div>
 
           {/* Quick Search inside menu */}
-          <div className="my-4">
+          <div className="my-3">
             <div className="relative">
               <Search className="absolute left-4 top-3 size-4 text-zinc-400" />
               <input
@@ -1726,15 +1725,15 @@ function Index() {
                     scrollToSection("coleccion");
                   }
                 }}
-                className="w-full rounded-2xl border border-rose-100 bg-[#fffafb] py-2.5 pl-11 pr-4 text-xs font-semibold focus:border-rose-300 focus:outline-none"
+                className="w-full rounded-2xl border border-rose-100 bg-[#fffafb] py-2.5 pl-11 pr-4 text-xs font-semibold focus:border-rose-350 focus:outline-none transition-colors"
               />
             </div>
           </div>
 
-          {/* Navigation Links Area */}
-          <div className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-4">
+          {/* Navigation Links Area (Optimized order) */}
+          <div className="flex-1 overflow-y-auto no-scrollbar py-2">
             <nav className="flex flex-col font-sans">
-              {/* Enlace Inicio */}
+              {/* 1. Inicio */}
               <a
                 href="#inicio"
                 onClick={(e) => {
@@ -1742,16 +1741,16 @@ function Index() {
                   setFullScreenMenuOpen(false);
                   scrollToSection("inicio");
                 }}
-                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors"
+                className="py-3.5 border-b border-rose-50/60 text-left text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors"
               >
                 {t("nav_home") || "Inicio"}
               </a>
 
-              {/* Acordeón de Categorías de la Tienda */}
+              {/* 2. Catálogo / Colecciones */}
               <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="categories" className="border-b border-rose-50/60 py-1">
-                  <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 hover:no-underline py-2">
-                    {t("nav_categories") || "Colección / Categorías"}
+                <AccordionItem value="categories" className="border-b border-rose-50/60 py-0.5">
+                  <AccordionTrigger className="text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 hover:no-underline py-3.5">
+                    {t("nav_categories") || "Catálogo / Colecciones"}
                   </AccordionTrigger>
                   <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
                     {[
@@ -1761,6 +1760,7 @@ function Index() {
                       { label: t("catalog_filter_sets"), category: "Tops & Sets", icon: Grid },
                       { label: "Bodys & Corsets", category: "Bodys & Corsets", icon: Sparkles },
                       { label: "Accesorios & Glam", category: "Accesorios & Glam", icon: Star },
+                      { label: t("catalog_filter_protection"), category: "Gas Pimienta", icon: ShieldCheck },
                     ].map((item) => (
                       <a
                         key={item.category}
@@ -1774,84 +1774,17 @@ function Index() {
                         className="flex items-center justify-between py-2 text-xs font-semibold text-zinc-650 hover:text-rose-600 transition-colors"
                       >
                         <span className="flex items-center gap-2">
-                          <item.icon className="size-3.5 text-rose-300" />
+                          <item.icon className="size-3.5 text-rose-450" />
                           {item.label}
                         </span>
-                        <ChevronRight className="size-3 text-zinc-450" />
+                        <ChevronRight className="size-3 text-zinc-400" />
                       </a>
                     ))}
                   </AccordionContent>
                 </AccordionItem>
-
-                <AccordionItem value="safety" className="border-b border-rose-50/60 py-1">
-                  <AccordionTrigger className="text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 hover:no-underline py-2">
-                    {t("catalog_filter_protection") || "Defensa Personal"}
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
-                    <a
-                      href="#coleccion"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveCategory("Gas Pimienta");
-                        setFullScreenMenuOpen(false);
-                        scrollToSection("coleccion");
-                      }}
-                      className="flex items-center justify-between py-2 text-xs font-semibold text-zinc-650 hover:text-rose-600 transition-colors"
-                    >
-                      <span className="flex items-center gap-2">
-                        <ShieldCheck className="size-3.5 text-rose-300" />
-                        Gas Pimienta & Alarmas
-                      </span>
-                      <ChevronRight className="size-3 text-zinc-450" />
-                    </a>
-                  </AccordionContent>
-                </AccordionItem>
               </Accordion>
 
-              {/* Botón de Favoritos */}
-              <button
-                onClick={() => {
-                  setFullScreenMenuOpen(false);
-                  setTimeout(() => {
-                    setFavoritesDrawerOpen(true);
-                  }, 200);
-                }}
-                className="w-full py-3.5 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group cursor-pointer"
-              >
-                <span className="flex items-center gap-2">
-                  Mis Favoritos 💖
-                  {Object.keys(favorites).length > 0 && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-rose-105 text-[10px] font-black text-rose-600">
-                      {Object.keys(favorites).length}
-                    </span>
-                  )}
-                </span>
-                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-
-              {/* Enlaces de Utilidad */}
-              <a
-                href="https://wa.me/19294848383?text=Hola,%20quisiera%20saber%20el%20estado%20de%20mi%20pedido%20de%20Isafer%20Boutique"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setFullScreenMenuOpen(false)}
-                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
-              >
-                <span>Seguimiento de Pedido 📦</span>
-                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-
-              <a
-                href="https://wa.me/19294848383?text=Hola,%20necesito%20ayuda%20con%20una%20compra%20en%20Isafer%20Boutique"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setFullScreenMenuOpen(false)}
-                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
-              >
-                <span>Centro de Ayuda 💬</span>
-                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-
+              {/* 3. Sobre Nosotros */}
               <a
                 href="#historia"
                 onClick={(e) => {
@@ -1859,21 +1792,56 @@ function Index() {
                   setFullScreenMenuOpen(false);
                   scrollToSection("historia");
                 }}
-                className="py-3 border-b border-rose-50/60 text-left text-sm font-bold uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
+                className="py-3.5 border-b border-rose-50/60 text-left text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
               >
-                <span>Nuestra Historia ✨</span>
-                <ChevronRight className="size-4 text-zinc-450 group-hover:translate-x-0.5 transition-transform" />
+                <span>Sobre Nosotros</span>
+                <ChevronRight className="size-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+
+              {/* 4. Mis Favoritos */}
+              <button
+                onClick={() => {
+                  setFullScreenMenuOpen(false);
+                  setTimeout(() => {
+                    setFavoritesDrawerOpen(true);
+                  }, 200);
+                }}
+                className="w-full py-3.5 border-b border-rose-50/60 text-left text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  Mis Favoritos 💕
+                  {Object.keys(favorites).length > 0 && (
+                    <span className="ml-1 px-2 py-0.5 rounded-full bg-rose-100 text-[10px] font-black text-rose-600">
+                      {Object.keys(favorites).length}
+                    </span>
+                  )}
+                </span>
+                <ChevronRight className="size-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+
+              {/* 5. Contacto */}
+              <a
+                href="#visitanos"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setFullScreenMenuOpen(false);
+                  scrollToSection("visitanos");
+                }}
+                className="py-3.5 border-b border-rose-50/60 text-left text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
+              >
+                <span>Contacto 💬</span>
+                <ChevronRight className="size-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
               </a>
             </nav>
           </div>
 
           {/* Footer Section of Menu */}
-          <div className="pt-4 border-t border-rose-100 space-y-4">
+          <div className="pt-4 border-t border-rose-100/50 space-y-4">
             {/* User Account / Profile */}
             {user ? (
               <div className="rounded-2xl border border-rose-100 bg-rose-50/30 p-3.5">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 text-white flex items-center justify-center font-black text-xs shadow-xs shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-rose-500 to-rose-650 text-white flex items-center justify-center font-black text-xs shadow-sm shrink-0">
                     {user.email ? user.email.slice(0, 2).toUpperCase() : "US"}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -1889,7 +1857,7 @@ function Index() {
                     onClick={() => {
                       setFullScreenMenuOpen(false);
                       setTimeout(() => {
-                        if (isAdmin) setAdminModalOpen(true);
+                        if (isAdmin) navigate({ to: "/admin" });
                         else setCustomerModalOpen(true);
                       }, 200);
                     }}
@@ -1913,46 +1881,36 @@ function Index() {
               <Link
                 to="/login"
                 onClick={() => setFullScreenMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3.5 shadow-xs cursor-pointer transition-colors"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#ff007f] hover:bg-rose-600 text-white text-xs font-black uppercase tracking-wider py-3.5 shadow-md shadow-rose-500/10 cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
               >
-                <User className="size-4 text-rose-500" /> Acceder o Crear Cuenta VIP
+                <User className="size-4 text-white animate-pulse" /> Acceder o Crear Cuenta VIP
               </Link>
             )}
 
-            {/* Social Media Widgets */}
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* Minimal Horizontal Social Icons */}
+            <div className="flex items-center justify-center gap-4 py-1.5">
               <a
                 href="https://www.instagram.com/shopisafer"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-rose-100/80 bg-white hover:bg-rose-50/20 transition-colors group"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-rose-100 bg-white text-zinc-700 hover:text-rose-600 hover:border-rose-200 transition-all hover:scale-105 active:scale-95 text-xs font-extrabold shadow-sm"
               >
-                <div className="size-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0 group-hover:scale-105 transition-transform">
-                  <Instagram className="size-4" />
-                </div>
-                <div className="text-left min-w-0">
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Instagram</p>
-                  <p className="text-xs font-extrabold text-zinc-800 group-hover:text-rose-600 transition-colors truncate">@shopisafer</p>
-                </div>
+                <Instagram className="size-4 text-rose-500 animate-pulse" />
+                <span>@shopisafer</span>
               </a>
               <a
                 href="https://www.tiktok.com/@shop_isafer1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 transition-colors group"
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-200 bg-white text-zinc-700 hover:text-zinc-950 hover:border-zinc-300 transition-all hover:scale-105 active:scale-95 text-xs font-extrabold shadow-sm"
               >
-                <div className="size-8 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 shrink-0 group-hover:scale-105 transition-transform font-bold text-xs">
-                  🎵
-                </div>
-                <div className="text-left min-w-0">
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">TikTok</p>
-                  <p className="text-xs font-extrabold text-zinc-800 group-hover:text-cyan-600 transition-colors truncate">@shop_isafer1</p>
-                </div>
+                <span className="text-xs">🎵</span>
+                <span>@shop_isafer1</span>
               </a>
             </div>
 
-            {/* Language Selector (At the very bottom as requested) */}
-            <div className="flex items-center justify-between pt-2">
+            {/* Language Selector */}
+            <div className="flex items-center justify-between pt-2 border-t border-rose-50/40">
               <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Idioma / Language</span>
               <LanguageSelector />
             </div>

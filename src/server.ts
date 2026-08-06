@@ -37,8 +37,27 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
+import { insforge } from "./lib/insforge";
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+    if (url.pathname === "/api/health") {
+      try {
+        // Ping ligero a Insforge
+        await insforge.auth.getSession();
+        return new Response(
+          JSON.stringify({ status: "ok", insforge: "connected", timestamp: Date.now() }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      } catch (error: any) {
+        return new Response(
+          JSON.stringify({ status: "error", error: error?.message || "Unknown error" }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
@@ -51,4 +70,15 @@ export default {
       });
     }
   },
+  
+  // Handler programado para el Keep-Alive (Cron trigger)
+  async scheduled(event: any, env: any, ctx: any) {
+    console.log("Ejecutando Keep-Alive Cron (Ping a Insforge)...");
+    try {
+      await insforge.auth.getSession();
+      console.log("Ping exitoso a Insforge.");
+    } catch (e) {
+      console.error("Error en Keep-Alive a Insforge:", e);
+    }
+  }
 };
