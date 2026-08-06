@@ -27,10 +27,13 @@
 - [x] **Modal de Políticas Legales Interactivo**: Implementación de diálogo emergente con políticas de Privacidad, Términos y Cookies integradas y accesibles desde el footer y el banner de cookies.
 - [x] **Créditos y enlaces de Marca**: Configuración de créditos de desarrollador en el footer con redirección a [MYNEXT](https://mynextbymusa.com/).
 - [x] **Revisión de Compilación y Responsividad Móvil**: Verificación de compilación limpia y estructura responsiva adaptada a móviles.
+- [x] **Ruta de Login Brutalista (Uiverse)**: Implementación de la nueva ruta dedicada `/login` con el formulario brutalista, Apple integrado y login admin funcional.
+- [x] **Botón de Perfil Dinámico en Header (Navbar)**: Acceso directo que cambia según el estado del usuario (`User`, `UserCheck`, `ShieldCheck`).
+- [x] **Mejoras del Panel de Administración Móvil**: Rediseño de la barra inferior móvil como un menú flotante y redondeado para evitar el bloqueo del Home Indicator de iOS, y solución de la opacidad de los iconos Bento.
+- [x] **Despliegue y Sincronización Automática**: Ejecución exitosa de compilación, wrangler deploy a Cloudflare y git push a GitHub (`dev`).
 
 ## 🟡 Tareas en Progreso
-- [ ] Verificación de despliegue activo en Cloudflare Workers (`https://isafer.mynextbymusa.workers.dev`).
+- [ ] 🎠 **Hero con carrusel de fotos dinámico**: Implementación de transición fluida de imágenes en la sección Hero de la página de inicio.
 
 ## 🔵 Próximas Mejoras Prioritarias
-- [ ] Despliegue de actualización a producción en Cloudflare mediante `npm run deploy`.
-- [ ] 🎠 **Hero con carrusel de fotos dinámico**: Implementación de transición fluida de imágenes en la sección Hero de la página de inicio.
+- [ ] Pruebas y optimizaciones de velocidad del carrusel en dispositivos reales.
