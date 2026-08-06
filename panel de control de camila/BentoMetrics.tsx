@@ -24,15 +24,18 @@ interface BentoMetricsProps {
 }
 
 export function BentoMetrics({ products, orders }: BentoMetricsProps) {
+  const safeOrders = orders || [];
+  const safeProducts = products || [];
+
   // Calculations
-  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-  const totalOrders = orders.length;
-  const lowStockCount = products.filter((p) => p.stock < 5).length;
-  const stripeOrders = orders.filter((o) => o.stripe_session_id && o.stripe_session_id !== 'pending_session');
-  const stripeRevenue = stripeOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+  const totalRevenue = safeOrders.reduce((sum, o) => sum + (Number(o?.total_amount) || 0), 0);
+  const totalOrders = safeOrders.length;
+  const lowStockCount = safeProducts.filter((p) => (p?.stock || 0) < 5).length;
+  const stripeOrders = safeOrders.filter((o) => o?.stripe_session_id && o?.stripe_session_id !== 'pending_session');
+  const stripeRevenue = stripeOrders.reduce((sum, o) => sum + (Number(o?.total_amount) || 0), 0);
   
   // Format orders by date for chart
-  const orderDates = orders
+  const orderDates = safeOrders
     .map(o => {
       const date = o.created_at ? new Date(o.created_at) : new Date();
       return {
@@ -137,9 +140,9 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
             {totalOrders}
           </h4>
           <div className="flex items-center gap-1 mt-2 text-[10px] text-zinc-500">
-            <span className="font-semibold text-amber-400">{orders.filter(o => o.status === 'pending').length} pendientes</span>
+            <span className="font-semibold text-amber-400">{safeOrders.filter(o => o?.status === 'pending').length} pendientes</span>
             <span>•</span>
-            <span>{orders.filter(o => o.status === 'delivered').length} completados</span>
+            <span>{safeOrders.filter(o => o?.status === 'delivered').length} completados</span>
           </div>
         </div>
       </div>
@@ -208,7 +211,7 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
         <div className="mt-8 z-10">
           <p className="text-xs text-zinc-400">Tasa de Entrega</p>
           <h4 className="text-3xl font-black text-white font-mono mt-1">
-            {totalOrders > 0 ? ((orders.filter(o => o.status !== 'cancelled').length / totalOrders) * 100).toFixed(0) : 0}%
+            {totalOrders > 0 ? ((safeOrders.filter(o => o?.status !== 'cancelled').length / totalOrders) * 100).toFixed(0) : 0}%
           </h4>
           <p className="text-[10px] text-zinc-500 mt-2">
             Pedidos activos excluyendo cancelaciones

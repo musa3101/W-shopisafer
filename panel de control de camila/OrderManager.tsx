@@ -54,6 +54,8 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
   const getWhatsAppLink = (order: BackendOrder) => {
     const defaultPhone = "19296772514";
     const phone = order.customer_phone ? order.customer_phone.replace(/\D/g, "") : defaultPhone;
+    const name = order.customer_name || "Cliente";
+    const orderId = (order.id || "order").slice(0, 8);
     
     // Custom message
     let statusText = "";
@@ -62,19 +64,23 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
     else if (order.status === 'shipped') statusText = "ha sido enviado";
     
     const items = Array.isArray(order.items) 
-      ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ")
+      ? order.items.map(i => `${i.name || 'Prenda'} (x${i.quantity || 1})`).join(", ")
       : "";
 
-    const text = `Hola ${order.customer_name}, te escribo de Isafer Boutique 💖 en Brooklyn para informarte que tu pedido #${order.id.slice(0, 8)} ${statusText}. Artículos: ${items}. Total: $${order.total_amount} USD.`;
+    const text = `Hola ${name}, te escribo de Isafer Boutique 💖 en Brooklyn para informarte que tu pedido #${orderId} ${statusText}. Artículos: ${items}. Total: $${order.total_amount || 0} USD.`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
   };
 
   // Filters
-  const filteredOrders = orders.filter((o) => {
-    const matchesSearch = 
-      o.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer_email.toLowerCase().includes(search.toLowerCase()) ||
-      o.id.toLowerCase().includes(search.toLowerCase());
+  const safeOrders = orders || [];
+  const filteredOrders = safeOrders.filter((o) => {
+    if (!o) return false;
+    const name = (o.customer_name || "").toLowerCase();
+    const email = (o.customer_email || "").toLowerCase();
+    const id = (o.id || "").toLowerCase();
+    const query = (search || "").toLowerCase();
+
+    const matchesSearch = name.includes(query) || email.includes(query) || id.includes(query);
 
     if (activeTab === "pending") return matchesSearch && o.status === "pending";
     if (activeTab === "processing") return matchesSearch && o.status === "processing";
@@ -175,8 +181,8 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-mono font-bold text-zinc-500">#{order.id.slice(0, 8)}</span>
-                        <h4 className="text-sm font-black text-white">{order.customer_name}</h4>
+                        <span className="text-xs font-mono font-bold text-zinc-500">#{(order.id || "order").slice(0, 8)}</span>
+                        <h4 className="text-sm font-black text-white">{order.customer_name || "Cliente"}</h4>
                       </div>
                       <p className="text-[10px] text-zinc-500 flex items-center gap-1.5 mt-0.5">
                         <Calendar className="w-3 h-3" /> {formattedDate}
@@ -188,7 +194,7 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
                     <div className="flex flex-col sm:items-end">
                       <p className="text-xs text-zinc-500 uppercase tracking-widest font-bold">Total</p>
                       <p className="text-base font-black text-white font-mono mt-0.5">
-                        ${Number(order.total_amount).toFixed(2)} <span className="text-[10px] font-semibold text-rose-400">USD</span>
+                        ${(Number(order.total_amount) || 0).toFixed(2)} <span className="text-[10px] font-semibold text-rose-400">USD</span>
                       </p>
                     </div>
 
