@@ -14,8 +14,11 @@
      - **Admin**: Icono dorado con animación de pulso (`ShieldCheck`) que abre el panel de control.
 3. **Optimización del Panel de Administración Móvil**:
    - **Navegación Táctil**: Reemplazada la barra inferior del admin pegada a la pantalla (que sufría bloqueos de Safari y del Home Indicator de iOS) por una **barra de navegación flotante, elevada (`bottom-6`) y redondeada**. Responde al tacto al instante.
+   - **Etiqueta Compacta en Móvil**: Se modificó el nombre de la pestaña de `"Añadir Prenda"` a `"Añadir"` para evitar que el texto se trunque o se corte como `"AÑADIR PR..."` en pantallas angostas.
    - **Corrección de Superposiciones**: Se ajustó la opacidad de los iconos de fondo en las tarjetas Bento (como el de ingresos totales en `BentoMetrics.tsx`) a un 3% (`opacity-[0.03]`) y se inyectó `z-index` estricto, solucionando la superposición del signo pesos gigante que tapaba los datos financieros en móviles.
-4. **Despliegue y Sincronización Automática**:
+4. **Agente de Pruebas y Auditoría**:
+   - Se creó un script de auditoría (`scripts/audit_web.js`) que validó de forma autónoma la integridad de los endpoints, la conexión del catálogo en producción con la base de datos InsForge y la disponibilidad de las 15 imágenes de productos en el Storage (0 rotas).
+5. **Despliegue y Sincronización Automática**:
    - Compilación y subida exitosa a **Cloudflare Workers**.
    - Sincronización limpia de todos los cambios de Git a la rama `dev` de GitHub.
 
@@ -23,10 +26,11 @@
 - `src/routes/index.tsx` (Botón de perfil, redirección del drawer/modal de favoritos).
 - `src/routes/login.tsx` (Nueva ruta del login retro-brutalista de Uiverse).
 - `src/styles.css` (Clases CSS de Uiverse.io con variables de Barbie Luxe).
-- `panel de contro de camila/AdminDashboard.tsx` (Barra flotante del admin móvil).
+- `panel de contro de camila/AdminDashboard.tsx` (Barra flotante y pestaña "Añadir" del admin móvil).
 - `panel de contro de camila/BentoMetrics.tsx` (Opacidades y z-index de las tarjetas Bento).
+- `scripts/audit_web.js` (Script de auditoría técnica).
 - `docs/SESSION_LATEST_ES.md` (Este archivo de estado).
 - `docs/ROADMAP.md` (Actualización de roadmap).
 
 ### 📌 Qué queda pendiente
-- 🎠 **Carrusel de Fotos en el Hero**: Implementar el carrusel dinámico en la sección del Hero de la tienda principal.
+- 🎠 **Hero con carrusel de fotos dinámico**: Implementar el carrusel dinámico en la sección del Hero de la tienda principal.

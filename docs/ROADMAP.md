@@ -26,11 +26,12 @@
 - [x] **Ajustes de Privacidad Corporativa en Web Pública**: Removidas referencias al nombre de la dueña ("Camila") de la web pública de cara al cliente; mantenido exclusivamente en el panel de administración privado.
 - [x] **Modal de Políticas Legales Interactivo**: Implementación de diálogo emergente con políticas de Privacidad, Términos y Cookies integradas y accesibles desde el footer y el banner de cookies.
 - [x] **Créditos y enlaces de Marca**: Configuración de créditos de desarrollador en el footer con redirección a [MYNEXT](https://mynextbymusa.com/).
-- [x] **Revisión de Compilación y Responsividad Móvil**: Verificación de compilación limpia y estructura responsiva adaptada a móviles.
-- [x] **Ruta de Login Brutalista (Uiverse)**: Implementación de la nueva ruta dedicada `/login` con el formulario brutalista, Apple integrado y login admin funcional.
+- [x] **Ruta de Login Brutalista (Uiverse)**: Nueva ruta dedicada `/login` con el formulario brutalista y Apple integrado.
 - [x] **Botón de Perfil Dinámico en Header (Navbar)**: Acceso directo que cambia según el estado del usuario (`User`, `UserCheck`, `ShieldCheck`).
-- [x] **Mejoras del Panel de Administración Móvil**: Rediseño de la barra inferior móvil como un menú flotante y redondeado para evitar el bloqueo del Home Indicator de iOS, y solución de la opacidad de los iconos Bento.
-- [x] **Despliegue y Sincronización Automática**: Ejecución exitosa de compilación, wrangler deploy a Cloudflare y git push a GitHub (`dev`).
+- [x] **Mejoras del Panel de Administración Móvil**: Menú flotante y redondeado para evitar el bloqueo del Home Indicator de iOS, y solución de la opacidad de los iconos Bento.
+- [x] **Etiqueta de Navegación Compacta**: Pestaña `"Añadir"` reducida para evitar desbordamientos de texto en vista móvil.
+- [x] **Agente de Pruebas y Auditoría**: Creación de `scripts/audit_web.js` y validación exitosa de los 15 productos y sus imágenes (0 rotas).
+- [x] **Despliegue y Sincronización Automática**: Compilación, wrangler deploy a Cloudflare y git push a GitHub (`dev`).
 
 ## 🟡 Tareas en Progreso
 - [ ] 🎠 **Hero con carrusel de fotos dinámico**: Implementación de transición fluida de imágenes en la sección Hero de la página de inicio.
