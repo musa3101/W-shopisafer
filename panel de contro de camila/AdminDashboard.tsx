@@ -203,8 +203,8 @@ export function AdminDashboard({ onClose, onProductsUpdated }: AdminDashboardPro
         </section>
       </main>
 
-      {/* 3. Mobile Navigation Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-zinc-900/98 backdrop-blur-lg border-t border-zinc-850 px-2 py-1.5 flex justify-between items-center z-[100] shadow-2xl">
+      {/* 3. Mobile Navigation Bottom Bar (Floating Neo-brutalist Premium) */}
+      <div className="md:hidden fixed bottom-6 left-4 right-4 bg-zinc-900/96 backdrop-blur-xl border border-zinc-800/80 p-2.5 flex justify-between items-center z-[100] shadow-[0_12px_40px_rgba(0,0,0,0.5)] rounded-2xl">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -212,12 +212,12 @@ export function AdminDashboard({ onClose, onProductsUpdated }: AdminDashboardPro
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-0 flex flex-col items-center gap-1 py-1 rounded-xl transition-all ${
-                isActive ? 'text-rose-500 scale-105' : 'text-zinc-500'
+              className={`flex-1 min-w-0 flex flex-col items-center gap-1.5 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer ${
+                isActive ? 'text-rose-500 font-bold' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span className="text-[9px] font-black uppercase tracking-wider truncate w-full text-center">{tab.label}</span>
+              <Icon className={`w-4 h-4 shrink-0 transition-transform ${isActive ? 'scale-110 text-rose-500' : ''}`} />
+              <span className="text-[8px] font-black uppercase tracking-widest truncate w-full text-center">{tab.label}</span>
             </button>
           );
         })}

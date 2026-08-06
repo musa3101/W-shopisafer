@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Instagram,
   MapPin,
@@ -234,6 +234,7 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
 }
 
 function Index() {
+  const navigate = useNavigate();
   const { t, language, setLanguage } = useTranslation();
   const [productsList, setProductsList] = useState<ProductItem[]>(products);
   const [cart, setCart] = useState<Cart>({});
@@ -716,18 +717,55 @@ function Index() {
             </a>
           </div>
 
-          {/* Right Action Icons: Search & Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Right Action Icons: Search, Profile & Cart */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             {/* Botón de Búsqueda */}
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer mr-0.5"
+              className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
               onClick={() => setSearchOpen(true)}
               aria-label="Buscar productos"
             >
               <Search className="size-5" />
             </Button>
+
+            {/* Botón de Cuenta / Perfil (Nueva Ruta Login) */}
+            {user ? (
+              isAdmin ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-zinc-700 hover:text-amber-500 hover:bg-amber-100/30 transition-transform active:scale-95 cursor-pointer relative"
+                  onClick={() => setAdminModalOpen(true)}
+                  title="Panel de Administración"
+                  aria-label="Panel de Administración"
+                >
+                  <ShieldCheck className="size-5 text-amber-500 animate-pulse" />
+                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-500" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
+                  onClick={() => setCustomerModalOpen(true)}
+                  title="Mi Cuenta"
+                  aria-label="Mi Cuenta"
+                >
+                  <UserCheck className="size-5 text-rose-500" />
+                </Button>
+              )
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center rounded-full size-9 sm:size-10 text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
+                title="Iniciar sesión / Mi Cuenta"
+                aria-label="Iniciar sesión"
+              >
+                <User className="size-5" />
+              </Link>
+            )}
 
             {/* Cart Trigger */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
@@ -1799,18 +1837,13 @@ function Index() {
                 </div>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2 rounded-2xl border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3 shadow-xs cursor-pointer"
-                onClick={() => {
-                  setFullScreenMenuOpen(false);
-                  setTimeout(() => {
-                    setAuthDialogOpen(true);
-                  }, 200);
-                }}
+              <Link
+                to="/login"
+                onClick={() => setFullScreenMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-white text-zinc-800 hover:bg-rose-50 text-xs font-extrabold py-3.5 shadow-xs cursor-pointer transition-colors"
               >
                 <User className="size-4 text-rose-500" /> Acceder o Crear Cuenta VIP
-              </Button>
+              </Link>
             )}
 
             {/* Instagram box widget */}
@@ -1840,17 +1873,6 @@ function Index() {
       </Sheet>
 
       {/* Dialogs */}
-      <AuthDialog
-        open={authDialogOpen}
-        onOpenChange={setAuthDialogOpen}
-        onGoogleSignIn={signInWithGoogle}
-        onAdminLogin={signInWithPassword}
-        onSuccessAdmin={() => {
-          setTimeout(() => {
-            setAdminModalOpen(true);
-          }, 200);
-        }}
-      />
       <CustomerAccountModal
         user={user}
         open={customerModalOpen}
@@ -2029,9 +2051,7 @@ function Index() {
               className="w-full rounded-2xl h-11 text-xs font-extrabold uppercase tracking-widest bg-zinc-950 text-white hover:bg-zinc-800 shadow-md cursor-pointer"
               onClick={() => {
                 setFavDialogOpen(false);
-                setTimeout(() => {
-                  setAuthDialogOpen(true);
-                }, 200);
+                navigate({ to: "/login" });
               }}
             >
               {t("fav_modal_login_btn")}

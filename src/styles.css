@@ -165,3 +165,146 @@
     display: none;
   }
 }
+
+/* 🎨 Uiverse.io Retro-Brutalist Form Styles for Login Page */
+.form {
+  --background: #fff5f7; /* Rosa Barbie Luxe ultra suave */
+  --input-focus: #f43f5e; /* Rose 500 */
+  --font-color: #0f172a; /* Slate 900 */
+  --font-color-sub: #475569; /* Slate 600 */
+  --bg-color: #ffffff;
+  --main-color: #0f172a; /* Slate 900 */
+  padding: 30px;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  border-radius: 20px;
+  border: 3px solid var(--main-color);
+  box-shadow: 6px 6px var(--main-color);
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.form > p {
+  font-family: var(--font-accent), "Syne", sans-serif;
+  color: var(--font-color);
+  font-weight: 800;
+  font-size: 22px;
+  margin-bottom: 5px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.form > p > span {
+  font-family: var(--font-sans), "Inter", sans-serif;
+  color: var(--font-color-sub);
+  font-weight: 500;
+  font-size: 14px;
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+.separator {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+.separator > div {
+  flex: 1;
+  height: 2px;
+  border-radius: 5px;
+  background-color: var(--font-color-sub);
+  opacity: 0.2;
+}
+
+.separator > span {
+  color: var(--font-color-sub);
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.oauthButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 3px solid var(--main-color);
+  background-color: var(--bg-color);
+  box-shadow: 4px 4px var(--main-color);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--font-color);
+  cursor: pointer;
+  transition: all 250ms;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.oauthButton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background-color: var(--main-color);
+  z-index: -1;
+  box-shadow: 4px 8px 19px -3px rgba(0, 0, 0, 0.27);
+  transition: all 250ms;
+}
+
+.oauthButton:hover {
+  color: #ffffff;
+}
+
+.oauthButton:hover::before {
+  width: 100%;
+}
+
+.form > input {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 3px solid var(--main-color);
+  background-color: var(--bg-color);
+  box-shadow: 4px 4px var(--main-color);
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--font-color);
+  padding: 10px 16px;
+  outline: none;
+  transition: all 200ms;
+}
+
+.form > input:focus {
+  border-color: var(--input-focus);
+  box-shadow: 4px 4px var(--input-focus);
+}
+
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+

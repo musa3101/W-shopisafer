@@ -69,12 +69,12 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-auto">
       
       {/* 1. Bento Card: Total Revenue (Main Highlight) */}
-      <div className="md:col-span-2 relative overflow-hidden rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between group hover:border-rose-500/30 transition-all duration-300 shadow-xl shadow-black/40">
-        <div className="absolute right-[-10px] top-[-10px] text-rose-500/5 group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+      <div className="md:col-span-2 relative overflow-hidden rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between group hover:border-rose-500/30 transition-all duration-300 shadow-xl shadow-black/40 z-0">
+        <div className="absolute right-[-15px] top-[-15px] text-rose-500 opacity-[0.03] group-hover:scale-105 transition-transform duration-500 pointer-events-none z-0">
           <DollarSign className="w-48 h-48 stroke-[1]" />
         </div>
         
-        <div className="flex items-center justify-between z-10">
+        <div className="flex items-center justify-between z-10 relative">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-rose-600 text-white flex items-center justify-center shadow-lg shadow-rose-500/20">
               <DollarSign className="w-5 h-5" />
@@ -119,12 +119,12 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
       </div>
 
       {/* 2. Bento Card: Pedidos Recibidos */}
-      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-amber-450/30 transition-all duration-300 shadow-xl shadow-black/40">
-        <div className="absolute right-[-10px] top-[-10px] text-amber-500/5 group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-amber-450/30 transition-all duration-300 shadow-xl shadow-black/40 z-0">
+        <div className="absolute right-[-15px] top-[-15px] text-amber-500 opacity-[0.03] group-hover:scale-105 transition-transform duration-500 pointer-events-none z-0">
           <ShoppingBag className="w-36 h-36 stroke-[1]" />
         </div>
 
-        <div className="flex items-center justify-between z-10">
+        <div className="flex items-center justify-between z-10 relative">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-450 to-amber-550 text-black flex items-center justify-center shadow-lg shadow-amber-500/20">
             <ShoppingBag className="w-5 h-5" />
           </div>
@@ -145,12 +145,12 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
       </div>
 
       {/* 3. Bento Card: Alerta Stock Bajo */}
-      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-rose-650/30 transition-all duration-300 shadow-xl shadow-black/40">
-        <div className="absolute right-[-10px] top-[-10px] text-rose-600/5 group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-rose-650/30 transition-all duration-300 shadow-xl shadow-black/40 z-0">
+        <div className="absolute right-[-15px] top-[-15px] text-rose-500 opacity-[0.03] group-hover:scale-105 transition-transform duration-500 pointer-events-none z-0">
           <AlertTriangle className="w-36 h-36 stroke-[1]" />
         </div>
 
-        <div className="flex items-center justify-between z-10">
+        <div className="flex items-center justify-between z-10 relative">
           <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-450 flex items-center justify-center">
             <AlertTriangle className="w-5 h-5" />
           </div>
@@ -169,12 +169,12 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
       </div>
 
       {/* 4. Bento Card: Métodos de Pago */}
-      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300 shadow-xl shadow-black/40">
-        <div className="absolute right-[-10px] top-[-10px] text-indigo-500/5 group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300 shadow-xl shadow-black/40 z-0">
+        <div className="absolute right-[-15px] top-[-15px] text-indigo-500 opacity-[0.03] group-hover:scale-105 transition-transform duration-500 pointer-events-none z-0">
           <Layers className="w-36 h-36 stroke-[1]" />
         </div>
 
-        <div className="flex items-center justify-between z-10">
+        <div className="flex items-center justify-between z-10 relative">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <Layers className="w-5 h-5" />
           </div>
@@ -193,12 +193,12 @@ export function BentoMetrics({ products, orders }: BentoMetricsProps) {
       </div>
 
       {/* 5. Bento Card: Rendimiento del Negocio */}
-      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300 shadow-xl shadow-black/40">
-        <div className="absolute right-[-10px] top-[-10px] text-emerald-500/5 group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+      <div className="rounded-3xl bg-zinc-900 border border-zinc-800 p-6 flex flex-col justify-between relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300 shadow-xl shadow-black/40 z-0">
+        <div className="absolute right-[-15px] top-[-15px] text-emerald-500 opacity-[0.03] group-hover:scale-105 transition-transform duration-500 pointer-events-none z-0">
           <TrendingUp className="w-36 h-36 stroke-[1]" />
         </div>
 
-        <div className="flex items-center justify-between z-10">
+        <div className="flex items-center justify-between z-10 relative">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <TrendingUp className="w-5 h-5" />
           </div>
