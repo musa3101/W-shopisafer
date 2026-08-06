@@ -13,17 +13,21 @@ export function useAuth() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let active = true;
+
     // Check active session on mount
     async function getInitialSession() {
       try {
         const { data, error } = await insforge.auth.getCurrentUser();
+        if (!active) return;
         if (data?.user && !error) {
           const profile = (data.user as any).profile || {};
           const meta = (data.user as any).metadata || {};
+          const isAdminUser = data.user.email === "admin@rosseboutique.com";
           setUser({
             id: data.user.id,
             email: data.user.email,
-            name: profile.name || meta.full_name || data.user.email?.split('@')[0],
+            name: isAdminUser ? "Dueña · Isafer Boutique" : (profile.name || meta.full_name || data.user.email?.split('@')[0]),
             avatar_url: profile.avatar_url || meta.avatar_url,
           });
         } else {
@@ -31,13 +35,40 @@ export function useAuth() {
         }
       } catch (err) {
         console.error('Error al obtener usuario actual de InsForge:', err);
-        setUser(null);
+        if (active) setUser(null);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
 
     getInitialSession();
+
+    // Suscribirse a cambios de sesión de forma reactiva
+    const unsubscribe = insforge.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      console.log('useAuth reactivo - Evento detectado:', event);
+      if (session?.user) {
+        const profile = (session.user as any).profile || {};
+        const meta = (session.user as any).metadata || {};
+        const isAdminUser = session.user.email === "admin@rosseboutique.com";
+        setUser({
+          id: session.user.id,
+          email: session.user.email,
+          name: isAdminUser ? "Dueña · Isafer Boutique" : (profile.name || meta.full_name || session.user.email?.split('@')[0]),
+          avatar_url: profile.avatar_url || meta.avatar_url,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const signInWithGoogle = async () => {

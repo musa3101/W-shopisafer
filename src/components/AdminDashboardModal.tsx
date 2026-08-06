@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { AdminDashboard } from "../../panel de contro de camila/AdminDashboard";
+import { AdminDashboard } from "../../panel de control de camila/AdminDashboard";
 
 interface AdminDashboardModalProps {
   open: boolean;

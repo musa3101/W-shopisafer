@@ -228,7 +228,7 @@ export async function fetchAllOrders(): Promise<BackendOrder[]> {
       return [];
     }
 
-    return (data as any[]).map((order) => ({
+    return (data || []).map((order) => ({
       ...order,
       items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items || [],
     }));
@@ -254,7 +254,7 @@ export async function fetchCustomerOrders(email: string): Promise<BackendOrder[]
       return [];
     }
 
-    return (data as any[]).map((order) => ({
+    return (data || []).map((order) => ({
       ...order,
       items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items || [],
     }));

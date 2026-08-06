@@ -258,7 +258,23 @@ function Index() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [legalType, setLegalType] = useState<"privacy" | "terms" | "cookies" | null>(null);
 
-  const { user, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
+  // Carrusel dinámico de Hero
+  const heroImages = useMemo(() => [
+    heroImage,
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600",
+    "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600",
+    "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1600"
+  ], []);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [heroImages]);
+
+  const { user, loading, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
 
   const loadProductsFromInsForge = async () => {
     try {
@@ -731,7 +747,11 @@ function Index() {
             </Button>
 
             {/* Botón de Cuenta / Perfil (Nueva Ruta Login) */}
-            {user ? (
+            {loading ? (
+              <div className="size-9 sm:size-10 flex items-center justify-center">
+                <span className="size-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : user ? (
               isAdmin ? (
                 <Button
                   variant="ghost"
@@ -895,14 +915,20 @@ function Index() {
       <main id="inicio">
         {/* 3. HERO SECTION (HIGH-FASHION EDITORIAL MAGAZINE COVER) */}
         <section className="relative min-h-[90svh] sm:min-h-[92vh] flex items-end overflow-hidden bg-zinc-950 text-white">
-          <img
-            src={heroImage}
-            alt="Modelo Isafer Boutique vestida con outfit sensual y elegante"
-            width={1280}
-            height={1600}
-            fetchPriority="high"
-            className="absolute inset-0 h-full w-full object-cover object-[55%_center] opacity-80 filter contrast-105"
-          />
+          {/* Hero Carousel Images with smooth fading transitions */}
+          {heroImages.map((src, index) => (
+            <img
+              key={src}
+              src={src}
+              alt={`Modelo Isafer Boutique - Colección ${index + 1}`}
+              width={1280}
+              height={1600}
+              fetchPriority={index === 0 ? "high" : "low"}
+              className={`absolute inset-0 h-full w-full object-cover object-[55%_center] filter contrast-105 transition-opacity duration-1000 ease-in-out ${
+                index === currentHeroIndex ? "opacity-80" : "opacity-0"
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/30 to-transparent" />
 
@@ -1140,8 +1166,8 @@ function Index() {
                         />
                       </button>
 
-                      {/* Quick Add Button Overlay */}
-                      <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {/* Quick Add Button Overlay (Desktop) */}
+                      <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
                         <Button
                           className="w-full rounded-full h-11 text-xs font-bold uppercase tracking-wider bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-xl cursor-pointer"
                           onClick={() => addProduct(product.id)}
@@ -1168,10 +1194,24 @@ function Index() {
                         <span className="font-mono text-lg font-extrabold text-zinc-950 dark:text-zinc-100">
                           ${product.price.toFixed(2)} <span className="text-[10px] font-normal text-zinc-400 hidden sm:inline">USD</span>
                         </span>
+                        
+                        {/* Botón de Añadir para Móviles */}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="rounded-full h-9 px-3.5 text-xs font-bold bg-zinc-950 hover:bg-zinc-900 text-white border border-zinc-800 transition-transform active:scale-95 flex sm:hidden items-center gap-1 cursor-pointer"
+                          onClick={() => addProduct(product.id)}
+                          aria-label={t("catalog_add_to_cart")}
+                        >
+                          <Plus className="size-3.5" />
+                          Añadir
+                        </Button>
+
+                        {/* Botón de Pedir para Desktop */}
                         <Button
                           variant="outline"
                           size="sm"
-                          className="rounded-full h-9 w-9 p-0 sm:w-auto sm:px-3 text-xs font-semibold border-zinc-300 dark:border-zinc-700 hover:bg-zinc-950 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-950"
+                          className="rounded-full h-9 w-9 p-0 sm:w-auto sm:px-3 text-xs font-semibold border-zinc-300 dark:border-zinc-700 hover:bg-zinc-950 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-950 hidden sm:flex"
                           onClick={() => addProduct(product.id)}
                           aria-label={t("catalog_add_to_cart")}
                         >
