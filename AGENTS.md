@@ -25,4 +25,11 @@ Key patterns:
 
 ### Carpeta de Referencia y Capturas
 - **Uso:** El usuario colocará archivos de referencia, capturas de pantalla, grabaciones de pantalla, etc., en la carpeta `/Users/musa/Downloads/sopisafer/carpeta de referencia` durante la sesión.
-- **Fin de Sesión:** Al finalizar la sesión (cuando el usuario mencione **@final**, **@end**, **terminar**, o similar), además de actualizar la documentación (`docs/SESSION_LATEST_ES.md` y `docs/ROADMAP.md`), se debe **borrar obligatoriamente todo el contenido** dentro de `/Users/musa/Downloads/sopisafer/carpeta de referencia`, dejándola completamente vacía para futuras sesiones.
+
+### Fin de Sesión (Despliegue y Sincronización Obligatorios)
+- **Obligación de Despliegue a Cloudflare y Git:** Al finalizar la sesión (cuando el usuario mencione **@final**, **@end**, **terminar**, o similar) o al dar su aprobación ("OK"), el agente **debe obligatoriamente** ejecutar el script de cierre automatizado:
+  ```bash
+  ./scripts/deploy_and_sync.sh "Mensaje descriptivo del commit"
+  ```
+- **Flujo de Ejecución:** El script automáticamente compilará la app, la desplegará en Cloudflare, comprobará que la URL pública responda con éxito (HTTP 200), subirá todos los cambios a GitHub en la rama `dev`, y vaciará la carpeta de referencia.
+- **Documentación:** El agente actualizará y guardará `docs/SESSION_LATEST_ES.md` y `docs/ROADMAP.md` justo antes de ejecutar el script de despliegue para asegurar que la documentación también se incluya en el despliegue y en Git.
