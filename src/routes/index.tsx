@@ -778,6 +778,8 @@ function Index() {
               )
             ) : (
               <Link
+                id="login-header-link"
+                data-testid="login-link"
                 to="/login"
                 className="inline-flex items-center justify-center rounded-full size-9 sm:size-10 text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
                 title="Iniciar sesión / Mi Cuenta"
@@ -1169,6 +1171,8 @@ function Index() {
                       {/* Quick Add Button Overlay (Desktop) */}
                       <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
                         <Button
+                          id={idx === 0 ? "add-to-cart-first-product" : undefined}
+                          data-testid="add-to-cart-button"
                           className="w-full rounded-full h-11 text-xs font-bold uppercase tracking-wider bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-xl cursor-pointer"
                           onClick={() => addProduct(product.id)}
                         >
@@ -1197,6 +1201,8 @@ function Index() {
                         
                         {/* Botón de Añadir para Móviles */}
                         <Button
+                          id={idx === 0 ? "add-to-cart-first-product-mobile" : undefined}
+                          data-testid="add-to-cart-button-mobile"
                           variant="default"
                           size="sm"
                           className="rounded-full h-9 px-3.5 text-xs font-bold bg-zinc-950 hover:bg-zinc-900 text-white border border-zinc-800 transition-transform active:scale-95 flex sm:hidden items-center gap-1 cursor-pointer"

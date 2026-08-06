@@ -1,0 +1,20 @@
+{
+  "testId": "37a0407f-880d-4ed7-a825-5456f70882b2",
+  "status": "failed",
+  "startedAt": "2026-08-06T13:04:04.497602+00:00",
+  "finishedAt": "2026-08-06T13:04:13.037Z",
+  "videoUrl": null,
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_13959545324e410b",
+  "runIdIfAvailable": "bff2371f-11e4-496c-8acc-6c75e3f0a60e",
+  "codeVersion": "v1",
+  "targetUrl": "https://isafer.mynextbymusa.workers.dev",
+  "targetUrlSource": "run",
+  "failedStepIndex": 5,
+  "failureKind": "assertion",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Failed (assertion) on step 5: Error: Locator.click: Error: strict mode violation: locator(\"xpath=/html/body/div/main/section[2]/div/div[2]/div/div/div/button\") resolved to 12 elements:\n    1) <button class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 s…",
+  "apiOutput": null,
+  "trace": null
+}
