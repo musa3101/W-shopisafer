@@ -36,6 +36,10 @@ dist-ssr
 
 # References
 web de referencia/
+carpeta de referencia/
+*.MOV
+*.mov
+*.mp4
 
 
 # InsForge & AI agent skills

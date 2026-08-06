@@ -34,7 +34,12 @@ export function TrendingCarousel({
   const [thumbWidth, setThumbWidth] = useState(25); // Default thumb width percentage
 
   // Filter a curated selection of products to display as "Trending" (e.g. first 6 products)
-  const trendingProducts = products.slice(0, 6);
+  const baseTrendingProducts = products.slice(0, 6);
+  // Repeat 4 times to create an infinite-like scrolling experience
+  const trendingProducts = [...baseTrendingProducts, ...baseTrendingProducts, ...baseTrendingProducts, ...baseTrendingProducts].map((p, idx) => ({
+    ...p,
+    uniqueKey: `${p.id}-${idx}`,
+  }));
 
   const handleScroll = () => {
     const container = containerRef.current;
@@ -69,7 +74,7 @@ export function TrendingCarousel({
         window.removeEventListener("resize", handleScroll);
       };
     }
-  }, [trendingProducts]);
+  }, [trendingProducts.length]); // Use length instead of object reference
 
   // Render product image or fallback
   const renderProductImage = (p: ProductItem) => {
@@ -120,7 +125,7 @@ export function TrendingCarousel({
         >
           {trendingProducts.map((product) => (
             <div
-              key={product.id}
+              key={product.uniqueKey}
               className="min-w-[70%] sm:min-w-[35%] md:min-w-[28%] lg:min-w-[22%] snap-start flex flex-col group rounded-none"
             >
               {/* Product Image Container with sharp corners */}

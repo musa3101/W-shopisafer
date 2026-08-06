@@ -34,6 +34,7 @@ import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 import heroImage from "@/assets/rosse-hero.jpg";
+import camilaOwnerHero from "@/assets/camila-owner-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
 import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail } from "@/services/insforgeService";
 import { fetchUserFavorites, addFavorite, removeFavorite, syncGuestFavorites } from "@/services/favoritesService";
@@ -41,6 +42,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { CustomerAccountModal } from "@/components/CustomerAccountModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
+import { AboutUsModal } from "@/components/AboutUsModal";
+import { AboutPage } from "@/components/AboutPage";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
@@ -82,6 +85,38 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
+
+function AnimatedOfferBanner() {
+  const [index, setIndex] = useState(0);
+  const OFFERS = [
+    "✦ ENVÍO EXPRESS GRATIS EN PEDIDOS SUPERIORES A $99 ✦",
+    "✦ 10% DE DESCUENTO EN TU PRIMERA COMPRA CON CÓDIGO ISAFER10 ✦",
+    "✦ NUEVA COLECCIÓN ISAFER LUXE DISPONIBLE ✦",
+    "✦ VISÍTANOS EN NUESTRO SHOWROOM EN BROOKLYN, NY ✦",
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % OFFERS.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="bg-rose-600 text-white w-full h-10 flex items-center justify-center overflow-hidden relative border-y border-rose-500/50 shadow-inner">
+      {OFFERS.map((offer, i) => (
+        <span
+          key={i}
+          className={`absolute text-[10px] sm:text-[11px] font-black tracking-[0.15em] sm:tracking-[0.25em] uppercase text-center w-full px-2 transition-all duration-700 ease-in-out ${
+            i === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
+          {offer}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 interface ProductItem {
   id: string | number;
@@ -257,22 +292,27 @@ function Index() {
   const [menuSearchQuery, setMenuSearchQuery] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [legalType, setLegalType] = useState<"privacy" | "terms" | "cookies" | null>(null);
+  const [aboutUsModalOpen, setAboutUsModalOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<"shop" | "about">("shop");
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  // Carrusel dinámico de Hero
+  // Carrusel dinámico de Hero (Camila como foto #1 oficial)
   const heroImages = useMemo(() => [
+    camilaOwnerHero,
     heroImage,
     "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600",
-    "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600",
     "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1600"
   ], []);
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // 7 segundos para la foto de Camila (index 0), 5 segundos para las demás
+    const duration = currentHeroIndex === 0 ? 7000 : 5000;
+    const timer = setTimeout(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [heroImages]);
+    }, duration);
+    return () => clearTimeout(timer);
+  }, [currentHeroIndex, heroImages.length]);
 
   const { user, loading, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
 
@@ -602,8 +642,19 @@ function Index() {
       })
       .catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
   };
+  const handleWhatsAppCheckout = () => {
+    const activeItems = productsList.filter((p) => cart[p.id]);
+    if (activeItems.length === 0) {
+      toast.error("Tu bolsa está vacía");
+      return;
+    }
+    const text = activeItems.map((p) => `- ${cart[p.id]}x ${p.name} ($${p.price})`).join('\n');
+    const msg = `Hola Isafer Boutique, quiero pedir lo siguiente:\n\n${text}\n\nTotal estimado: $${subtotal.toFixed(2)} USD`;
+    window.open(`https://wa.me/19296772514?text=${encodeURIComponent(msg)}`, '_blank');
+  };
 
   const handleStripeCheckout = async () => {
+    setIsCheckingOut(true);
     const activeItems = productsList.filter((p) => cart[p.id]);
 
     if (activeItems.length === 0) {
@@ -685,6 +736,8 @@ function Index() {
       toast.dismiss();
       console.error("Excepción en Stripe checkout:", err);
       toast.error("Error de conexión al procesar el pago");
+    } finally {
+      setIsCheckingOut(false);
     }
   };
 
@@ -693,14 +746,12 @@ function Index() {
     return productsList.filter((p) => p.category === activeCategory);
   }, [activeCategory, productsList]);
 
+  if (currentView === "about") {
+    return <AboutPage onBackToShop={() => setCurrentView("shop")} />;
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900 dark:selection:text-amber-100">
-      {/* 1. TOP ANNOUNCEMENT MARQUEE */}
-      <div className="bg-zinc-950 text-zinc-100 px-4 py-2 text-[11px] font-semibold tracking-[0.25em] uppercase text-center border-b border-zinc-800 flex items-center justify-center gap-3 overflow-hidden">
-        <span className="hidden sm:inline text-amber-400">✦</span>
-        <span>{t("nav_shipping_banner")}</span>
-        <span className="hidden sm:inline text-amber-400">✦</span>
-      </div>
 
       {/* 2. HEADER NAVBAR */}
       <header className="sticky top-0 z-40 border-b border-rose-100 bg-[#fff8fa]/95 text-zinc-800 backdrop-blur-xl transition-all">
@@ -735,6 +786,14 @@ function Index() {
 
           {/* Right Action Icons: Search, Profile & Cart */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
+            {/* Botón Acerca de Nosotros (Estilo Camila Sevilla) */}
+            <button
+              onClick={() => setCurrentView("about")}
+              className="hidden lg:inline-flex items-center text-[11px] font-black uppercase tracking-widest text-zinc-700 hover:text-rose-600 px-3 py-1.5 rounded-full transition-colors cursor-pointer mr-1"
+            >
+              Acerca de Nosotros
+            </button>
+
             {/* Botón de Búsqueda */}
             <Button
               variant="ghost"
@@ -890,21 +949,24 @@ function Index() {
                       <span className="text-xl font-mono text-amber-400">${subtotal.toFixed(2)} USD</span>
                     </div>
                     <Button
-                      className="h-12 w-full rounded-full text-xs font-semibold uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-950/20 gap-2 cursor-pointer transition-all active:scale-95 border border-rose-500/20"
+                      className="w-full h-14 rounded-2xl bg-zinc-950 text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-2xl shadow-rose-500/20 hover:bg-zinc-800 transition-all cursor-pointer flex items-center justify-center gap-2"
                       onClick={handleStripeCheckout}
+                      disabled={isCheckingOut}
                     >
                       <CreditCard className="size-4" />
-                      Pagar con Tarjeta (Stripe)
+                      {isCheckingOut ? "Procesando..." : "Pagar con Tarjeta"}
                     </Button>
+
                     <Button
-                      className="h-12 w-full rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-950/50 gap-2 cursor-pointer transition-all active:scale-95 border border-emerald-500/20"
-                      onClick={handleCheckout}
+                      variant="outline"
+                      className="w-full h-14 rounded-2xl border-emerald-200 bg-emerald-50 text-emerald-700 font-extrabold text-xs uppercase tracking-[0.2em] shadow-sm hover:bg-emerald-100 hover:text-emerald-800 transition-all cursor-pointer flex items-center justify-center gap-2"
+                      onClick={handleWhatsAppCheckout}
                     >
-                      <MessageCircle className="size-4 fill-white" />
-                      Pedir por WhatsApp (Respaldo)
+                      <MessageCircle className="size-4" />
+                      Pedir por WhatsApp
                     </Button>
-                    <p className="text-center text-[10px] text-zinc-500 tracking-wide">
-                      🔒 Pago seguro encriptado con Stripe & InsForge
+                    <p className="text-center text-[10px] text-zinc-400 font-mono mt-2 flex items-center justify-center gap-1">
+                      🔒 Pago seguro 100% encriptado (SSL)
                     </p>
                   </div>
                 )}
@@ -917,44 +979,66 @@ function Index() {
       <main id="inicio">
         {/* 3. HERO SECTION (HIGH-FASHION EDITORIAL MAGAZINE COVER) */}
         <section className="relative min-h-[90svh] sm:min-h-[92vh] flex items-end overflow-hidden bg-zinc-950 text-white">
-          {/* Hero Carousel Images with smooth fading transitions */}
-          {heroImages.map((src, index) => (
-            <img
-              key={src}
-              src={src}
-              alt={`Modelo Isafer Boutique - Colección ${index + 1}`}
-              width={1280}
-              height={1600}
-              fetchPriority={index === 0 ? "high" : "low"}
-              className={`absolute inset-0 h-full w-full object-cover object-[55%_center] filter contrast-105 transition-opacity duration-1000 ease-in-out ${
-                index === currentHeroIndex ? "opacity-80" : "opacity-0"
-              }`}
-            />
-          ))}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/30 to-transparent" />
+          {/* Hero Carousel Images with smooth fading transitions (Fade-In / Fade-Out) */}
+          {heroImages.map((src, index) => {
+            const isActive = index === currentHeroIndex;
+            return (
+              <div
+                key={src}
+                className={`absolute inset-0 h-full w-full transition-opacity duration-1000 ease-in-out ${
+                  isActive ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                }`}
+              >
+                {/* Ambient Blurred Backdrop for Widescreen Desktop Displays */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center filter blur-3xl scale-110 opacity-40 hidden sm:block"
+                  style={{ backgroundImage: `url(${src})` }}
+                />
+
+                {/* Main Hero Image */}
+                <img
+                  src={src}
+                  alt={index === 0 ? "Camila — Dueña y Fundadora de Isafer Boutique" : `Colección Isafer Boutique ${index + 1}`}
+                  width={1280}
+                  height={1600}
+                  fetchPriority={index === 0 ? "high" : "low"}
+                  className={`absolute inset-0 h-full w-full filter contrast-105 transition-transform duration-3000 ease-out ${
+                    index === 0
+                      ? "object-cover sm:object-contain lg:object-cover object-[center_35%] lg:object-[65%_center]"
+                      : "object-cover object-[55%_center]"
+                  } ${isActive ? "scale-100" : "scale-105"}`}
+                />
+              </div>
+            );
+          })}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/50 to-zinc-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/95 via-zinc-950/40 to-transparent" />
 
           <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-32 sm:px-10 lg:px-16">
             <div className="max-w-2xl">
-              {/* H1 Display Title (gpt-taste rule) */}
+              {/* H1 Display Title */}
               <h1 className="font-display text-4xl sm:text-6xl font-black leading-[1.0] tracking-tight text-white uppercase text-balance">
                 {t("hero_title_1").includes("y") ? "Sensual &" : "Sexy &"}
                 <br />
-                <span className="italic font-serif font-normal text-primary drop-shadow-sm normal-case">
+                <span className="italic font-serif font-normal text-rose-400 drop-shadow-sm normal-case">
                   {t("hero_title_1").includes("y") ? "Elegante" : "Elegant"}
                 </span>
               </h1>
 
-              {/* Body Text (max 65 chars rule - hidden on mobile) */}
-              <p className="mt-6 max-w-lg text-sm sm:text-base leading-relaxed text-zinc-300 font-normal hidden sm:block">
+              <p className="mt-2.5 text-xs font-mono tracking-[0.25em] text-rose-300/90 uppercase font-bold">
+                Isafer Boutique · Brooklyn, NY
+              </p>
+
+              {/* Body Text (hidden on mobile for total Hero clarity) */}
+              <p className="mt-4 max-w-lg text-xs sm:text-sm leading-relaxed text-zinc-300/90 font-normal hidden sm:block">
                 {t("hero_subtitle")}
               </p>
 
-              {/* CTA Buttons (gpt-taste uppercase tracking rule) */}
-              <div className="mt-8 flex items-center">
+              {/* Refined Small CTA Button */}
+              <div className="mt-6 flex items-center">
                 <Button
                   asChild
-                  className="w-full sm:w-auto h-13 rounded-full px-8 text-xs font-bold uppercase tracking-[0.2em] bg-primary text-white hover:bg-primary/90 shadow-lg shadow-rose-950/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="h-10 rounded-full px-6 text-[11px] font-extrabold uppercase tracking-[0.18em] bg-rose-600 hover:bg-rose-500 text-white shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer border border-rose-400/30"
                 >
                   <a
                     href="#coleccion"
@@ -990,6 +1074,9 @@ function Index() {
             </div>
           </div>
         </section>
+
+        {/* Animated Offers Banner */}
+        <AnimatedOfferBanner />
 
         {/* Trending/New Arrivals Carousel */}
         <TrendingCarousel
@@ -1140,9 +1227,9 @@ function Index() {
                 return (
                   <article
                     key={product.id}
-                    className={`group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-card p-3 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${shouldHide}`}
+                    className={`group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-card p-2 sm:p-3 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${shouldHide}`}
                   >
-                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+                    <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                       <ProductCrop product={product} />
 
                       {/* Tag Badge */}
@@ -1181,12 +1268,12 @@ function Index() {
                       </div>
                     </div>
 
-                    <div className="p-3 pt-4 flex flex-col flex-1 justify-between">
+                    <div className="p-2 pt-3 flex flex-col flex-1 justify-between">
                       <div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                           {product.category}
                         </span>
-                        <h3 className="mt-1 font-display text-sm sm:text-base md:text-lg font-bold tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                        <h3 className="mt-0.5 sm:mt-1 font-display text-xs sm:text-base md:text-lg font-bold tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                           {product.name}
                         </h3>
                         <p className="mt-1 text-xs text-muted-foreground line-clamp-2 hidden sm:block">
@@ -1257,85 +1344,120 @@ function Index() {
           </div>
         </section>
 
-        {/* 6. "EL SELLO ISAFE" EDITORIAL FEATURE SPOTLIGHT */}
-        <section id="estilo" className="scroll-mt-20 bg-zinc-950 py-20 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full filter blur-3xl pointer-events-none" />
-          <div className="mx-auto max-w-7xl px-5 sm:px-8">
-            <div className="grid lg:grid-cols-3 gap-8 items-stretch">
-              {/* Feature 1 */}
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 flex flex-col justify-between hover:border-amber-400/40 transition-colors">
-                <div>
-                  <Flame className="size-8 text-amber-400 mb-6" />
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                    TEJIDO INTELIGENTE
-                  </p>
-                  <h3 className="mt-2 font-display text-2xl font-bold">Efecto Moldeador Real</h3>
-                  <p className="mt-3 text-xs leading-relaxed text-zinc-400">
-                    Nuestras licras están confeccionadas con compresión anatómica que define la cintura, moldea los glúteos y no marca costuras.
-                  </p>
-                </div>
-                <div className="mt-8 pt-4 border-t border-zinc-800 flex items-center gap-2 text-xs font-semibold text-zinc-300">
-                  <CheckCircle2 className="size-4 text-emerald-400" /> Ajuste 100% Garantizado
-                </div>
-              </div>
+        {/* 6. EDITORIAL BANNER SECTION (IDÉNTICO A CAMILA SEVILLA REF FRAME 006) */}
+        <section id="historia" className="relative w-full h-[55vh] min-h-[400px] bg-zinc-900 overflow-hidden border-t border-b border-zinc-800">
+          <img
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000"
+            alt="Isafer Boutique — Moda con sensibilidad"
+            className="w-full h-full object-cover object-center opacity-85"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/20" />
 
-              {/* Feature 2 */}
-              <div className="rounded-3xl border border-amber-400/30 bg-gradient-to-b from-amber-400/10 to-zinc-900/60 p-8 flex flex-col justify-between">
-                <div>
-                  <Sparkles className="size-8 text-amber-400 mb-6" />
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                    DISEÑO NOCTURNO
-                  </p>
-                  <h3 className="mt-2 font-display text-2xl font-bold text-amber-200">
-                    Elegancia Sensual
-                  </h3>
-                  <p className="mt-3 text-xs leading-relaxed text-zinc-300">
-                    Vestidos de malla con caídas drapeadas y transparencias refinadas para destacar en tus fiestas, cumpleaños y cenas en Nueva York.
-                  </p>
-                </div>
-                <div className="mt-8 pt-4 border-t border-amber-400/20 flex items-center gap-2 text-xs font-semibold text-amber-300">
-                  <Star className="size-4 fill-amber-400 text-amber-400" /> Colección Exclusiva 2026
-                </div>
-              </div>
+          {/* Text Overlay on Bottom Left (Frame 006 & Frame 018 replica) */}
+          <div className="absolute bottom-8 left-6 sm:left-12 max-w-2xl text-white space-y-4 pr-6">
+            <p className="text-sm sm:text-xl font-sans font-normal leading-relaxed text-zinc-100 drop-shadow-md">
+              Desde 2024 creamos moda con sensibilidad, con corazón. No es solo diseñar ropa, es poner un poco de alma en cada pieza.
+            </p>
 
-              {/* Feature 3 */}
-              <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 flex flex-col justify-between hover:border-amber-400/40 transition-colors">
-                <div>
-                  <Truck className="size-8 text-amber-400 mb-6" />
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-400">
-                    ENTREGA INMEDIATA
-                  </p>
-                  <h3 className="mt-2 font-display text-2xl font-bold">Showroom & Envíos 🇺🇸</h3>
-                  <p className="mt-3 text-xs leading-relaxed text-zinc-400">
-                    Recoge directamente en nuestra boutique física en Brooklyn o recibe tu paquete en tiempo récord con seguimiento activo.
-                  </p>
-                </div>
-                <div className="mt-8 pt-4 border-t border-zinc-800 flex items-center gap-2 text-xs font-semibold text-zinc-300">
-                  <Clock className="size-4 text-amber-400" /> Atención 1 a 1 en WhatsApp
-                </div>
-              </div>
+            <div>
+              <button
+                onClick={() => setCurrentView("about")}
+                className="px-6 py-3 border border-white text-white text-xs font-black uppercase tracking-[0.25em] bg-black/40 hover:bg-white hover:text-zinc-950 transition-all cursor-pointer shadow-lg active:scale-95"
+              >
+                Nuestra Historia
+              </button>
             </div>
           </div>
         </section>
 
-        {/* 6.5 INSTAGRAM & TIKTOK FEED SHOWCASE (@shopisafer & @shop_isafer1) */}
-        <section className="py-16 sm:py-24 bg-zinc-900 text-zinc-100 border-t border-b border-zinc-800">
-          <div className="mx-auto max-w-7xl px-5 sm:px-8">
-            <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-rose-400">
-                  REDES SOCIALES OFICIALES
-                </p>
-                <h2 className="mt-1 font-display text-4xl sm:text-5xl font-extrabold tracking-tight">
-                  @shopisafer en Instagram & TikTok
-                </h2>
+
+
+        {/* 7. VISÍTANOS EN BROOKLYN (SHOWROOM CARD) */}
+        <section id="visitanos" className="scroll-mt-20 py-20 px-5 bg-background">
+          <div className="mx-auto max-w-5xl rounded-3xl border border-rose-200/60 dark:border-rose-900/40 bg-card p-8 sm:p-14 text-center shadow-2xl relative overflow-hidden">
+            <div className="inline-flex size-14 items-center justify-center rounded-full bg-rose-500/10 text-rose-500 mb-6">
+              <MapPin className="size-7" />
+            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-rose-500">
+              NUESTRA TIENDA FÍSICA Y SHOWROOM
+            </p>
+            <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
+              Visítanos en Brooklyn
+            </h2>
+            <p className="mt-4 text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-2">
+              <span>📍 4711 4th Ave, Brooklyn, NY 11220, Estados Unidos</span>
+            </p>
+            <p className="mt-1 text-xs font-mono text-zinc-500 dark:text-zinc-400">
+              Sunset Park · Teléfono Local: <a href="tel:+19293531953" className="font-bold underline hover:text-rose-500">+1 (929) 353-1953</a>
+            </p>
+            <p className="mt-3 text-xs text-muted-foreground max-w-md mx-auto">
+              Pruebas privadas de vestuario, asesoría de estilo personalizada y atención directa en boutique.
+            </p>
+
+            {/* Operating Hours Box */}
+            <div className="mt-8 mx-auto max-w-md p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/60 text-left">
+              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-3">
+                <span className="text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                  <Clock className="size-4 text-rose-500" /> Horario de Atención
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
+                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse"></span> Abierto hoy hasta las 8:00 PM
+                </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="grid grid-cols-2 gap-y-1.5 text-xs">
+                <div className="font-semibold text-zinc-500">Lunes:</div>
+                <div className="font-bold text-rose-500 text-right">Cerrado</div>
+                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Martes:</div>
+                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
+                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Miércoles:</div>
+                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
+                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Jueves:</div>
+                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
+                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Viernes:</div>
+                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
+                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Sábado:</div>
+                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
+                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Domingo:</div>
+                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col items-center justify-center gap-4">
+              <div className="flex flex-wrap justify-center gap-4">
+                <Button asChild className="h-12 rounded-full px-8 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs uppercase tracking-wider shadow-md">
+                  <a
+                    href="https://maps.app.goo.gl/2kHjqUHMUXyegViK8"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Abrir en Google Maps <MapPin className="ml-2 size-4" />
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-12 rounded-full px-8 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs uppercase tracking-wider"
+                >
+                  <a
+                    href="https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20quiero%20agendar%20una%20visita%20al%20Showroom%20en%204711%204th%20Ave"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Agendar Cita previa <MessageCircle className="ml-2 size-4" />
+                  </a>
+                </Button>
+              </div>
+
+              {/* Redes Sociales Movidas a Contacto */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 border-t border-zinc-200 dark:border-zinc-800 pt-6 w-full max-w-md">
+                <p className="w-full text-center text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
+                  Síguenos en nuestras Redes Oficiales
+                </p>
                 <a
                   href="https://www.instagram.com/shopisafer"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition-all"
+                  className="inline-flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-500/10 px-5 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                 >
                   <Instagram className="size-4" /> @shopisafer
                 </a>
@@ -1343,137 +1465,27 @@ function Index() {
                   href="https://www.tiktok.com/@shop_isafer1"
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-800 px-4 py-2 text-xs font-semibold text-zinc-200 hover:bg-zinc-700 transition-all"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 transition-all shadow-sm"
                 >
                   🎵 TikTok @shop_isafer1
                 </a>
               </div>
             </div>
-
-            {/* Social Posts Grid */}
-            <div
-              className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-5 pb-4 sm:pb-0 snap-x snap-mandatory scrollbar-none"
-              style={{
-                scrollbarWidth: "none",
-                msOverflowStyle: "none",
-              }}
-            >
-              {[
-                {
-                  title: "Licra Moldeadora Efecto Cintura Reloj de Arena 🔥",
-                  handle: "@shopisafer · Instagram Reel",
-                  image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
-                  link: "https://www.instagram.com/shopisafer",
-                  badge: "Reel Popular",
-                },
-                {
-                  title: "Drop Exclusivo: Vestidos de Malla Noche Sexy 💫",
-                  handle: "@shop_isafer1 · TikTok Video",
-                  image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
-                  link: "https://www.tiktok.com/@shop_isafer1",
-                  badge: "Viral TikTok",
-                },
-                {
-                  title: "Set Silk Knot Bandeau 2 Piezas · Sensual & Chic ✨",
-                  handle: "@shopisafer · Post Foto",
-                  image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-                  link: "https://www.instagram.com/shopisafer",
-                  badge: "Look de la Semana",
-                },
-                {
-                  title: "Pruébate en nuestro Showroom de Brooklyn, NY 📍",
-                  handle: "@shop_isafer1 · TikTok Live",
-                  image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
-                  link: "https://www.tiktok.com/@shop_isafer1",
-                  badge: "Showroom NYC",
-                },
-              ].map((item, idx) => (
-                <a
-                  key={idx}
-                  href={item.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 aspect-[4/5] flex flex-col justify-end p-4 transition-all duration-300 hover:border-rose-400/50 hover:shadow-2xl min-w-[75%] sm:min-w-0 snap-start shrink-0 sm:shrink"
-                >
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-
-                  <span className="absolute top-3 left-3 rounded-full bg-zinc-950/80 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-bold text-rose-300 border border-rose-500/30">
-                    {item.badge}
-                  </span>
-
-                  <div className="relative z-10 space-y-1">
-                    <p className="text-xs font-semibold text-zinc-100 line-clamp-2">{item.title}</p>
-                    <p className="text-[11px] text-zinc-400 font-mono">{item.handle}</p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* 7. VISÍTANOS EN BROOKLYN (SHOWROOM CARD) */}
-        <section id="visitanos" className="scroll-mt-20 py-20 px-5 bg-background">
-          <div className="mx-auto max-w-5xl rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-card p-8 sm:p-14 text-center shadow-2xl relative overflow-hidden">
-            <div className="inline-flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-6">
-              <MapPin className="size-7" />
-            </div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-              NUESTRA TIENDA FÍSICA
-            </p>
-            <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
-              Visítanos en Brooklyn
-            </h2>
-            <p className="mt-4 text-base font-semibold text-zinc-800 dark:text-zinc-200">
-              📍 4711 Brooklyn, Nueva York, EE. UU.
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground max-w-md mx-auto">
-              Pruebas privadas de vestuario, asesoría de estilo personalizada y atención directa.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Button asChild className="h-12 rounded-full px-8 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs uppercase tracking-wider">
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=4711+Brooklyn+New+York"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Abrir en Google Maps <MapPin className="ml-2 size-4" />
-                </a>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-12 rounded-full px-8 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs uppercase tracking-wider"
-              >
-                <a
-                  href="https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20quiero%20agendar%20una%20visita%20al%20Showroom"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Agendar Cita previa <MessageCircle className="ml-2 size-4" />
-                </a>
-              </Button>
-            </div>
           </div>
         </section>
       </main>
 
-      {/* 8. FOOTER E-COMMERCE ENRIQUECIDO (Bershka / Fashion Nova Style) */}
-      <footer className="border-t border-zinc-900 bg-zinc-950 text-zinc-300 pt-16 pb-12 transition-all">
+      {/* 8. FOOTER E-COMMERCE ENRIQUECIDO (Premium Light Theme) */}
+      <footer className="border-t border-rose-100 bg-[#fffafb] text-zinc-600 pt-16 pb-12 transition-all">
         <div className="mx-auto max-w-7xl px-4 sm:px-8">
           {/* VIP Newsletter Box */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-rose-950/40 to-zinc-900 border border-rose-500/20 p-8 sm:p-12 mb-16 shadow-2xl">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-rose-50 via-white to-rose-50 border border-rose-100 p-8 sm:p-12 mb-16 shadow-lg shadow-rose-100/50">
             <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left">
               <div className="space-y-2 max-w-xl">
-                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-mono font-bold tracking-widest uppercase">
-                  <Sparkles className="size-3 text-rose-400" /> {t("newsletter_title")}
+                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-100/50 border border-rose-200 text-rose-600 text-[10px] font-mono font-bold tracking-widest uppercase">
+                  <Sparkles className="size-3 text-rose-500" /> {t("newsletter_title")}
                 </span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
                   {t("newsletter_subtitle")}
                 </h3>
               </div>
@@ -1482,8 +1494,8 @@ function Index() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (newsletterEmail) {
-                    toast.success("¡Bienvenida al Club Barbie Luxe! 💖", {
-                      description: "Te hemos enviado tu cupón VIP de 10% OFF.",
+                    toast.success("¡Bienvenida al Club VIP! 💖", {
+                      description: "Te hemos enviado tu cupón de 10% OFF.",
                     });
                     setNewsletterEmail("");
                   }
@@ -1491,19 +1503,19 @@ function Index() {
                 className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0 max-w-md"
               >
                 <div className="relative flex-1">
-                  <Mail className="absolute left-4 top-3.5 size-4 text-zinc-500" />
+                  <Mail className="absolute left-4 top-3.5 size-4 text-zinc-400" />
                   <input
                     type="email"
                     required
                     placeholder={t("newsletter_placeholder")}
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/90 py-3 pl-11 pr-4 text-xs text-white placeholder-zinc-500 focus:border-rose-500 focus:outline-none"
+                    className="w-full rounded-2xl border border-rose-200 bg-white py-3 pl-11 pr-4 text-xs text-zinc-800 placeholder-zinc-400 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100 transition-all"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-3 shadow-lg cursor-pointer"
+                  className="rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-wider px-6 py-3 shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95"
                 >
                   {t("newsletter_btn")}
                 </Button>
@@ -1512,13 +1524,13 @@ function Index() {
           </div>
 
           {/* 4 Columns Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-zinc-900">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-rose-100">
             {/* Col 1: Brand Info */}
             <div className="space-y-4 text-center md:text-left">
               <div className="inline-flex justify-center md:justify-start">
-                <IsaferLogo variant="footer" size="md" />
+                <IsaferLogo variant="header" size="md" />
               </div>
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
+              <p className="text-xs text-zinc-500 leading-relaxed max-w-sm">
                 {t("footer_tagline")} Diseñado en Brooklyn, NY para empoderar la elegancia y seguridad femenina.
               </p>
               <div className="pt-2 flex items-center justify-center md:justify-start gap-3">
@@ -1526,16 +1538,25 @@ function Index() {
                   href="https://www.instagram.com/shopisafer"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 transition-colors"
-                  aria-label="Instagram"
+                  className="w-9 h-9 rounded-full bg-white border border-rose-100 flex items-center justify-center text-zinc-400 hover:text-rose-500 hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm"
+                  aria-label="Instagram @shopisafer"
                 >
                   <Instagram className="size-4" />
+                </a>
+                <a
+                  href="https://www.tiktok.com/@shop_isafer1"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-full bg-white border border-rose-100 flex items-center justify-center text-zinc-400 hover:text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50 transition-all shadow-sm"
+                  aria-label="TikTok @shop_isafer1"
+                >
+                  <span className="text-xs font-bold font-mono">🎵</span>
                 </a>
                 <a
                   href="https://wa.me/19296772514"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/40 transition-colors"
+                  className="w-9 h-9 rounded-full bg-white border border-rose-100 flex items-center justify-center text-zinc-400 hover:text-emerald-500 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm"
                   aria-label="WhatsApp"
                 >
                   <MessageCircle className="size-4" />
@@ -1545,27 +1566,27 @@ function Index() {
 
             {/* Col 2: Shop Links */}
             <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-serif text-sm font-bold uppercase tracking-widest text-white">
+              <h4 className="font-serif text-sm font-black uppercase tracking-widest text-zinc-900">
                 {t("footer_links_title")}
               </h4>
-              <ul className="space-y-2.5 text-xs text-zinc-400">
+              <ul className="space-y-2.5 text-xs text-zinc-500 font-medium">
                 <li>
-                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }} className="hover:text-rose-400 transition-colors">
+                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }} className="hover:text-rose-500 transition-colors">
                     Fajas & Licras Moldeadoras
                   </a>
                 </li>
                 <li>
-                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }} className="hover:text-rose-400 transition-colors">
+                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }} className="hover:text-rose-500 transition-colors">
                     Vestidos Glam & Noche
                   </a>
                 </li>
                 <li>
-                  <a href="#spray" onClick={(e) => { e.preventDefault(); scrollToSection("spray"); }} className="hover:text-rose-400 transition-colors">
+                  <a href="#spray" onClick={(e) => { e.preventDefault(); scrollToSection("spray"); }} className="hover:text-rose-500 transition-colors">
                     Aerosol de Autodefensa Chic
                   </a>
                 </li>
                 <li>
-                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }} className="hover:text-rose-400 transition-colors">
+                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }} className="hover:text-rose-500 transition-colors">
                     Conjuntos & Tops Luxe
                   </a>
                 </li>
@@ -1574,21 +1595,21 @@ function Index() {
 
             {/* Col 3: Customer Support */}
             <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-serif text-sm font-bold uppercase tracking-widest text-white">
+              <h4 className="font-serif text-sm font-black uppercase tracking-widest text-zinc-900">
                 {t("footer_help_title")}
               </h4>
-              <ul className="space-y-2.5 text-xs text-zinc-400 flex flex-col items-center md:items-start">
+              <ul className="space-y-2.5 text-xs text-zinc-500 font-medium flex flex-col items-center md:items-start">
                 <li className="flex items-center gap-2">
                   <Truck className="size-3.5 text-rose-400" /> Envíos Express (USA 24-48h)
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="size-3.5 text-emerald-400" /> Devoluciones 30 Días
+                  <CheckCircle2 className="size-3.5 text-emerald-500" /> Devoluciones 30 Días
                 </li>
                 <li className="flex items-center gap-2">
-                  <Clock className="size-3.5 text-amber-400" /> Atención Lun-Sáb (9am - 8pm)
+                  <Clock className="size-3.5 text-amber-500" /> Atención Lun-Sáb (9am - 8pm)
                 </li>
                 <li>
-                  <a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="text-emerald-400 underline hover:text-emerald-300 transition-colors font-semibold">
+                  <a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="text-emerald-600 underline hover:text-emerald-500 transition-colors font-bold">
                     Atención por WhatsApp
                   </a>
                 </li>
@@ -1597,59 +1618,65 @@ function Index() {
 
             {/* Col 4: Safe Payments & Location */}
             <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-serif text-sm font-bold uppercase tracking-widest text-white">
+              <h4 className="font-serif text-sm font-black uppercase tracking-widest text-zinc-900">
                 {t("footer_payments_title")}
               </h4>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Pagos encriptados SSL de 256 bits procesados en tiempo real con Stripe Checkout o WhatsApp.
+              <p className="text-xs text-zinc-500 leading-relaxed font-medium">
+                Pagos encriptados SSL de 256 bits procesados en tiempo real. 100% seguros y garantizados.
               </p>
-              <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 pt-1">
-                <span className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-extrabold text-white flex items-center gap-1.5">
-                  <CreditCard className="size-3.5 text-rose-400" /> Stripe Checkout
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 pt-2">
+                <span className="px-3 py-1.5 rounded-lg bg-white border border-rose-100 text-[10px] font-bold tracking-wider text-zinc-600 flex items-center gap-1.5 shadow-sm">
+                  <CreditCard className="size-3.5 text-zinc-400" /> Visa
                 </span>
-                <span className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-bold text-zinc-300">
-                  Visa / MasterCard
+                <span className="px-3 py-1.5 rounded-lg bg-white border border-rose-100 text-[10px] font-bold tracking-wider text-zinc-600 shadow-sm">
+                  MasterCard
                 </span>
-                <span className="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-bold text-emerald-400">
-                  WhatsApp Orders
+                <span className="px-3 py-1.5 rounded-lg bg-white border border-rose-100 text-[10px] font-bold tracking-wider text-zinc-600 shadow-sm">
+                  Amex
+                </span>
+                <span className="px-3 py-1.5 rounded-lg bg-white border border-rose-100 text-[10px] font-bold tracking-wider text-zinc-600 shadow-sm">
+                  Apple Pay
+                </span>
+                <span className="px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-100 text-[10px] font-bold tracking-wider text-emerald-600 flex items-center gap-1.5 shadow-sm">
+                  <MessageCircle className="size-3.5" /> WhatsApp
                 </span>
               </div>
             </div>
           </div>
 
           {/* Subfooter */}
-          <div className="pt-8 border-t border-zinc-900/60 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+          <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-medium text-zinc-500">
             <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
               <p>{t("footer_rights")} Brooklyn, New York, NY 11201.</p>
-              <span className="hidden sm:inline text-zinc-800">|</span>
+              <span className="hidden sm:inline text-rose-200">|</span>
               <p>
                 {t("footer_credits")}{" "}
                 <a 
                   href="https://mynextbymusa.com/" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors underline decoration-dotted underline-offset-4"
+                  className="text-amber-500 hover:text-amber-400 font-extrabold transition-colors underline decoration-wavy underline-offset-4"
                 >
                   MYNEXT
                 </a>
               </p>
             </div>
-            <div className="flex items-center gap-6 text-[11px]">
+            <div className="flex items-center gap-6">
               <button 
                 onClick={() => setLegalType("privacy")} 
-                className="hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-0 p-0 text-[11px] font-medium"
+                className="hover:text-zinc-800 transition-colors cursor-pointer bg-transparent border-0 p-0 font-semibold"
               >
                 {t("footer_privacy")}
               </button>
               <button 
                 onClick={() => setLegalType("terms")} 
-                className="hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-0 p-0 text-[11px] font-medium"
+                className="hover:text-zinc-800 transition-colors cursor-pointer bg-transparent border-0 p-0 font-semibold"
               >
                 {t("footer_terms")}
               </button>
               <button 
                 onClick={() => setLegalType("cookies")} 
-                className="hover:text-zinc-300 transition-colors cursor-pointer bg-transparent border-0 p-0 text-[11px] font-medium"
+                className="hover:text-zinc-800 transition-colors cursor-pointer bg-transparent border-0 p-0 font-semibold"
               >
                 {t("footer_cookies")}
               </button>
@@ -1892,22 +1919,37 @@ function Index() {
               </Link>
             )}
 
-            {/* Instagram box widget */}
-            <a
-              href="https://instagram.com/shopisafer"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 p-3 rounded-2xl border border-rose-100/80 bg-white hover:bg-rose-50/20 transition-colors group"
-            >
-              <div className="size-9 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0 group-hover:scale-105 transition-transform">
-                <Instagram className="size-5" />
-              </div>
-              <div className="text-left min-w-0">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-450">Instagram Oficial</p>
-                <p className="text-xs font-extrabold text-zinc-855 group-hover:text-rose-600 transition-colors">@shopisafer</p>
-              </div>
-              <ChevronRight className="size-4 text-zinc-450 ml-auto group-hover:translate-x-0.5 transition-transform" />
-            </a>
+            {/* Social Media Widgets */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <a
+                href="https://www.instagram.com/shopisafer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-rose-100/80 bg-white hover:bg-rose-50/20 transition-colors group"
+              >
+                <div className="size-8 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0 group-hover:scale-105 transition-transform">
+                  <Instagram className="size-4" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">Instagram</p>
+                  <p className="text-xs font-extrabold text-zinc-800 group-hover:text-rose-600 transition-colors truncate">@shopisafer</p>
+                </div>
+              </a>
+              <a
+                href="https://www.tiktok.com/@shop_isafer1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 p-2.5 rounded-2xl border border-zinc-200 bg-white hover:bg-zinc-50 transition-colors group"
+              >
+                <div className="size-8 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 shrink-0 group-hover:scale-105 transition-transform font-bold text-xs">
+                  🎵
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">TikTok</p>
+                  <p className="text-xs font-extrabold text-zinc-800 group-hover:text-cyan-600 transition-colors truncate">@shop_isafer1</p>
+                </div>
+              </a>
+            </div>
 
             {/* Language Selector (At the very bottom as requested) */}
             <div className="flex items-center justify-between pt-2">
@@ -2307,6 +2349,9 @@ function Index() {
           </div>
         </div>
       )}
+
+      {/* MODAL / PESTAÑA SOBRE NOSOTROS & NUESTRA HISTORIA */}
+      <AboutUsModal open={aboutUsModalOpen} onOpenChange={setAboutUsModalOpen} />
     </div>
   );
 }

@@ -12,6 +12,9 @@ export interface BackendProduct {
   is_featured: boolean;
   badge?: string;
   stripe_price_id?: string;
+  gender?: 'women' | 'men' | 'unisex' | string;
+  sizes?: string[];
+  size_system?: 'US' | 'EU' | string;
 }
 
 export interface BackendCategory {
@@ -114,26 +117,71 @@ export async function updateProductPriceAndStock(id: string, price: number, stoc
 }
 
 /**
+ * Sube una imagen de producto a InsForge Storage o genera un Data URL de respaldo
+ */
+export async function uploadProductImage(file: File): Promise<{ success: boolean; url?: string; error?: string }> {
+  try {
+    const fileExt = file.name.split('.').pop() || 'png';
+    const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+    
+    // Intento 1: InsForge Storage
+    if (insforge.storage) {
+      try {
+        const { data, error } = await insforge.storage
+          .from('products')
+          .upload(fileName, file);
+
+        if (!error && data?.url) {
+          return { success: true, url: data.url };
+        }
+      } catch (storageErr) {
+        console.warn('InsForge Storage upload not available, falling back to base64 reader:', storageErr);
+      }
+    }
+
+    // Intento 2: FileReader Data URL (Base64 ultra-confiable)
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve({ success: true, url: reader.result });
+        } else {
+          resolve({ success: false, error: 'Error al procesar la imagen seleccionada.' });
+        }
+      };
+      reader.onerror = () => resolve({ success: false, error: 'Error al leer el archivo de imagen.' });
+      reader.readAsDataURL(file);
+    });
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Error en la subida de imagen' };
+  }
+}
+
+/**
  * Crea un nuevo producto en la tienda
  */
 export async function createProduct(product: Partial<BackendProduct>) {
   try {
     const slug = product.slug || (product.name ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`);
+    const insertPayload: any = {
+      name: product.name || 'Nuevo Producto',
+      slug,
+      description: product.description || '',
+      price: Number(product.price) || 0,
+      stock: Number(product.stock) || 0,
+      images: product.images && product.images.length > 0 ? product.images : ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80'],
+      is_featured: product.is_featured ?? false,
+      badge: product.badge || '',
+      stripe_price_id: product.stripe_price_id || '',
+    };
+
+    if (product.gender) insertPayload.gender = product.gender;
+    if (product.sizes) insertPayload.sizes = product.sizes;
+    if (product.size_system) insertPayload.size_system = product.size_system;
+
     const { data, error } = await insforge.database
       .from('products')
-      .insert([
-        {
-          name: product.name || 'Nuevo Producto',
-          slug,
-          description: product.description || '',
-          price: Number(product.price) || 0,
-          stock: Number(product.stock) || 0,
-          images: product.images && product.images.length > 0 ? product.images : ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80'],
-          is_featured: product.is_featured ?? false,
-          badge: product.badge || '',
-          stripe_price_id: product.stripe_price_id || '',
-        },
-      ]);
+      .insert([insertPayload]);
 
     if (error) throw error;
     return { success: true, data };

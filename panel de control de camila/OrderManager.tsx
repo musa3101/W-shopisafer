@@ -13,10 +13,13 @@ import {
   Phone, 
   MapPin,
   ExternalLink,
-  DollarSign
+  DollarSign,
+  FileSpreadsheet,
+  Printer
 } from "lucide-react";
 import { toast } from "sonner";
 import { BackendOrder, updateOrderStatus } from "../src/services/insforgeService";
+import { exportToCSV, printReport, ExportColumn } from "../src/lib/exportUtils";
 
 interface OrderManagerProps {
   orders: BackendOrder[];
@@ -89,10 +92,48 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
     return matchesSearch;
   });
 
+  // Exportación de Pedidos / Ventas
+  const handleExportCSV = () => {
+    const cols: ExportColumn<BackendOrder>[] = [
+      { header: "ID Pedido", accessor: o => (o.id || "").slice(0, 8) },
+      { header: "Cliente", accessor: o => o.customer_name || "Cliente" },
+      { header: "Email", accessor: o => o.customer_email || "" },
+      { header: "Teléfono", accessor: o => o.customer_phone || "" },
+      { header: "Dirección Envío", accessor: o => o.shipping_address || "" },
+      { header: "Estado", accessor: o => o.status || "pending" },
+      { header: "Total ($ USD)", accessor: o => (Number(o.total_amount) || 0).toFixed(2) },
+      { header: "Artículos", accessor: o => Array.isArray(o.items) ? o.items.map(i => `${i.name} (x${i.quantity})`).join("; ") : "" },
+      { header: "Fecha", accessor: o => o.created_at ? new Date(o.created_at).toLocaleString('es-ES') : "" }
+    ];
+    exportToCSV("Ventas_Pedidos_Isafer_Boutique", cols, filteredOrders);
+  };
+
+  const handleExportPDF = () => {
+    const cols: ExportColumn<BackendOrder>[] = [
+      { header: "ID", accessor: o => `#${(o.id || "").slice(0, 8)}` },
+      { header: "Cliente", accessor: o => o.customer_name || "Cliente" },
+      { header: "Contacto", accessor: o => `${o.customer_email || ''} | ${o.customer_phone || ''}` },
+      { header: "Estado", accessor: o => (o.status || "").toUpperCase() },
+      { header: "Total", accessor: o => `$${(Number(o.total_amount) || 0).toFixed(2)} USD` },
+    ];
+    const totalAmount = filteredOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    printReport(
+      "Reporte de Pedidos y Ventas — Isafer Boutique",
+      "Historial filtrado de compras y estado de envíos",
+      cols,
+      filteredOrders,
+      [
+        { label: "Total Pedidos", value: `${filteredOrders.length}` },
+        { label: "Monto Facturado", value: `$${totalAmount.toFixed(2)} USD` },
+        { label: "Pendientes", value: `${filteredOrders.filter(o => o.status === 'pending').length}` }
+      ]
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Top Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-stretch">
+      <div className="flex flex-col lg:flex-row gap-3 justify-between items-stretch">
         <input
           type="text"
           placeholder="Buscar pedidos por nombre, email o ID..."
@@ -101,32 +142,54 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
           className="flex-1 px-4 py-2.5 bg-zinc-900 border border-zinc-850 rounded-2xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500/50 transition-colors"
         />
 
-        {/* Tab Filters */}
-        <div className="flex bg-zinc-900 border border-zinc-850 p-1 rounded-2xl overflow-x-auto whitespace-nowrap scrollbar-none">
-          <button
-            onClick={() => setActiveTab("all")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "all" ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
-          >
-            Todos ({orders.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("pending")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "pending" ? "bg-amber-450 text-black" : "text-zinc-400 hover:text-zinc-200"}`}
-          >
-            Pendientes ({orders.filter(o => o.status === "pending").length})
-          </button>
-          <button
-            onClick={() => setActiveTab("processing")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "processing" ? "bg-indigo-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
-          >
-            Procesando ({orders.filter(o => o.status === "processing").length})
-          </button>
-          <button
-            onClick={() => setActiveTab("shipped_delivered")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "shipped_delivered" ? "bg-emerald-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
-          >
-            Entregados ({orders.filter(o => o.status === "shipped" || o.status === "delivered").length})
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Tab Filters */}
+          <div className="flex bg-zinc-900 border border-zinc-850 p-1 rounded-2xl overflow-x-auto whitespace-nowrap scrollbar-none">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "all" ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+            >
+              Todos ({orders.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "pending" ? "bg-amber-450 text-black" : "text-zinc-400 hover:text-zinc-200"}`}
+            >
+              Pendientes ({orders.filter(o => o.status === "pending").length})
+            </button>
+            <button
+              onClick={() => setActiveTab("processing")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "processing" ? "bg-indigo-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+            >
+              Procesando ({orders.filter(o => o.status === "processing").length})
+            </button>
+            <button
+              onClick={() => setActiveTab("shipped_delivered")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === "shipped_delivered" ? "bg-emerald-500 text-white" : "text-zinc-400 hover:text-zinc-200"}`}
+            >
+              Entregados ({orders.filter(o => o.status === "shipped" || o.status === "delivered").length})
+            </button>
+          </div>
+
+          {/* Export Buttons */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleExportCSV}
+              className="p-2.5 rounded-2xl bg-zinc-900 border border-zinc-850 text-zinc-300 hover:text-emerald-400 hover:border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+              title="Descargar Pedidos en Excel (CSV)"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+              <span className="hidden sm:inline">Excel</span>
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="p-2.5 rounded-2xl bg-zinc-900 border border-zinc-850 text-zinc-300 hover:text-rose-400 hover:border-rose-500/30 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+              title="Imprimir / Exportar Reporte PDF"
+            >
+              <Printer className="w-4 h-4 text-rose-500" />
+              <span className="hidden sm:inline">PDF</span>
+            </button>
+          </div>
         </div>
       </div>
 

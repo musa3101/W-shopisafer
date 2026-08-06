@@ -9,10 +9,13 @@ import {
   Sparkles,
   AlertCircle,
   TrendingUp,
-  CreditCard
+  CreditCard,
+  FileSpreadsheet,
+  Printer
 } from "lucide-react";
 import { toast } from "sonner";
 import { BackendProduct, updateProductPriceAndStock, deleteProduct } from "../src/services/insforgeService";
+import { exportToCSV, printReport, ExportColumn } from "../src/lib/exportUtils";
 
 interface StockManagerProps {
   products: BackendProduct[];
@@ -105,10 +108,45 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
     return matchesSearch;
   });
 
+  // Exportación de Inventario
+  const handleExportCSV = () => {
+    const cols: ExportColumn<BackendProduct>[] = [
+      { header: "Nombre Prenda", accessor: p => p.name || "" },
+      { header: "Etiqueta", accessor: p => p.badge || "Colección" },
+      { header: "Precio ($ USD)", accessor: p => getProductState(p.id, p).price },
+      { header: "Stock (Unidades)", accessor: p => getProductState(p.id, p).stock },
+      { header: "Stripe Price ID", accessor: p => getProductState(p.id, p).stripe_price_id || "N/A" },
+      { header: "Descripción", accessor: p => p.description || "" }
+    ];
+    exportToCSV("Inventario_Isafer_Boutique", cols, filteredProducts);
+  };
+
+  const handleExportPDF = () => {
+    const cols: ExportColumn<BackendProduct>[] = [
+      { header: "Prenda", accessor: p => p.name || "" },
+      { header: "Detalles", accessor: p => p.description || "N/A" },
+      { header: "Precio USD", accessor: p => `$${getProductState(p.id, p).price.toFixed(2)}` },
+      { header: "Stock", accessor: p => `${getProductState(p.id, p).stock} u.` },
+      { header: "Stripe ID", accessor: p => getProductState(p.id, p).stripe_price_id || "Sin vincular" }
+    ];
+    const totalValuation = filteredProducts.reduce((sum, p) => sum + (getProductState(p.id, p).price * getProductState(p.id, p).stock), 0);
+    printReport(
+      "Reporte de Inventario de la Boutique",
+      "Estado de existencias, precios y catalogación para Camila",
+      cols,
+      filteredProducts,
+      [
+        { label: "Prendas en Lista", value: `${filteredProducts.length}` },
+        { label: "Valoración del Stock", value: `$${totalValuation.toFixed(2)} USD` },
+        { label: "Sin Stock", value: `${filteredProducts.filter(p => getProductState(p.id, p).stock === 0).length}` }
+      ]
+    );
+  };
+
   return (
     <div className="space-y-5">
-      {/* Barra de Búsqueda y Filtros Adaptables */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-stretch">
+      {/* Barra de Búsqueda, Filtros y Acciones de Exportación */}
+      <div className="flex flex-col lg:flex-row gap-3 justify-between items-stretch">
         
         {/* Input de Búsqueda */}
         <div className="relative flex-1">
@@ -122,32 +160,54 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
           />
         </div>
 
-        {/* Botones de Filtro en Carrusel Horizontal Scrollable */}
-        <div className="flex bg-zinc-900 border border-zinc-800 p-1.5 rounded-2xl overflow-x-auto whitespace-nowrap scrollbar-none gap-1">
-          <button
-            onClick={() => setFilterType("all")}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-              filterType === "all" ? "bg-rose-500 text-white shadow-md shadow-rose-500/20" : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Todas ({safeProducts.length})
-          </button>
-          <button
-            onClick={() => setFilterType("low")}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-              filterType === "low" ? "bg-amber-450 text-black font-black" : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Stock Bajo ({safeProducts.filter(p => (p?.stock || 0) > 0 && (p?.stock || 0) < 5).length})
-          </button>
-          <button
-            onClick={() => setFilterType("out")}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-              filterType === "out" ? "bg-rose-600 text-white font-black" : "text-zinc-400 hover:text-white"
-            }`}
-          >
-            Sin Stock ({safeProducts.filter(p => (p?.stock || 0) === 0).length})
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Botones de Filtro en Carrusel Horizontal Scrollable */}
+          <div className="flex bg-zinc-900 border border-zinc-800 p-1.5 rounded-2xl overflow-x-auto whitespace-nowrap scrollbar-none gap-1">
+            <button
+              onClick={() => setFilterType("all")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                filterType === "all" ? "bg-rose-500 text-white shadow-md shadow-rose-500/20" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Todas ({safeProducts.length})
+            </button>
+            <button
+              onClick={() => setFilterType("low")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                filterType === "low" ? "bg-amber-450 text-black font-black" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Stock Bajo ({safeProducts.filter(p => (p?.stock || 0) > 0 && (p?.stock || 0) < 5).length})
+            </button>
+            <button
+              onClick={() => setFilterType("out")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                filterType === "out" ? "bg-rose-600 text-white font-black" : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              Sin Stock ({safeProducts.filter(p => (p?.stock || 0) === 0).length})
+            </button>
+          </div>
+
+          {/* Export Buttons */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleExportCSV}
+              className="p-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-emerald-400 hover:border-emerald-500/30 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+              title="Descargar Inventario en Excel (CSV)"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+              <span className="hidden sm:inline">Excel</span>
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="p-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-rose-400 hover:border-rose-500/30 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+              title="Imprimir / Exportar Reporte PDF"
+            >
+              <Printer className="w-4 h-4 text-rose-500" />
+              <span className="hidden sm:inline">PDF</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -205,10 +265,22 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
                     
                     <p className="text-xs text-zinc-400 line-clamp-1">{p.description || "Sin descripción"}</p>
                     
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="flex items-center gap-2 pt-1 flex-wrap">
                       <span className={`px-2.5 py-1 rounded-xl border text-[10px] font-black uppercase tracking-wider ${stockBadge}`}>
                         {stockText}
                       </span>
+
+                      {p.gender && (
+                        <span className="px-2 py-0.5 rounded-lg bg-zinc-800 text-[10px] font-bold text-zinc-300 uppercase">
+                          {p.gender === 'women' ? 'Mujer 💖' : p.gender === 'men' ? 'Hombre 🖤' : 'Unisex ✨'}
+                        </span>
+                      )}
+
+                      {p.sizes && p.sizes.length > 0 && (
+                        <span className="px-2 py-0.5 rounded-lg bg-zinc-950 border border-zinc-800 text-[10px] font-mono text-rose-400">
+                          Tallas ({p.size_system || 'US'}): {p.sizes.join(', ')}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

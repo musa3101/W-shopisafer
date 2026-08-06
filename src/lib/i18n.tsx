@@ -268,7 +268,7 @@ const translations: Record<Language, Translations> = {
     footer_links_title: "Boutique",
     footer_help_title: "Customer Care",
     footer_location_title: "Showroom Location",
-    footer_location_address: "Brooklyn, New York, NY 11201, USA",
+    footer_location_address: "4711 4th Ave, Brooklyn, NY 11220, USA",
     footer_rights: "© 2026 Isafer Boutique. All rights reserved.",
 
     // General & Notifications
@@ -449,7 +449,7 @@ const translations: Record<Language, Translations> = {
     footer_links_title: "Boutique",
     footer_help_title: "Atención al Cliente",
     footer_location_title: "Ubicación Showroom",
-    footer_location_address: "Brooklyn, New York, NY 11201, EE. UU.",
+    footer_location_address: "4711 4th Ave, Brooklyn, NY 11220, EE. UU.",
     footer_rights: "© 2026 Isafer Boutique. Todos los derechos reservados.",
 
     // General & Notifications
