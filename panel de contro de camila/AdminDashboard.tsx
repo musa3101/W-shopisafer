@@ -62,7 +62,7 @@ export function AdminDashboard({ onClose, onProductsUpdated }: AdminDashboardPro
     { id: "summary", label: "Resumen", icon: LayoutDashboard },
     { id: "inventory", label: "Inventario", icon: PackageSearch },
     { id: "orders", label: "Pedidos", icon: ShoppingBag },
-    { id: "add_product", label: "Añadir Prenda", icon: PlusCircle },
+    { id: "add_product", label: "Añadir", icon: PlusCircle },
   ] as const;
 
   return (
