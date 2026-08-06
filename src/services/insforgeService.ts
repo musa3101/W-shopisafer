@@ -1,4 +1,5 @@
 import { insforge } from '@/lib/insforge';
+import { OWNER_PHONE } from '@/lib/constants';
 
 export interface BackendProduct {
   id: string;
@@ -375,7 +376,7 @@ export async function sendOrderConfirmationEmail(orderData: {
           <p>Por favor, si aún no nos has escrito, pulsa el botón de abajo para enviarnos tu comprobante de WhatsApp:</p>
           
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20acabo%20de%20realizar%20un%20pedido%20por%20la%20web%20para%20la%20orden%20%23${orderData.orderId.slice(0,8)}" 
+            <a href="https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20acabo%20de%20realizar%20un%20pedido%20por%20la%20web%20para%20la%20orden%20%23${orderData.orderId.slice(0,8)}" 
                style="background-color: #10b981; color: #ffffff; padding: 14px 28px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 6px rgba(16,185,129,0.2);">
                Escribir por WhatsApp
             </a>

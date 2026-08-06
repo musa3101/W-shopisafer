@@ -1,4 +1,5 @@
 import { createClient } from "npm:@insforge/sdk@1.5.2";
+import webpush from "npm:web-push";
 
 export default async function (req: Request) {
   try {
@@ -50,9 +51,10 @@ export default async function (req: Request) {
           .single();
 
         if (error) {
-          console.error(`Error actualizando orden ${orderId} en base de datos:`, error);
-        } else {
+          console.error(`Error actualizando orden ${orderId} en base de datos:`, error)        } else {
           console.log(`✓ Orden ${orderId} actualizada con éxito en PostgreSQL. Datos:`, data);
+
+          const ownerPhone = Deno.env.get("OWNER_PHONE") || "19296772514";
 
           // 2. Enviar email de confirmación si el cliente tiene email
           if (customerEmail) {
@@ -62,7 +64,7 @@ export default async function (req: Request) {
             const emailHtml = `
               <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ffe4ec; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); background-color: #fffafb;">
                 <div style="background-color: #e11d48; padding: 24px; text-align: center; border-bottom: 2px solid #be123c;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;">Isafer Boutique</h1>
+                   <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase;">Isafer Boutique</h1>
                 </div>
                 <div style="padding: 32px; color: #333333; line-height: 1.6;">
                   <h2 style="color: #e11d48; margin-top: 0; font-size: 20px;">¡Gracias por tu compra, ${customerName}! 💖</h2>
@@ -78,7 +80,7 @@ export default async function (req: Request) {
                   <p>Si tienes alguna pregunta o quieres coordinar detalles específicos de la entrega en Brooklyn, no dudes en escribirnos por nuestro WhatsApp oficial pulsando el siguiente enlace:</p>
                   
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20acabo%20de%20realizar%20un%20pago%20con%20tarjeta%20para%20la%20orden%20%23${orderId.slice(0,8)}" 
+                    <a href="https://wa.me/${ownerPhone}?text=Hola%20Isafer%20Boutique%2C%20acabo%20de%20realizar%20un%20pago%20con%20tarjeta%20para%20la%20orden%20%23${orderId.slice(0,8)}" 
                        style="background-color: #10b981; color: #ffffff; padding: 14px 28px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 6px rgba(16,185,129,0.2);">
                        Escribir por WhatsApp
                     </a>
@@ -108,7 +110,6 @@ export default async function (req: Request) {
 
           // 3. Notificar a la dueña Camila por WhatsApp mediante CallMeBot si la API key está presente
           const callmebotApiKey = Deno.env.get("CALLMEBOT_API_KEY");
-          const ownerPhone = Deno.env.get("OWNER_PHONE") || "19296772514"; // Teléfono de Camila por defecto
 
           if (callmebotApiKey) {
             console.log(`Enviando notificación por WhatsApp a Camila (${ownerPhone})...`);
@@ -135,6 +136,67 @@ export default async function (req: Request) {
             }
           } else {
             console.log("Notificación de WhatsApp omitida: CALLMEBOT_API_KEY no configurada.");
+          }
+
+          // 4. Enviar Notificaciones Push PWA a los dispositivos de administración suscritos
+          const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
+          const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
+
+          if (vapidPublicKey && vapidPrivateKey) {
+            try {
+              const { data: subscriptions, error: subsError } = await insforge.database
+                .from("push_subscriptions")
+                .select("*");
+
+              if (subsError) throw subsError;
+
+              if (subscriptions && subscriptions.length > 0) {
+                console.log(`Enviando notificación Push PWA a ${subscriptions.length} dispositivo(s)...`);
+                
+                webpush.setVapidDetails(
+                  "mailto:support@isaferboutique.com",
+                  vapidPublicKey,
+                  vapidPrivateKey
+                );
+
+                const totalAmount = data.total_amount ? Number(data.total_amount).toFixed(2) : "0.00";
+                const pushPayload = JSON.stringify({
+                  title: "¡Nueva Venta Registrada! 🛍️💖",
+                  body: `Se ha completado el pago de $${totalAmount} USD de ${customerName}.`,
+                  url: "/admin/pedidos"
+                });
+
+                for (const sub of subscriptions) {
+                  try {
+                    const pushSubscription = {
+                      endpoint: sub.endpoint,
+                      keys: {
+                        p256dh: sub.p256dh,
+                        auth: sub.auth
+                      }
+                    };
+
+                    await webpush.sendNotification(pushSubscription, pushPayload);
+                    console.log(`✓ Push enviado con éxito a: ${sub.endpoint.slice(0, 30)}...`);
+                  } catch (pushErr: any) {
+                    console.warn(`Error al enviar push a ${sub.endpoint.slice(0, 30)}:`, pushErr.message);
+
+                    // Si la suscripción ha expirado (410) o no se encuentra (404), la eliminamos de la base de datos
+                    if (pushErr.statusCode === 410 || pushErr.statusCode === 404) {
+                      console.log(`Eliminando suscripción inválida de la DB: ${sub.id}`);
+                      await insforge.database
+                        .from("push_subscriptions")
+                        .delete()
+                        .eq("id", sub.id);
+                    }
+                  }
+                }
+              } else {
+                console.log("No hay dispositivos registrados en push_subscriptions.");
+              }
+            } catch (pushError: any) {
+              console.error("Excepción en el flujo de notificaciones Push PWA:", pushError.message);
+            }
           }
         }
       }

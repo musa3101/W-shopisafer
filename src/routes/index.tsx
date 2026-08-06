@@ -48,6 +48,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
+import { OWNER_PHONE } from "@/lib/constants";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { TrendingCarousel } from "@/components/TrendingCarousel";
 import { insforge } from "@/lib/insforge";
@@ -604,7 +605,7 @@ function Index() {
       .join("%0A");
 
     const subtotalFormatted = subtotal.toFixed(2);
-    const whatsappUrl = `https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%3A%0A%0A${itemsText}%0A%0ASubtotal%3A%20%24${subtotalFormatted}%0A%0A%C2%BFMe%20confirmas%20disponibilidad%20y%20m%C3%A9todo%20de%20entrega%3F`;
+    const whatsappUrl = `https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%3A%0A%0A${itemsText}%0A%0ASubtotal%3A%20%24${subtotalFormatted}%0A%0A%C2%BFMe%20confirmas%20disponibilidad%20y%20m%C3%A9todo%20de%20entrega%3F`;
 
     const win = window.open(whatsappUrl, "_blank");
     if (!win) {
@@ -650,7 +651,7 @@ function Index() {
     }
     const text = activeItems.map((p) => `- ${cart[p.id]}x ${p.name} ($${p.price})`).join('\n');
     const msg = `Hola Isafer Boutique, quiero pedir lo siguiente:\n\n${text}\n\nTotal estimado: $${subtotal.toFixed(2)} USD`;
-    window.open(`https://wa.me/19296772514?text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(`https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   const handleStripeCheckout = async () => {
@@ -1451,7 +1452,7 @@ function Index() {
                   className="h-12 rounded-full px-8 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs uppercase tracking-wider"
                 >
                   <a
-                    href="https://wa.me/19296772514?text=Hola%20Isafer%20Boutique%2C%20quiero%20agendar%20una%20visita%20al%20Showroom%20en%204711%204th%20Ave"
+                    href={`https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20quiero%20agendar%20una%20visita%20al%20Showroom%20en%204711%204th%20Ave`}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -1565,7 +1566,7 @@ function Index() {
                   <span className="text-xs font-bold font-mono">🎵</span>
                 </a>
                 <a
-                  href="https://wa.me/19296772514"
+                  href={`https://wa.me/${OWNER_PHONE}`}
                   target="_blank"
                   rel="noreferrer"
                   className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-emerald-500 hover:border-emerald-800/50 hover:bg-emerald-500/5 transition-all shadow-sm"
@@ -1623,7 +1624,7 @@ function Index() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="text-[#ff007f] underline hover:text-[#ff4d94] transition-colors font-bold">
+                  <a href={`https://wa.me/${OWNER_PHONE}`} target="_blank" rel="noreferrer" className="text-[#ff007f] underline hover:text-[#ff4d94] transition-colors font-bold">
                     Contacto Directo WhatsApp
                   </a>
                 </li>

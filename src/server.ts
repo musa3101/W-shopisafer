@@ -44,8 +44,8 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/health") {
       try {
-        // Ping ligero a Insforge
-        await insforge.auth.getSession();
+        // Ping ligero real a PostgreSQL en InsForge
+        await insforge.database.from("products").select("id").limit(1);
         return new Response(
           JSON.stringify({ status: "ok", insforge: "connected", timestamp: Date.now() }),
           { status: 200, headers: { "Content-Type": "application/json" } }
@@ -74,11 +74,36 @@ export default {
   // Handler programado para el Keep-Alive (Cron trigger)
   async scheduled(event: any, env: any, ctx: any) {
     console.log("Ejecutando Keep-Alive Cron (Ping a Insforge)...");
+    const start = Date.now();
     try {
-      await insforge.auth.getSession();
-      console.log("Ping exitoso a Insforge.");
-    } catch (e) {
-      console.error("Error en Keep-Alive a Insforge:", e);
+      await insforge.database.from("products").select("id").limit(1);
+      const latency = Date.now() - start;
+      console.log(`Ping exitoso a Insforge (${latency} ms).`);
+      
+      // Guardar log en base de datos
+      await insforge.database
+        .from("database_health_logs")
+        .insert([{
+          latency_ms: latency,
+          status: "ok",
+          error_message: null
+        }]);
+    } catch (e: any) {
+      const latency = Date.now() - start;
+      const errorMsg = e?.message || "Unknown health-check error";
+      console.error(`Error en Keep-Alive a Insforge (${latency} ms):`, errorMsg);
+      
+      try {
+        await insforge.database
+          .from("database_health_logs")
+          .insert([{
+            latency_ms: latency,
+            status: "error",
+            error_message: errorMsg
+          }]);
+      } catch (insertErr) {
+        console.error("No se pudo insertar el log de error en la base de datos:", insertErr);
+      }
     }
   }
 };

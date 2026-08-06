@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OWNER_PHONE } from "../src/lib/constants";
 import { 
   ShoppingBag, 
   MessageSquare, 
@@ -55,7 +56,7 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
 
   // WhatsApp helper
   const getWhatsAppLink = (order: BackendOrder) => {
-    const defaultPhone = "19296772514";
+    const defaultPhone = OWNER_PHONE;
     const phone = order.customer_phone ? order.customer_phone.replace(/\D/g, "") : defaultPhone;
     const name = order.customer_name || "Cliente";
     const orderId = (order.id || "order").slice(0, 8);

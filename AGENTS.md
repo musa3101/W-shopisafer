@@ -33,3 +33,15 @@ Key patterns:
   ```
 - **Flujo de Ejecución:** El script automáticamente compilará la app, la desplegará en Cloudflare, comprobará que la URL pública responda con éxito (HTTP 200), subirá todos los cambios a GitHub en la rama `dev`, y vaciará la carpeta de referencia.
 - **Documentación:** El agente actualizará y guardará `docs/SESSION_LATEST_ES.md` y `docs/ROADMAP.md` justo antes de ejecutar el script de despliegue para asegurar que la documentación también se incluya en el despliegue y en Git.
+
+### Navegación y Pruebas Visuales con Google Chrome
+Si la herramienta de navegador estándar (`browser_subagent`) del IDE falla al inicializarse (por ejemplo, por errores 404 al descargar el driver Playwright):
+- **Método de Conexión:** Conéctate directamente a una instancia local de Google Chrome abierta con depuración remota activada en el puerto `9222` mediante CDP (Chrome DevTools Protocol).
+- **Iniciar Chrome con Depuración:** Si Chrome no está escuchando en el puerto 9222, puedes lanzarlo en segundo plano ejecutando:
+  ```bash
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9222 --user-data-dir="/Users/musa/Library/Application Support/Google/ChromeDev" --no-first-run --no-default-browser-check > /dev/null 2>&1 &
+  ```
+- **Playwright Local:** Usa la biblioteca Playwright del proyecto local (`playwright` en `package.json`) y conéctate usando `chromium.connectOverCDP('http://127.0.0.1:9222')`.
+- **Automatización de Pruebas:** Puedes usar o extender el script `scripts/test_chrome_connection.js` para navegar de forma automatizada por la web y tomar capturas de pantalla de control.
+- **Carpeta de Capturas:** Guarda las capturas resultantes de las pruebas visuales en `/Users/musa/Downloads/sopisafer/carpeta de referencia/`.
+

@@ -2,75 +2,60 @@
 
 ## 🌟 Qué se ha hecho hoy
 
-1. **Rediseño del Panel de Administración (`/admin`)**:
-   - Creada la nueva ruta protegida `/admin` para Camila, aislando la interfaz pública.
-   - Diseñado un layout "App-like" minimalista suizo limpio (fondos blancos/grises, tipografía sólida) reemplazando el fondo oscuro anterior.
-   - Enrutamiento por separado para Inicio de Sesión (`/admin/login`), Resumen, Pedidos, Catálogo y Ajustes.
-   - Barra lateral (Sidebar) en desktop y menú desplegable móvil responsive adaptado.
+1. **Notificaciones Push PWA Nativa**:
+   - Creada la tabla `push_subscriptions` en Postgres de InsForge para guardar las suscripciones de los dispositivos de administración.
+   - Desarrollado el Service Worker en `public/sw.js` que escucha los eventos `push` y muestra alertas flotantes en el móvil u ordenador (incluso con la aplicación cerrada).
+   - Registrado el Service Worker automáticamente en `src/routes/admin/route.tsx` cuando inicia sesión un administrador.
+   - Implementado un switch interactivo en el panel de **Ajustes** (`/admin/ajustes`) para solicitar permisos nativos del navegador, realizar el handshake de suscripción con VAPID keys y guardar los tokens en la base de datos de InsForge.
+   - Modificada la función del webhook de Stripe (`functions/stripe-webhook.ts`) para que, al procesarse un pago exitoso, recupere las suscripciones activas y envíe la notificación Web Push, limpiando automáticamente las suscripciones expiradas (errores 410/404).
 
-2. **Integración de Datos Reales y Gestión en Rutas**:
-   - **Pedidos (`/admin/pedidos`)**: Montado el componente real `OrderManager` con datos reales de la base de datos PostgreSQL de Insforge. Permite cambiar estados de entrega y contactar por WhatsApp.
-   - **Catálogo (`/admin/catalogo`)**: Montados `StockManager` y `ProductCreator`. Se pueden actualizar precios, existencias y añadir nuevos productos en tiempo real.
-   - **Ajustes (`/admin/ajustes`)**: Añadidas opciones reales para activar notificaciones de sonido de nuevos pedidos (con prueba de sonido), diagnóstico en tiempo real (comprobar latencia al hacer ping a `/api/health`) y visor de infraestructura.
+2. **Recordatorios Automatizados de Email para Pedidos Pendientes**:
+   - Agregada la columna `reminder_sent` (boolean, default `false`) a la tabla `orders` en PostgreSQL de InsForge.
+   - Creada la Edge Function `send-pending-reminders.ts` que selecciona órdenes creadas hace más de 24 horas y menos de 7 días con estado `pending` y `reminder_sent = false`, enviando un correo HTML detallado de recordatorio de compra con enlace directo a WhatsApp.
+   - Creado y configurado un **Cron Job (Schedule)** en la plataforma InsForge para ejecutar esta función automáticamente todos los días a las 9:00 AM.
 
-3. **Sistema Keep-Alive y Health Check**:
-   - Creado el endpoint `/api/health` ultraligero que hace un ping a Insforge.
-   - Configurado un Cron Trigger en Cloudflare Workers (`wrangler.jsonc` y scheduled handler en `server.ts`) para ejecutarse cada 10 minutos, evitando que la base de datos PostgreSQL de Insforge (Free Tier) entre en pausa por inactividad.
+3. **Monitoreo Continuo del Keep-Alive (Uptime de DB)**:
+   - Creada la tabla `database_health_logs` en Postgres para registrar la latencia de pings y estado de la conexión.
+   - Modificado el scheduled handler keep-alive (que corre cada 10 minutos) en `src/server.ts` para hacer una consulta real a `products` (con límite 1), medir los milisegundos de latencia e insertarlos en `database_health_logs`.
+   - Implementado en el panel de **Ajustes** un visor de estabilidad gráfica tipo "commits de GitHub" (tira de cuadritos verdes y rojos de pings), mostrando el porcentaje de actividad (Uptime %) de las últimas horas y la latencia media.
 
-4. **Rediseño y Estructura del Menú Desplegable Móvil de la Web Pública**:
-   - **Header Fijo Blanco:** Se ha creado una cabecera superior rígida con fondo blanco puro y una línea divisoria sutil (`border-b border-rose-100/50`).
-   - **Logotipo Ampliado:** Se ha aumentado un **15%** el tamaño del logotipo oficial de "isafer boutique" (`scale-110`) dentro de esta barra para ganar jerarquía e identidad de marca.
-   - **Fondo con Contraste:** Cambiado el color de fondo general de todo el panel desplegable del menú a un tono crema nude muy suave (`bg-[#fdf9f7]`), lo que aporta calidez y hace que los contenidos y el header destaquen con volumen.
-   - **Pie de Menú Diferenciado:** Se ha encapsulado la zona inferior (tarjeta de cuenta VIP/Administración, enlaces de redes sociales oficiales y el selector de idioma) en un bloque diferenciado con fondo ligeramente más oscuro (`bg-[#f5ebe7]`) y una línea de separación superior limpia, dando un cierre estructurado y profesional.
-   - **Limpieza de Enlaces:** Reordenados los enlaces clave: 1. Inicio, 2. Catálogo (con acordeón), 3. Sobre Nosotros (scroll a historia), 4. Mis Favoritos, 5. Contacto (scroll suave directo a `#visitanos`). Se eliminaron FAQs y la sección de "Gas Pimienta" como enlace principal.
+4. **Centralización del Teléfono de Pruebas**:
+   - Creado el archivo `src/lib/constants.ts` para definir el número de España `346673109486` y la clave pública VAPID.
+   - Modificados los enlaces e importaciones de WhatsApp en la web pública (`index.tsx`), en la sección "Sobre Nosotros" (`AboutPage.tsx`) y en el panel de Camila (`OrderManager.tsx` en la carpeta `panel de control de camila`).
+   - Configurada la variable de entorno `OWNER_PHONE=346673109486` en `.env` y `.env.local` y registrada como secreto del backend de InsForge mediante la CLI.
 
-5. **Optimización del Hero en Dispositivos Móviles**:
-   - Suavizados los degradados oscuros del fondo del Hero en móviles (`bg-gradient-to-t` y `bg-gradient-to-r` reducidos considerablemente) para dar total protagonismo a las fotos.
-   - Ajustadas las dimensiones y paddings de cabecera (`pt-28 pb-10`) y reducidos los tamaños de los títulos ("Sensual & Elegante") para ocupar mucho menos espacio vertical.
-   - Rediseñado el botón CTA "EXPLORAR COLECCIÓN" para que sea más compacto (`h-9 px-5 text-[10px]`), evitando tapar las fotografías del carrusel.
-   - Preservados todos los efectos de transición fade-in/fade-out del carrusel de imágenes.
-
-6. **Rediseño de Bolsa / Carrito de Compras**:
-   - Reemplazado el fondo negro/oscuro por un Slide-over Drawer claro de color crema suave/blanco elegante (`bg-[#fffcfd]`), con bordes suaves de color rosa (`border-rose-100/50`).
-   - Ajustada la posición del contador de artículos a la derecha de "Tu Bolsa" (`gap-2`) para prevenir cualquier solapamiento visual con la 'X' de cierre.
-   - Diseñado el **Estado Vacío** con un icono grande, texto y botón "EXPLORAR COLECCIÓN" para cerrar el carrito.
-   - Creado un diseño de tarjetas de productos más refinado y boutique (imágenes con borde rosa suave, talla/color y un selector compacto de cantidad).
-   - Pie de carrito fijo con subtotal visible, botón de Checkout destacado en fucsia premium (`#ff007f`) y botón alternativo de WhatsApp.
-
-7. **Rediseño del Footer (Pie de Página)**:
-   - Cambiado el fondo a un negro mate boutique elegante (`#111111`) con borde superior sutil en gris oscuro (`border-zinc-800/60`), logrando una separación impecable con el resto del contenido blanco.
-   - Títulos en alto contraste (`text-zinc-100`) y textos secundarios altamente legibles en gris suave (`text-zinc-400`).
-   - Creada una disposición limpia de bloques:
-     * **Info & Redes:** Incorpora la insignia circular oficial de aro de neón de Camila (`IsaferLogo variant="footer" size="lg"`) que resalta de forma premium, junto a iconos de redes en círculos mate con hover fucsia, blanco y verde.
-     * **Colecciones:** Enlaces de categorías que redirigen/desplazan al catálogo.
-     * **Atención:** Métodos de servicio y dirección física (hace scroll a `#visitanos`).
-     * **Pagos:** Insignias de confianza rediseñadas con un formato uniforme minimalista rectangular en fondo carbón.
-   - **Copyright & Créditos:** Franja inferior reestructurada, destacando elegantemente el crédito **"Creado por MYNEXT"** en un fucsia vibrante (`#ff007f`) con subrayado punteado y enlaces de políticas en blanco hover.
+5. **Auditoría Visual de Responsive**:
+   - Creado y ejecutado el script `scripts/audit_visual.js` que se conecta a una instancia local de Google Chrome mediante CDP (puerto 9222) y toma capturas de pantalla de la web pública (móvil y escritorio), el menú móvil desplegable y el portal de administración, guardándolas en la carpeta de referencia local.
 
 ---
 
 ## 🛠️ Archivos Creados y Modificados
-- `src/routes/index.tsx` [Menú móvil estructurado con cabecera y pie diferenciado, Hero, Bolsa de compras, alineación y rediseño de Footer]
-- `src/routes/admin/route.tsx` [Layout de admin minimalista con sidebar y protección]
-- `src/routes/admin/index.tsx` [Dashboard resumen con bento y métricas reales]
-- `src/routes/admin/pedidos.tsx` [Gestión real de pedidos con OrderManager]
-- `src/routes/admin/catalogo.tsx` [Inventario y creador de prendas real]
-- `src/routes/admin/ajustes.tsx` [Ajustes con prueba de campana y latencia DB]
-- `src/server.ts` [Endpoint /api/health y handler programado scheduled]
-- `wrangler.jsonc` [Configuración de cron trigger cada 10 minutos]
+- `src/lib/constants.ts` [NEW] [Definición de OWNER_PHONE y VAPID_PUBLIC_KEY]
+- `public/sw.js` [NEW] [Service Worker de la PWA para notificaciones Push]
+- `functions/send-pending-reminders.ts` [NEW] [Edge function de recordatorios de email]
+- `scripts/audit_visual.js` [NEW] [Script de auditoría visual automatizada CDP]
+- `src/routes/admin/route.tsx` [Registro de Service Worker si es administrador]
+- `src/routes/admin/ajustes.tsx` [Controles de activación Push PWA e historial visual del Keep-Alive]
+- `src/services/insforgeService.ts` [Uso de la constante centralizada OWNER_PHONE]
+- `src/routes/index.tsx` [Uso de la constante centralizada OWNER_PHONE]
+- `src/components/AboutPage.tsx` [Uso de la constante centralizada OWNER_PHONE]
+- `panel de control de camila/OrderManager.tsx` [Uso de la constante centralizada OWNER_PHONE]
+- `functions/stripe-webhook.ts` [Cifrado y envío de Web Push ante pagos, y WhatsApp/Email con datos dinámicos]
+- `src/server.ts` [Medición de latencia de base de datos y logs en PostgreSQL en la tarea programada]
+- `.env` y `.env.local` [Añadidas VAPID keys y variable de teléfono OWNER_PHONE]
 - `docs/SESSION_LATEST_ES.md` [Este archivo]
 - `docs/ROADMAP.md` [Roadmap actualizado]
 
 ---
 
 ## ✅ Problemas Solucionados
-- Los botones de "Abrir Panel" en el sitio ahora navegan correctamente a la ruta de pantalla completa `/admin` en lugar de abrir el modal antiguo.
-- El panel ahora carga y guarda datos reales del catálogo e historial de pedidos.
-- Se eliminó el fondo oscuro que no le gustaba a Camila, adoptando una interfaz profesional suiza con toques elegantes.
-- Evitamos la suspensión automática de Insforge mediante el cron keep-alive.
-- Limpieza y reordenación del menú móvil público con estética boutique premium.
-- El enlace de "Contacto" del menú lateral ahora redirige correctamente a la sección de la tienda física (`#visitanos`).
-- El carrito/bolsa ya no tiene fondo oscuro, adaptándose a la estética limpia fucsia/crema boutique, con un flujo dinámico elegante.
-- Solapamiento del contador de artículos con la 'X' de cierre del carrito totalmente solucionado.
-- El Footer ya no se funde con el contenido blanco, teniendo un contraste espectacular, orden y un acabado de lujo.
-- Fondo plano del menú móvil solucionado añadiendo cabecera rígida blanca con logo grande y bloque inferior de redes con contraste.
+- **Error de compilación en Rollup:** Corregido el fallo al importar el alias `@/lib/constants` en el archivo externo `panel de control de camila/OrderManager.tsx` mediante el uso de una ruta relativa (`../src/lib/constants`).
+- **Error de tipado en server.ts:** Corregido el método inexistente `getSession` en el SDK de InsForge reemplazándolo por una consulta directa a la base de datos de productos para comprobar conectividad.
+- **Limpieza de archivos obsoletos:** Eliminada la carpeta duplicada `src/components/admin/` que tenía imports rotos de `../src/...` y tipos implícitos de `any`, dejando el repositorio limpio y sin errores de compilación TypeScript.
+- **Playwright en Mac ARM64:** Solucionado el fallo al descargar el driver Playwright nativo usando una conexión remota directa a Google Chrome con el protocolo CDP por el puerto 9222.
+
+---
+
+## 📅 Qué queda pendiente
+- Realizar pruebas de extremo a extremo en producción desde dispositivos móviles reales para validar la recepción de alertas PWA Push nativas y mensajes de WhatsApp.
+- Seguir auditando los logs de latencia del keep-alive del base de datos en PostgreSQL.

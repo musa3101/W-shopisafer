@@ -48,6 +48,15 @@ function AdminLayout() {
     }
   }, [user, loading, isAdmin, isLoginPage, navigate]);
 
+  // Registrar Service Worker para notificaciones Push PWA
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator && user && isAdmin) {
+      navigator.serviceWorker.register("/sw.js")
+        .then((reg) => console.log("✓ Service Worker registrado para Admin PWA:", reg.scope))
+        .catch((err) => console.error("❌ Error al registrar el Service Worker:", err));
+    }
+  }, [user, isAdmin]);
+
   const handleLogout = async () => {
     await insforge.auth.signOut();
     navigate({ to: "/admin/login", replace: true });

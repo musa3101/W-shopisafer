@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { ArrowLeft, Sparkles, Instagram, MessageCircle, MapPin, Heart, ShieldCheck, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IsaferLogo } from "@/components/IsaferLogo";
+import { OWNER_PHONE } from "@/lib/constants";
 
 interface AboutPageProps {
   onBackToShop: () => void;
@@ -165,8 +166,8 @@ export function AboutPage({ onBackToShop, camilaImage }: AboutPageProps) {
           <div className="space-y-3">
             <h5 className="text-xs font-black uppercase tracking-widest text-white">Atención al Cliente</h5>
             <ul className="space-y-2 text-xs font-semibold">
-              <li><a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Seguimiento de Pedido</a></li>
-              <li><a href="https://wa.me/19296772514" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Centro de Ayuda / WhatsApp</a></li>
+              <li><a href={`https://wa.me/${OWNER_PHONE}`} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Seguimiento de Pedido</a></li>
+              <li><a href={`https://wa.me/${OWNER_PHONE}`} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Centro de Ayuda / WhatsApp</a></li>
               <li><a href="https://www.instagram.com/shopisafer" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Instagram @shopisafer</a></li>
             </ul>
           </div>
