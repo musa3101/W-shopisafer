@@ -14,22 +14,26 @@ echo -e "${YELLOW}📦 Compilando aplicación localmente...${NC}"
 npm run build
 echo -e "${GREEN}✓ Aplicación compilada correctamente.${NC}"
 
-# 2. Despliegue a Cloudflare Workers
+# 2. Despliegue a Cloudflare Workers & Cloudflare Pages
 echo -e "${YELLOW}☁️ Desplegando en Cloudflare Workers...${NC}"
 npx wrangler deploy
-echo -e "${GREEN}✓ Despliegue en Cloudflare completado con éxito.${NC}"
+echo -e "${GREEN}✓ Despliegue en Cloudflare Workers completado.${NC}"
 
-# 3. Verificación de la URL pública
-URL="https://isafer.mynextbymusa.workers.dev"
-echo -e "${YELLOW}🧪 Verificando que la web responda en producción... (${URL})${NC}"
-# Darle 3 segundos a Cloudflare para refrescar
+echo -e "${YELLOW}⚡ Desplegando en Cloudflare Pages (isaferboutique.pages.dev)...${NC}"
+npx wrangler pages deploy dist/client --project-name=isaferboutique
+echo -e "${GREEN}✓ Despliegue en Cloudflare Pages completado con éxito.${NC}"
+
+# 3. Verificación de las URLs públicas
+URL_PAGES="https://isaferboutique.pages.dev"
+URL_WORKERS="https://isafer.mynextbymusa.workers.dev"
+echo -e "${YELLOW}🧪 Verificando que la web responda en producción... (${URL_PAGES})${NC}"
 sleep 3
-RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+RESPONSE_PAGES=$(curl -s -o /dev/null -w "%{http_code}" "$URL_PAGES")
 
-if [ "$RESPONSE_CODE" -eq 200 ]; then
-  echo -e "${GREEN}✓ Verificación exitosa! La web pública responde con HTTP 200.${NC}"
+if [ "$RESPONSE_PAGES" -eq 200 ]; then
+  echo -e "${GREEN}✓ Verificación exitosa! Cloudflare Pages (${URL_PAGES}) responde con HTTP 200.${NC}"
 else
-  echo -e "${RED}❌ ERROR: La web pública devolvió HTTP $RESPONSE_CODE. Verifica el estado en Cloudflare.${NC}"
+  echo -e "${RED}❌ ERROR: Cloudflare Pages devolvió HTTP $RESPONSE_PAGES. Verifica el estado en Cloudflare.${NC}"
   exit 1
 fi
 
