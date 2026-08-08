@@ -1,15 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "isafer",
-  "main": "dist/server/server.js",
+  "name": "isaferboutique",
+  "pages_build_output_dir": "./dist/client",
   "compatibility_date": "2026-08-03",
   "compatibility_flags": [
     "nodejs_compat"
-  ],
-  "assets": {
-    "directory": "./dist/client"
-  },
-  "crons": [
-    "*/10 * * * *"
   ]
 }
