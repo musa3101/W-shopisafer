@@ -1,5 +1,5 @@
-import logoHeaderBarbie from "@/assets/logo-header-barbie.png";
-import logoFooterChic from "@/assets/logo-footer-chic.png";
+import logoHeaderBarbie from "@/assets/logo-header-barbie-transparent.png";
+import logoFooter from "@/assets/logo-footer-square.jpg";
 
 interface IsaferLogoProps {
   variant?: "header" | "footer";
@@ -13,7 +13,7 @@ export function IsaferLogo({
   size = "md",
 }: IsaferLogoProps) {
   if (variant === "footer") {
-    const sizeMap = {
+    const sizeClasses = {
       sm: "w-14 h-14",
       md: "w-20 h-20",
       lg: "w-28 h-28",
@@ -22,13 +22,11 @@ export function IsaferLogo({
 
     return (
       <div className={`inline-flex items-center justify-center select-none ${className}`}>
-        <div className={`${sizeMap} rounded-full p-1.5 border-2 border-rose-500/90 shadow-[0_0_20px_rgba(244,63,94,0.45)] bg-zinc-950 overflow-hidden flex items-center justify-center transition-all duration-300 hover:scale-105 hover:border-rose-400 hover:shadow-[0_0_25px_rgba(244,63,94,0.65)]`}>
-          <img
-            src={logoFooterChic}
-            alt="ISAFÉR BOUTIQUE BROOKLYN"
-            className="w-full h-full object-cover rounded-full"
-          />
-        </div>
+        <img
+          src={logoFooter}
+          alt="ISAFÉR BOUTIQUE BROOKLYN"
+          className={`${sizeClasses} object-cover rounded-full shadow-[0_0_20px_rgba(244,63,94,0.3)] border-2 border-rose-300 transition-transform duration-300 hover:scale-105 hover:border-rose-400`}
+        />
       </div>
     );
   }
@@ -45,7 +43,7 @@ export function IsaferLogo({
       <img
         src={logoHeaderBarbie}
         alt="ISAFÉR BOUTIQUE BROOKLYN"
-        className={`${sizeClasses} w-auto object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply filter contrast-115`}
+        className={`${sizeClasses} w-auto object-contain transition-transform duration-300 hover:scale-105`}
       />
     </div>
   );

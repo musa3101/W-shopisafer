@@ -94,12 +94,14 @@ export async function fetchProducts(): Promise<BackendProduct[]> {
 
   // Cargar productos creados en almacenamiento de respaldo
   let customProducts: BackendProduct[] = [];
-  try {
-    const stored = localStorage.getItem('isafer_custom_products');
-    if (stored) {
-      customProducts = JSON.parse(stored);
-    }
-  } catch (e) {}
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('isafer_custom_products');
+      if (stored) {
+        customProducts = JSON.parse(stored);
+      }
+    } catch (e) {}
+  }
 
   // Combinar sin duplicados por ID
   const map = new Map<string, BackendProduct>();
@@ -315,6 +317,13 @@ export async function deleteProduct(id: string) {
  */
 export async function createOrder(order: OrderInput) {
   try {
+    if (order.total_amount < 0) {
+      return { success: false, error: 'El monto total del pedido no puede ser negativo.' };
+    }
+    const hasInvalidItems = Array.isArray(order.items) && order.items.some(i => (i.quantity ?? 1) <= 0 || (i.price ?? 0) < 0);
+    if (hasInvalidItems) {
+      return { success: false, error: 'Los artículos del pedido contienen cantidades o precios inválidos.' };
+    }
     const orderId = crypto.randomUUID();
     const { error } = await insforge.database
       .from('orders')

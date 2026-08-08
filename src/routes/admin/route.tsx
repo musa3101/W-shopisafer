@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate, useLocation, Link } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useLocation, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { IsaferLogo } from "@/components/IsaferLogo";
@@ -6,6 +6,18 @@ import { Loader2, LayoutDashboard, ShoppingBag, Package, Settings, LogOut, Menu,
 import { insforge } from "@/lib/insforge";
 
 export const Route = createFileRoute("/admin")({
+  beforeLoad: ({ location }) => {
+    if (location.pathname === "/admin/login") return;
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      const stored = localStorage.getItem("isafer_admin_session");
+      if (!stored) {
+        throw redirect({
+          to: "/admin/login",
+          replace: true,
+        });
+      }
+    }
+  },
   head: () => ({
     meta: [
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -15,7 +27,7 @@ export const Route = createFileRoute("/admin")({
     ],
     links: [
       { rel: "manifest", href: "/admin-manifest.json" },
-      { rel: "apple-touch-icon", href: "/favicon.png" }
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" }
     ]
   }),
   component: AdminLayout,
@@ -45,6 +57,8 @@ function AdminLayout() {
       } else if (user && isAdmin && isLoginPage) {
         navigate({ to: "/admin", replace: true });
       }
+    } else if (!user && typeof window !== "undefined" && typeof localStorage !== "undefined" && !localStorage.getItem("isafer_admin_session") && !isLoginPage) {
+      navigate({ to: "/admin/login", replace: true });
     }
   }, [user, loading, isAdmin, isLoginPage, navigate]);
 
@@ -62,6 +76,10 @@ function AdminLayout() {
     navigate({ to: "/admin/login", replace: true });
   };
 
+  if (isLoginPage) {
+    return <Outlet />;
+  }
+
   if (loading) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-50">
@@ -69,10 +87,6 @@ function AdminLayout() {
         <p className="text-sm font-semibold text-zinc-600 animate-pulse">Autenticando...</p>
       </div>
     );
-  }
-
-  if (isLoginPage) {
-    return <Outlet />;
   }
 
   if (!isAdmin) {

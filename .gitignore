@@ -58,3 +58,7 @@ carpeta de referencia/
 .roo
 .trae
 .windsurf
+
+# Playwright E2E
+e2e/reports/
+e2e/test-results/

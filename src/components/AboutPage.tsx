@@ -7,35 +7,47 @@ import { OWNER_PHONE } from "@/lib/constants";
 interface AboutPageProps {
   onBackToShop: () => void;
   camilaImage?: string;
+  favCount: number;
+  onOpenFavorites: () => void;
 }
 
-export function AboutPage({ onBackToShop, camilaImage }: AboutPageProps) {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
+export function AboutPage({ onBackToShop, camilaImage, favCount, onOpenFavorites }: AboutPageProps) {
   const defaultCamilaImage = "/camila-owner.jpg";
   const finalCamilaImage = camilaImage || defaultCamilaImage;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-rose-50 dark:bg-rose-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans animate-in fade-in duration-300">
       
       {/* 1. Sticky Navigation Header */}
-      <header className="sticky top-0 z-50 bg-white/95 dark:bg-zinc-950/95 border-b border-zinc-200 dark:border-zinc-800 backdrop-blur-md px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-rose-100/90 dark:bg-rose-950/90 border-b border-rose-200 dark:border-rose-900 backdrop-blur-md px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between shadow-sm">
         <button
           onClick={onBackToShop}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-rose-800 dark:text-rose-200 hover:text-rose-600 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Volver a la Tienda</span>
         </button>
 
-        <div className="font-serif text-xl sm:text-2xl font-black tracking-wider text-zinc-900 dark:text-white uppercase">
+        <div className="font-display text-xl sm:text-2xl font-black tracking-wider text-rose-950 dark:text-white uppercase">
           Isafer Boutique
         </div>
 
-        <div className="w-24 text-right">
-          <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-widest hidden sm:inline">Acerca de Nosotros</span>
+        <div className="w-24 flex justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative rounded-full size-9 sm:size-10 text-rose-800 hover:text-rose-600 hover:bg-rose-100/40 transition-transform active:scale-95 cursor-pointer"
+            onClick={onOpenFavorites}
+            title="Mis Favoritos"
+            aria-label="Ver productos favoritos"
+          >
+            <Heart className={`size-5 ${favCount > 0 ? "fill-rose-500 text-rose-500" : ""}`} />
+            {favCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex size-4 sm:size-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-xs">
+                {favCount}
+              </span>
+            )}
+          </Button>
         </div>
       </header>
 

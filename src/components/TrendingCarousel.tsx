@@ -19,6 +19,7 @@ interface TrendingCarouselProps {
   favorites: Record<string | number, boolean>;
   toggleFavorite: (id: string | number) => void;
   addProduct: (id: string | number) => void;
+  onProductClick?: (product: ProductItem) => void;
   t: (key: any) => string;
 }
 
@@ -27,15 +28,14 @@ export function TrendingCarousel({
   favorites,
   toggleFavorite,
   addProduct,
+  onProductClick,
   t,
 }: TrendingCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [thumbWidth, setThumbWidth] = useState(25); // Default thumb width percentage
+  const [thumbWidth, setThumbWidth] = useState(25);
 
-  // Filter a curated selection of products to display as "Trending" (e.g. first 6 products)
   const baseTrendingProducts = products.slice(0, 6);
-  // Repeat 4 times to create an infinite-like scrolling experience
   const trendingProducts = [...baseTrendingProducts, ...baseTrendingProducts, ...baseTrendingProducts, ...baseTrendingProducts].map((p, idx) => ({
     ...p,
     uniqueKey: `${p.id}-${idx}`,
@@ -55,7 +55,7 @@ export function TrendingCarousel({
       setScrollProgress(progress);
 
       const visibleRatio = clientWidth / scrollWidth;
-      setThumbWidth(Math.max(15, visibleRatio * 100)); // Minimum 15% width
+      setThumbWidth(Math.max(15, visibleRatio * 100));
     }
   };
 
@@ -63,10 +63,7 @@ export function TrendingCarousel({
     const container = containerRef.current;
     if (container) {
       container.addEventListener("scroll", handleScroll);
-      // Trigger initial layout calculation
       handleScroll();
-      
-      // Listen to resize to recalculate thumb width
       window.addEventListener("resize", handleScroll);
 
       return () => {
@@ -74,16 +71,20 @@ export function TrendingCarousel({
         window.removeEventListener("resize", handleScroll);
       };
     }
-  }, [trendingProducts.length]); // Use length instead of object reference
+  }, [trendingProducts.length]);
 
-  // Render product image or fallback
+  const fallbackUnsplash = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
+
   const renderProductImage = (p: ProductItem) => {
     if (p.image) {
       return (
         <img
           src={p.image}
-          alt={p.name}
+          alt={p.name || "Prenda Isafer Boutique"}
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = fallbackUnsplash;
+          }}
           className="absolute top-0 left-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 rounded-none"
         />
       );
@@ -91,8 +92,11 @@ export function TrendingCarousel({
     return (
       <img
         src={productsImage}
-        alt={p.name}
+        alt={p.name || "Prenda Isafer Boutique"}
         loading="lazy"
+        onError={(e) => {
+          e.currentTarget.src = fallbackUnsplash;
+        }}
         className={`absolute top-0 h-full w-[400%] max-w-none object-cover transition-transform duration-700 ease-out group-hover:scale-105 rounded-none ${p.position || "left-0"}`}
       />
     );
@@ -126,7 +130,8 @@ export function TrendingCarousel({
           {trendingProducts.map((product) => (
             <div
               key={product.uniqueKey}
-              className="min-w-[70%] sm:min-w-[35%] md:min-w-[28%] lg:min-w-[22%] snap-start flex flex-col group rounded-none"
+              onClick={() => onProductClick?.(product)}
+              className="min-w-[70%] sm:min-w-[35%] md:min-w-[28%] lg:min-w-[22%] snap-start flex flex-col group rounded-none cursor-pointer"
             >
               {/* Product Image Container with sharp corners */}
               <div className="relative aspect-[3/4] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900 rounded-none border border-zinc-100 dark:border-zinc-900">

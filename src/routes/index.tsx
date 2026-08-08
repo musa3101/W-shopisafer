@@ -1,13 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Instagram,
+  Phone,
   MapPin,
   Menu,
   MessageCircle,
   Minus,
   Plus,
   ShoppingBag,
-  Sparkles,
+
   Trash2,
   User,
   ShieldCheck,
@@ -34,13 +35,14 @@ import {
   FileText,
   Cookie,
 } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { TikTokIcon, WhatsAppIcon } from "@/components/SocialIcons";
 
 import heroImage from "@/assets/rosse-hero.jpg";
 import camilaOwnerHero from "@/assets/camila-owner-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
+import sobreNosotrosImg from "@/assets/sobrenostros.jpg";
 import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail, fetchCartById, saveCart, deleteCart, subscribeToNewsletter } from "@/services/insforgeService";
 import { fetchUserFavorites, addFavorite, removeFavorite, syncGuestFavorites } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
@@ -51,6 +53,7 @@ import { AboutUsModal } from "@/components/AboutUsModal";
 import { AboutPage } from "@/components/AboutPage";
 import { ProductDetailModal, ProductItem } from "@/components/ProductDetailModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CtaButton } from "@/components/CtaButton";
 import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/i18n";
@@ -125,7 +128,49 @@ function AnimatedOfferBanner() {
   );
 }
 
+function AnimatedOwnerImage() {
+  const [isVisible, setIsVisible] = useState(false);
+  const imgRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
+      },
+      { threshold: 0.2 }
+    );
+    if (imgRef.current) observer.observe(imgRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={imgRef}
+      className={`relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 shrink-0 transition-all duration-1000 ease-out transform ${
+        isVisible ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-12 scale-95"
+      }`}
+    >
+      {/* Glow Backdrop */}
+      <div className="absolute inset-0 bg-white/40 rounded-[2.5rem] sm:rounded-[3rem] animate-pulse filter blur-xl" />
+      
+      {/* Image Frame */}
+      <div className="relative w-full h-full p-2 bg-white/80 backdrop-blur-md rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl shadow-rose-950/20 group hover:-translate-y-2 transition-all duration-500">
+        <div className="w-full h-full overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-pink-100 relative">
+          <img
+            src={sobreNosotrosImg}
+            alt="Camila, dueña de Isafer Boutique"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+          />
+        </div>
+        
+        {/* Floating Tag */}
+        <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white px-5 py-3 rounded-full shadow-xl border border-pink-100 z-20 flex items-center gap-2 transform -rotate-6 group-hover:rotate-0 transition-all duration-300">
+          <span className="font-display text-rose-950 font-black text-sm sm:text-lg">Camila ✨</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const products: ProductItem[] = [
   {
@@ -265,25 +310,32 @@ function getOptimizedImageUrl(url?: string): string | undefined {
 
 function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string; product?: ProductItem }) {
   const p = product ?? (id !== undefined ? products.find(prod => String(prod.id) === String(id)) : undefined);
+  const [imgSrc, setImgSrc] = useState<string>(() => {
+    if (p?.image) return getOptimizedImageUrl(p.image);
+    return getOptimizedImageUrl(productsImage);
+  });
+
+  useEffect(() => {
+    if (p?.image) setImgSrc(getOptimizedImageUrl(p.image));
+    else setImgSrc(getOptimizedImageUrl(productsImage));
+  }, [p?.image]);
+
   if (!p) return null;
-  if (p.image) {
-    return (
-      <img
-        src={getOptimizedImageUrl(p.image)}
-        alt={alt || p.name}
-        loading="lazy"
-        className="absolute top-0 left-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-      />
-    );
-  }
+
+  const isSprite = !p.image;
+  const fallbackUnsplash = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
+
   return (
     <img
-      src={getOptimizedImageUrl(productsImage)}
-      alt={alt || p.name}
+      src={imgSrc}
+      alt={alt || p.name || "Prenda Isafer Boutique"}
       loading="lazy"
-      width={1536}
-      height={1024}
-      className={`absolute top-0 h-full w-[400%] max-w-none object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${p.position || "left-0"}`}
+      onError={() => {
+        setImgSrc(fallbackUnsplash);
+      }}
+      className={`absolute top-0 h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${
+        isSprite ? `w-[400%] max-w-none ${p.position || "left-0"}` : "left-0 w-full"
+      }`}
     />
   );
 }
@@ -319,7 +371,7 @@ function Index() {
   const [currentView, setCurrentView] = useState<"shop" | "about">("shop");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  // Carrusel dinámico de Hero (Camila como foto #1 oficial)
+  // Carrusel dinámico de Hero
   const heroImages = useMemo(() => [
     camilaOwnerHero,
     heroImage,
@@ -356,13 +408,18 @@ function Index() {
             category = "Accesorios & Glam";
           }
 
+          let imgUrl = bp.images && bp.images.length > 0 ? bp.images[0] : undefined;
+          if (imgUrl && imgUrl.includes("insforge.app") && (imgUrl.includes("catalog%2FIMG_") || imgUrl.includes("catalog/IMG_"))) {
+            imgUrl = undefined; // Fallback to local sprite productsImage asset
+          }
+
           return {
             id: bp.id || idx,
             name: bp.name,
             price: Number(bp.price),
             category,
             tag: bp.badge || "Destacado",
-            image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
+            image: imgUrl,
             description: bp.description || "",
             stripe_price_id: bp.stripe_price_id,
             sizes: bp.sizes && bp.sizes.length > 0 ? bp.sizes : undefined,
@@ -800,9 +857,11 @@ function Index() {
   };
 
   const scrollToSection = (id: string) => {
-    const target = document.getElementById(id);
+    const target = document.getElementById(id) || document.querySelector(`[data-section="${id}"]`);
     if (target) {
       target.scrollIntoView({ behavior: "smooth" });
+    } else if (id === "coleccion") {
+      window.scrollTo({ top: 600, behavior: "smooth" });
     }
   };
 
@@ -992,9 +1051,7 @@ function Index() {
     return productsList.filter((p) => p.category === activeCategory);
   }, [activeCategory, productsList]);
 
-  if (currentView === "about") {
-    return <AboutPage onBackToShop={() => setCurrentView("shop")} />;
-  }
+
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900 dark:selection:text-amber-100">
@@ -1143,7 +1200,10 @@ function Index() {
                       <Button
                         variant="outline"
                         className="mt-6 w-full rounded-xl border border-rose-200 bg-white text-[#ff007f] hover:bg-rose-50/50 text-xs font-black uppercase tracking-widest py-3.5 shadow-sm cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
-                        onClick={() => setCartOpen(false)}
+                        onClick={() => {
+                          setCartOpen(false);
+                          scrollToSection("coleccion");
+                        }}
                       >
                         Explorar Colección
                       </Button>
@@ -1293,7 +1353,7 @@ function Index() {
             return (
               <div
                 key={src}
-                className={`absolute inset-0 h-full w-full transition-opacity duration-1000 ease-in-out ${
+                className={`absolute inset-0 h-full w-full transition-opacity duration-[3000ms] ease-in-out ${
                   isActive ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                 }`}
               >
@@ -1345,41 +1405,15 @@ function Index() {
               </p>
 
               {/* Botón CTA compacto */}
-              <div className="mt-4 sm:mt-6 flex items-center">
-                <Button
-                  asChild
-                  className="h-9 sm:h-11 rounded-full px-5 sm:px-7 text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.15em] sm:tracking-[0.18em] bg-rose-600 hover:bg-rose-500 text-white shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer border border-rose-400/40"
-                >
-                  <a
-                    href="#coleccion"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection("coleccion");
-                    }}
-                    className="flex items-center justify-center gap-1.5"
-                  >
-                    {t("hero_cta_primary")} ✦
-                  </a>
-                </Button>
-              </div>
-
-              {/* Social Proof Stats - hidden on mobile */}
-              <div className="mt-8 hidden sm:flex items-center gap-6 pt-6 border-t border-white/20 text-xs text-zinc-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
-                <div className="flex items-center gap-1.5">
-                  <div className="flex -space-x-1">
-                    {[1, 2, 3, 4].map((i) => (
-                      <span
-                        key={i}
-                        className="inline-flex size-6 items-center justify-center rounded-full bg-rose-600/30 border border-rose-400 text-[10px] font-bold text-rose-300"
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <span className="font-semibold text-zinc-100 ml-1">4.9/5 Rating</span>
-                </div>
-                <span className="text-zinc-500">•</span>
-                <span className="text-zinc-100 font-medium">+1,200 Pedidos en NYC & EE. UU.</span>
+              <div className="mt-4 sm:mt-8 flex items-center">
+                <CtaButton
+                  href="#coleccion"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection("coleccion");
+                  }}
+                  text={t("hero_cta_primary")}
+                />
               </div>
             </div>
           </div>
@@ -1394,50 +1428,53 @@ function Index() {
           favorites={favorites}
           toggleFavorite={toggleFavorite}
           addProduct={addProduct}
+          onProductClick={openProductModal}
           t={t}
         />
 
-        {/* 4. BENTO GRID CATEGORIES (uipro-max skill) */}
-        <section id="categorias" className="scroll-mt-20 py-16 sm:py-24 bg-zinc-900 text-zinc-100">
+        {/* 4. BENTO GRID CATEGORIES (Barbie Style) */}
+        <section id="categorias" className="scroll-mt-20 py-16 sm:py-24 bg-rose-50 dark:bg-[#1a0f14]">
           <div className="mx-auto max-w-7xl px-5 sm:px-8">
             <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
-                  ESTRUCTURA DE ESTILOS
+                <p className="text-xs font-black uppercase tracking-[0.3em] text-pink-500 flex items-center gap-2">
+                  <Gem className="size-4" /> ESTRUCTURA DE ESTILOS
                 </p>
-                <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
-                  Colecciones Bento
+                <h2 className="mt-2 font-display text-5xl sm:text-7xl font-black tracking-tighter text-rose-900 dark:text-rose-100 italic drop-shadow-sm">
+                  Colecciones Luxe
                 </h2>
               </div>
-              <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">
-                Selecciona la categoría perfecta para tu próxima salida o evento.
+              <p className="text-xs sm:text-sm font-medium text-rose-700/80 dark:text-rose-300/80 max-w-xs leading-relaxed">
+                Selecciona la categoría perfecta para tu próxima salida o evento. Brilla con estilo.
               </p>
             </div>
 
             {/* Asymmetric Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Bento Card 1: Large Featured (Licras Moldeadoras) */}
               <div
                 onClick={() => {
                   setActiveCategory("Licras");
                   scrollToSection("coleccion");
                 }}
-                className="group relative md:col-span-2 aspect-[4/3] md:aspect-auto md:h-96 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 flex flex-col justify-end cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl"
+                className="group relative md:col-span-2 aspect-[4/3] md:aspect-auto md:h-[400px] overflow-hidden rounded-[2rem] border-4 border-white/60 dark:border-rose-900/40 shadow-xl cursor-pointer transition-all duration-500 hover:border-pink-400 hover:shadow-pink-500/20 hover:shadow-2xl hover:-translate-y-1"
               >
                 <ProductCrop product={productsList[3] || productsList[0]} />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-                <div className="relative z-10">
-                  <span className="inline-block rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-950 mb-2">
-                    Efecto Reloj de Arena
-                  </span>
-                  <h3 className="font-display text-3xl sm:text-4xl font-extrabold text-white">
-                    Licras Moldeadoras
-                  </h3>
-                  <p className="mt-1 text-xs text-zinc-300 max-w-md">
-                    Compresión inteligente con tejido moldeador que ajusta la cintura y esculpe la silueta sin perder comodidad.
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400 group-hover:translate-x-1 transition-transform">
-                    Ver Licras <ArrowRight className="size-3.5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-pink-950 via-pink-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                <div className="relative z-10 p-8 flex flex-col justify-end h-full">
+                  <div>
+                    <span className="inline-block rounded-full bg-pink-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white mb-3 shadow-md">
+                      Efecto Reloj de Arena
+                    </span>
+                    <h3 className="font-display text-4xl sm:text-5xl font-black text-white italic drop-shadow-md">
+                      Licras Moldeadoras
+                    </h3>
+                    <p className="mt-2 text-sm text-pink-100 max-w-md font-medium">
+                      Compresión inteligente con tejido moldeador que ajusta la cintura y esculpe la silueta sin perder comodidad.
+                    </p>
+                  </div>
+                  <span className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-pink-300 group-hover:text-pink-200 group-hover:translate-x-1 transition-all">
+                    Ver Licras <ArrowRight className="size-4" />
                   </span>
                 </div>
               </div>
@@ -1448,18 +1485,20 @@ function Index() {
                   setActiveCategory("Vestidos");
                   scrollToSection("coleccion");
                 }}
-                className="group relative aspect-[3/4] md:h-96 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 flex flex-col justify-end cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl"
+                className="group relative aspect-[3/4] md:h-[400px] overflow-hidden rounded-[2rem] border-4 border-white/60 dark:border-rose-900/40 shadow-xl cursor-pointer transition-all duration-500 hover:border-pink-400 hover:shadow-pink-500/20 hover:shadow-2xl hover:-translate-y-1"
               >
                 <ProductCrop product={productsList[7] || productsList[0]} />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-                <div className="relative z-10">
-                  <span className="inline-block rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-semibold uppercase text-zinc-300 mb-2">
-                    Sensual & Noche
-                  </span>
-                  <h3 className="font-display text-2xl font-bold text-white">Vestidos de Malla</h3>
-                  <p className="mt-1 text-xs text-zinc-400">Transparencias y drapeados sexy.</p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 group-hover:translate-x-1 transition-transform">
-                    Explorar <ArrowRight className="size-3.5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-pink-950 via-pink-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                <div className="relative z-10 p-6 flex flex-col justify-end h-full">
+                  <div>
+                    <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white mb-3">
+                      Sensual & Noche
+                    </span>
+                    <h3 className="font-display text-3xl font-black text-white italic drop-shadow-md">Vestidos de Malla</h3>
+                    <p className="mt-1 text-xs text-pink-100 font-medium">Transparencias y drapeados sexy.</p>
+                  </div>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-pink-300 group-hover:text-pink-200 group-hover:translate-x-1 transition-all">
+                    Explorar <ArrowRight className="size-4" />
                   </span>
                 </div>
               </div>
@@ -1470,18 +1509,20 @@ function Index() {
                   setActiveCategory("Tops & Sets");
                   scrollToSection("coleccion");
                 }}
-                className="group relative aspect-[3/4] md:h-96 overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 flex flex-col justify-end cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:shadow-2xl"
+                className="group relative aspect-[3/4] md:h-[400px] overflow-hidden rounded-[2rem] border-4 border-white/60 dark:border-rose-900/40 shadow-xl cursor-pointer transition-all duration-500 hover:border-pink-400 hover:shadow-pink-500/20 hover:shadow-2xl hover:-translate-y-1"
               >
                 <ProductCrop product={productsList[0]} />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-                <div className="relative z-10">
-                  <span className="inline-block rounded-full bg-zinc-800 border border-zinc-700 px-2.5 py-0.5 text-[10px] font-semibold uppercase text-zinc-300 mb-2">
-                    Outfits 2 Piezas
-                  </span>
-                  <h3 className="font-display text-2xl font-bold text-white">Tops & Sets</h3>
-                  <p className="mt-1 text-xs text-zinc-400">Bandeau, nudos y piezas combinables.</p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 group-hover:translate-x-1 transition-transform">
-                    Explorar <ArrowRight className="size-3.5" />
+                <div className="absolute inset-0 bg-gradient-to-t from-pink-950 via-pink-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                <div className="relative z-10 p-6 flex flex-col justify-end h-full">
+                  <div>
+                    <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white mb-3">
+                      Outfits 2 Piezas
+                    </span>
+                    <h3 className="font-display text-3xl font-black text-white italic drop-shadow-md">Tops & Sets</h3>
+                    <p className="mt-1 text-xs text-pink-100 font-medium">Bandeau, nudos y combinables.</p>
+                  </div>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-pink-300 group-hover:text-pink-200 group-hover:translate-x-1 transition-all">
+                    Explorar <ArrowRight className="size-4" />
                   </span>
                 </div>
               </div>
@@ -1650,159 +1691,164 @@ function Index() {
           </div>
         </section>
 
-        {/* 6. EDITORIAL BANNER SECTION (IDÉNTICO A CAMILA SEVILLA REF FRAME 006) */}
-        <section id="historia" className="relative w-full h-[55vh] min-h-[400px] bg-zinc-900 overflow-hidden border-t border-b border-zinc-800">
-          <img
-            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000"
-            alt="Isafer Boutique — Moda con sensibilidad"
-            className="w-full h-full object-cover object-center opacity-85"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/20" />
+        {/* 6. EDITORIAL BANNER SECTION (Sobre Nosotros - Barbie Style Curved) */}
+        <section id="historia" className="relative w-full min-h-[450px] py-20 bg-gradient-to-r from-pink-300 to-rose-300 overflow-hidden flex items-center">
+          
+          {/* Top Curved Divider */}
+          <div className="absolute top-0 left-0 w-full overflow-hidden leading-[0] z-20">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full h-[40px] sm:h-[80px]">
+              <path d="M0,0 L1440,0 L1440,20 Q720,120 0,20 Z" className="fill-rose-50 dark:fill-[#1a0f14]" />
+            </svg>
+          </div>
 
-          {/* Text Overlay on Bottom Left (Frame 006 & Frame 018 replica) */}
-          <div className="absolute bottom-8 left-6 sm:left-12 max-w-2xl text-white space-y-4 pr-6">
-            <p className="text-sm sm:text-xl font-sans font-normal leading-relaxed text-zinc-100 drop-shadow-md">
-              Desde 2024 creamos moda con sensibilidad, con corazón. No es solo diseñar ropa, es poner un poco de alma en cada pieza.
-            </p>
+          <div className="relative z-30 max-w-7xl mx-auto w-full px-6 sm:px-12 flex flex-col md:flex-row items-center justify-between gap-12 lg:gap-24">
+            {/* Text Content */}
+            <div className="max-w-xl space-y-6 text-center md:text-left mt-8 md:mt-0">
+              <h2 className="font-sans text-4xl sm:text-5xl lg:text-6xl font-black text-rose-950 tracking-tight drop-shadow-sm">
+                Nuestra Esencia
+              </h2>
+              <p className="text-sm sm:text-lg lg:text-xl font-semibold leading-relaxed text-rose-950/80 drop-shadow-sm">
+                Desde 2024 creamos moda con sensibilidad, con corazón. No es solo diseñar ropa, es poner un poco de alma en cada pieza.
+              </p>
 
-            <div>
-              <button
-                onClick={() => setCurrentView("about")}
-                className="px-6 py-3 border border-white text-white text-xs font-black uppercase tracking-[0.25em] bg-black/40 hover:bg-white hover:text-zinc-950 transition-all cursor-pointer shadow-lg active:scale-95"
-              >
-                Nuestra Historia
-              </button>
+              <div className="pt-2 flex justify-center md:justify-start">
+                <button
+                  onClick={() => setCurrentView("about")}
+                  className="px-8 py-4 rounded-full bg-rose-950 text-pink-100 text-xs font-bold uppercase tracking-[0.2em] hover:bg-rose-900 transition-all cursor-pointer shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 border-0"
+                >
+                  Nuestra Historia
+                </button>
+              </div>
             </div>
+
+            {/* Image Overlay on Right */}
+            <AnimatedOwnerImage />
+          </div>
+
+          {/* Bottom Curved Divider */}
+          <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-20 rotate-180">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full h-[40px] sm:h-[80px]">
+              <path d="M0,0 L1440,0 L1440,20 Q720,120 0,20 Z" className="fill-zinc-50 dark:fill-zinc-950" />
+            </svg>
           </div>
         </section>
 
-
-
-        {/* 7. VISÍTANOS EN BROOKLYN (SHOWROOM CARD) */}
-        <section id="visitanos" className="scroll-mt-20 py-20 px-5 bg-background">
-          <div className="mx-auto max-w-5xl rounded-3xl border border-rose-200/60 dark:border-rose-900/40 bg-card p-8 sm:p-14 text-center shadow-2xl relative overflow-hidden">
-            <div className="inline-flex size-14 items-center justify-center rounded-full bg-rose-500/10 text-rose-500 mb-6">
-              <MapPin className="size-7" />
+        {/* 7. VISÍTANOS EN BROOKLYN (BENTO SHOWROOM) */}
+        <section id="visitanos" className="scroll-mt-20 py-24 px-5 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-zinc-200/50 dark:bg-grid-white/[0.02] bg-[size:32px_32px]" />
+          <div className="mx-auto max-w-6xl relative z-10">
+            <div className="flex flex-col gap-2 mb-12 text-center sm:text-left">
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-rose-500">Nuestra Tienda Física y Showroom</span>
+              <h2 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight">Visítanos en Brooklyn</h2>
             </div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-rose-500">
-              NUESTRA TIENDA FÍSICA Y SHOWROOM
-            </p>
-            <h2 className="mt-2 font-display text-4xl sm:text-6xl font-extrabold tracking-tight">
-              Visítanos en Brooklyn
-            </h2>
-            <p className="mt-4 text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 flex items-center justify-center gap-2">
-              <span>📍 4711 4th Ave, Brooklyn, NY 11220, Estados Unidos</span>
-            </p>
-            <p className="mt-1 text-xs font-mono text-zinc-500 dark:text-zinc-400">
-              Sunset Park · Teléfono Local: <a href="tel:+19293531953" className="font-bold underline hover:text-rose-500">+1 (929) 353-1953</a>
-            </p>
-            <p className="mt-3 text-xs text-muted-foreground max-w-md mx-auto">
-              Pruebas privadas de vestuario, asesoría de estilo personalizada y atención directa en boutique.
-            </p>
-
-            {/* Operating Hours Box */}
-            <div className="mt-8 mx-auto max-w-md p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/60 text-left">
-              <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 pb-3 mb-3">
-                <span className="text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                  <Clock className="size-4 text-rose-500" /> Horario de Atención
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
-                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse"></span> Abierto hoy hasta las 8:00 PM
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-y-1.5 text-xs">
-                <div className="font-semibold text-zinc-500">Lunes:</div>
-                <div className="font-bold text-rose-500 text-right">Cerrado</div>
-                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Martes:</div>
-                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
-                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Miércoles:</div>
-                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
-                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Jueves:</div>
-                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
-                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Viernes:</div>
-                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
-                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Sábado:</div>
-                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
-                <div className="font-semibold text-zinc-700 dark:text-zinc-300">Domingo:</div>
-                <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11:00 AM – 8:00 PM</div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col items-center justify-center gap-4">
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button asChild className="h-12 rounded-full px-8 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs uppercase tracking-wider shadow-md">
-                  <a
-                    href="https://maps.app.goo.gl/2kHjqUHMUXyegViK8"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Abrir en Google Maps <MapPin className="ml-2 size-4" />
-                  </a>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-12 rounded-full px-8 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs uppercase tracking-wider"
-                >
-                  <a
-                    href={`https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20quiero%20agendar%20una%20visita%20al%20Showroom%20en%204711%204th%20Ave`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Agendar Cita previa <WhatsAppIcon className="ml-2 size-4 text-emerald-400" />
-                  </a>
-                </Button>
+            
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Address / Map */}
+              <div className="md:col-span-12 lg:col-span-8 group relative overflow-hidden rounded-[2rem] border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-8 sm:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 backdrop-blur-xl">
+                 <div className="absolute -right-10 -bottom-10 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-700 transform group-hover:scale-110 pointer-events-none">
+                   <MapPin className="w-96 h-96" />
+                 </div>
+                 <div className="relative z-10 flex flex-col h-full justify-between">
+                    <div>
+                      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 mb-6 border border-rose-500/20 shadow-sm">
+                        <MapPin className="size-7" />
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-bold mb-4 tracking-tight">4711 4th Ave, Brooklyn, NY</h3>
+                      <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-lg leading-relaxed font-medium">
+                        Pruebas privadas de vestuario, asesoría de estilo personalizada y atención directa en nuestra boutique en Sunset Park.
+                      </p>
+                    </div>
+                    <div className="mt-10 flex flex-wrap gap-4">
+                      <Button asChild className="h-14 rounded-full px-8 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs uppercase tracking-wider shadow-lg hover:-translate-y-1 transition-all">
+                        <a href="https://maps.app.goo.gl/2kHjqUHMUXyegViK8" target="_blank" rel="noreferrer">
+                          Abrir en Google Maps <MapPin className="ml-2 size-4" />
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline" className="h-14 rounded-full px-8 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 font-bold text-xs uppercase tracking-wider transition-all hover:-translate-y-1 bg-white/50 dark:bg-black/20 backdrop-blur-md">
+                        <a href={`https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique`} target="_blank" rel="noreferrer">
+                          Cita Previa <WhatsAppIcon className="ml-2 size-4 text-emerald-500" />
+                        </a>
+                      </Button>
+                    </div>
+                 </div>
               </div>
 
-              {/* Redes Sociales Movidas a Contacto */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 border-t border-zinc-200 dark:border-zinc-800 pt-6 w-full max-w-md">
-                <p className="w-full text-center text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2">
-                  Síguenos en nuestras Redes Oficiales
-                </p>
-                <a
-                  href="https://www.instagram.com/shopisafer"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-500/10 px-5 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                >
-                  <Instagram className="size-4" /> @shopisafer
-                </a>
-                <a
-                  href="https://www.tiktok.com/@shop_isafer1"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 transition-all shadow-sm"
-                >
-                  <TikTokIcon className="size-4 text-cyan-400" /> TikTok @shop_isafer1
-                </a>
+              {/* Operating Hours */}
+              <div className="md:col-span-6 lg:col-span-4 group relative overflow-hidden rounded-[2rem] border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-8 shadow-xl hover:shadow-2xl transition-all duration-500 backdrop-blur-xl">
+                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/10 pb-5 mb-5">
+                   <span className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                     <Clock className="size-4 text-emerald-500" /> Horario
+                   </span>
+                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
+                     <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Abierto
+                   </span>
+                 </div>
+                 <div className="grid grid-cols-2 gap-y-3.5 text-sm">
+                   <div className="font-semibold text-zinc-400">Lunes:</div>
+                   <div className="font-bold text-rose-500 text-right">Cerrado</div>
+                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Martes:</div>
+                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
+                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Miércoles:</div>
+                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
+                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Jueves:</div>
+                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
+                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Viernes:</div>
+                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
+                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Sábado:</div>
+                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
+                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Domingo:</div>
+                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
+                 </div>
+              </div>
+
+              {/* Contact / Social Grid */}
+              <div className="md:col-span-6 lg:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                 {/* Phone */}
+                 <a href="tel:+19293531953" className="group flex flex-col justify-center items-center text-center rounded-2xl border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 backdrop-blur-xl">
+                   <Phone className="size-5 sm:size-6 text-zinc-400 group-hover:text-rose-500 transition-colors mb-2" />
+                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 mb-0.5">Llámanos</span>
+                   <span className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors">+1 (929) 353-1953</span>
+                 </a>
+                 {/* Instagram */}
+                 <a href="https://www.instagram.com/shopisafer" target="_blank" rel="noreferrer" className="group flex flex-col justify-center items-center text-center rounded-2xl border border-rose-200/50 dark:border-rose-900/30 bg-rose-50/70 dark:bg-rose-950/20 p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 backdrop-blur-xl">
+                   <Instagram className="size-5 sm:size-6 text-rose-400 group-hover:text-rose-500 transition-colors mb-2" />
+                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-rose-500/70 mb-0.5">Síguenos</span>
+                   <span className="font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400">@shopisafer</span>
+                 </a>
+                 {/* TikTok */}
+                 <a href="https://www.tiktok.com/@shop_isafer1" target="_blank" rel="noreferrer" className="group flex flex-col justify-center items-center text-center rounded-2xl border border-zinc-200/50 dark:border-white/5 bg-zinc-900 p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 shadow-zinc-900/20">
+                   <TikTokIcon className="size-5 sm:size-6 text-cyan-400 group-hover:text-white transition-colors mb-2" />
+                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 mb-0.5">Tendencias</span>
+                   <span className="font-bold text-sm sm:text-base text-white">@shop_isafer1</span>
+                 </a>
               </div>
             </div>
           </div>
         </section>
       </main>
 
-      {/* 8. FOOTER E-COMMERCE LUXE (Organizado para Mac & Widescreen) */}
-      <footer className="border-t border-zinc-800/80 bg-[#0c0c0e] text-zinc-400 pt-16 pb-12 transition-all">
+      {/* 8. FOOTER E-COMMERCE LUXE (Barbie Style) */}
+      <footer className="border-t-2 border-rose-100 bg-rose-50 text-rose-900 pt-16 pb-12 transition-all">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           {/* VIP Newsletter Box (Diseño Editorial Centrado Luxe) */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-950 via-[#1e1319] to-zinc-950 border border-rose-500/30 p-8 sm:p-14 mb-16 shadow-[0_10px_40px_rgba(244,63,94,0.12)] flex flex-col items-center text-center">
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-white via-rose-50 to-pink-100 border-2 border-white p-8 sm:p-14 mb-16 shadow-xl shadow-rose-200/50 flex flex-col items-center text-center">
             {/* Luces de Neón Ambientales */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-rose-500/10 rounded-full filter blur-3xl -z-0 pointer-events-none" />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/10 rounded-full filter blur-2xl -z-0 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-pink-300/20 rounded-full filter blur-3xl -z-0 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-300/20 rounded-full filter blur-2xl -z-0 pointer-events-none" />
 
             <div className="relative z-10 w-full flex flex-col items-center">
               {/* Badge VIP */}
-              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[10px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase mb-4 shadow-xs">
-                <Sparkles className="size-3.5 text-rose-400 animate-pulse" /> CLUB VIP · ISAFÉR BOUTIQUE
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-pink-200 text-pink-600 text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 shadow-sm">
+                <Crown className="size-3.5 text-pink-500 animate-pulse" /> CLUB VIP · ISAFÉR BOUTIQUE
               </span>
 
               {/* Título Principal */}
-              <h3 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight max-w-2xl">
-                Consigue <span className="font-serif italic font-normal text-rose-400 drop-shadow-md">10% OFF</span> en tu primer pedido
+              <h3 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-rose-950 tracking-tight leading-tight max-w-2xl">
+                Consigue <span className="font-serif italic font-normal text-pink-500 drop-shadow-sm">10% OFF</span> en tu primer pedido
               </h3>
 
               {/* Subtítulo */}
-              <p className="mt-3 text-xs sm:text-sm text-zinc-300 font-medium max-w-lg leading-relaxed">
+              <p className="mt-4 text-xs sm:text-sm text-rose-700 font-medium max-w-lg leading-relaxed">
                 Recibe avisos VIP de lanzamientos secretos, ventas exclusivas y ofertas semanales directamente en tu email.
               </p>
 
@@ -1820,40 +1866,43 @@ function Index() {
                     }
                   }
                 }}
-                className="mt-8 w-full max-w-xl flex flex-col sm:flex-row items-center p-1.5 rounded-2xl sm:rounded-full bg-zinc-950/90 border border-rose-500/40 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-500/30 shadow-2xl transition-all duration-300 gap-2"
+                className="mt-8 w-full max-w-xl flex flex-col sm:flex-row items-center p-2 rounded-[2rem] sm:rounded-full bg-white/90 backdrop-blur-sm border-2 border-pink-100 focus-within:border-pink-300 focus-within:ring-4 focus-within:ring-pink-200/50 shadow-lg shadow-pink-100 transition-all duration-300 gap-2"
               >
                 <div className="relative flex-1 w-full flex items-center pl-4 py-1">
-                  <Mail className="size-4 text-rose-400 shrink-0" />
+                  <Mail className="size-5 text-pink-400 shrink-0" />
                   <input
                     type="email"
                     required
                     placeholder="Escribe tu correo electrónico..."
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
-                    className="w-full bg-transparent px-3 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none"
+                    className="w-full bg-transparent px-3 py-2.5 text-sm font-medium text-rose-950 placeholder-rose-300 focus:outline-none"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto rounded-xl sm:rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-extrabold text-xs uppercase tracking-[0.18em] px-8 py-3.5 shadow-lg shadow-rose-600/25 cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 border-0 h-12"
+                  className="w-full sm:w-auto rounded-xl sm:rounded-full bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-400 hover:to-rose-300 text-white font-black text-xs uppercase tracking-[0.15em] px-8 py-4 shadow-md shadow-pink-200 cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 border-0 h-12"
                 >
                   UNIRME VIP
                 </Button>
               </form>
 
               {/* Mensaje de Confianza */}
-              <p className="mt-4 text-[10px] text-zinc-500 font-mono tracking-wider">
+              <p className="mt-5 text-[10px] text-rose-400/80 font-medium tracking-wider">
                 🔒 Respetamos tu privacidad. Cancela tu suscripción en cualquier momento.
               </p>
             </div>
           </div>
 
+          {/* Separador negro */}
+          <hr className="border-t-2 border-zinc-950/10 mb-14" />
+
           {/* 4 Columns Grid Organizado */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-14 border-b border-zinc-800/60">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-14 border-b-2 border-zinc-950/10">
             {/* Col 1: Brand Identity */}
-            <div className="space-y-4 text-center md:text-left flex flex-col items-center md:items-start">
+            <div className="space-y-5 text-center md:text-left flex flex-col items-center md:items-start">
               <IsaferLogo variant="footer" size="lg" />
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-xs font-normal">
+              <p className="text-xs text-zinc-900 leading-relaxed max-w-xs font-medium">
                 Moda femenina moldeadora, sensual y elegante. Diseñado en Brooklyn, NY para resaltar la seguridad y belleza natural de la mujer.
               </p>
               <div className="pt-2 flex items-center gap-3">
@@ -1861,7 +1910,7 @@ function Index() {
                   href="https://www.instagram.com/shopisafer"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all shadow-sm group"
+                  className="w-10 h-10 rounded-full bg-white border border-pink-100 flex items-center justify-center text-rose-400 hover:text-white hover:border-pink-500 hover:bg-pink-500 transition-all shadow-sm group"
                   aria-label="Instagram @shopisafer"
                 >
                   <Instagram className="size-4 group-hover:scale-110 transition-transform" />
@@ -1870,7 +1919,7 @@ function Index() {
                   href="https://www.tiktok.com/@shop_isafer1"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all shadow-sm group"
+                  className="w-10 h-10 rounded-full bg-white border border-pink-100 flex items-center justify-center text-rose-400 hover:text-white hover:border-zinc-950 hover:bg-zinc-950 transition-all shadow-sm group"
                   aria-label="TikTok @shop_isafer1"
                 >
                   <TikTokIcon className="size-4 group-hover:scale-110 transition-transform" />
@@ -1879,7 +1928,7 @@ function Index() {
                   href={`https://wa.me/${OWNER_PHONE}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all shadow-sm group"
+                  className="w-10 h-10 rounded-full bg-white border border-pink-100 flex items-center justify-center text-rose-400 hover:text-white hover:border-emerald-500 hover:bg-emerald-500 transition-all shadow-sm group"
                   aria-label="WhatsApp Directo"
                 >
                   <WhatsAppIcon className="size-4 group-hover:scale-110 transition-transform" />
@@ -1888,16 +1937,16 @@ function Index() {
             </div>
 
             {/* Col 2: Colecciones */}
-            <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-rose-400 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> Colecciones
+            <div className="space-y-5 text-center md:text-left">
+              <h4 className="font-display text-sm font-black uppercase tracking-[0.2em] text-zinc-950 flex items-center justify-center md:justify-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" /> Colecciones
               </h4>
-              <ul className="space-y-3 text-xs text-zinc-400 font-medium">
+              <ul className="space-y-3.5 text-sm text-zinc-900 font-medium">
                 <li>
                   <a
                     href="#coleccion"
                     onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }}
-                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                    className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Fajas & Licras Moldeadoras
                   </a>
@@ -1906,7 +1955,7 @@ function Index() {
                   <a
                     href="#coleccion"
                     onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }}
-                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                    className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Vestidos Glam & Noche
                   </a>
@@ -1915,7 +1964,7 @@ function Index() {
                   <a
                     href="#coleccion"
                     onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }}
-                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                    className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Conjuntos & Tops Luxe
                   </a>
@@ -1924,7 +1973,7 @@ function Index() {
                   <a
                     href="#historia"
                     onClick={(e) => { e.preventDefault(); setAboutUsModalOpen(true); }}
-                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                    className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Nuestra Historia & Atelier
                   </a>
@@ -1933,26 +1982,32 @@ function Index() {
             </div>
 
             {/* Col 3: Servicio al Cliente */}
-            <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-rose-400 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> Servicio & Garantía
+            <div className="space-y-5 text-center md:text-left">
+              <h4 className="font-display text-sm font-black uppercase tracking-[0.2em] text-zinc-950 flex items-center justify-center md:justify-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" /> Servicio & Garantía
               </h4>
-              <ul className="space-y-3 text-xs text-zinc-400 font-medium flex flex-col items-center md:items-start">
+              <ul className="space-y-3.5 text-sm text-zinc-900 font-medium flex flex-col items-center md:items-start">
                 <li className="flex items-center gap-2.5">
-                  <Truck className="size-4 text-rose-400 shrink-0" />
-                  <span>Envíos Express (EE. UU. 24–48h)</span>
+                  <div className="p-1.5 rounded-full bg-white shadow-sm border border-pink-100">
+                    <Truck className="size-3.5 text-pink-400 shrink-0" />
+                  </div>
+                  <span>Envíos Express (EE. UU.)</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                  <div className="p-1.5 rounded-full bg-white shadow-sm border border-pink-100">
+                    <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                  </div>
                   <span>Garantía de Cambio de Talla</span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <a
                     href="#visitanos"
                     onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }}
-                    className="hover:text-rose-400 flex items-center gap-2.5 transition-colors"
+                    className="hover:text-pink-500 flex items-center gap-2.5 transition-colors"
                   >
-                    <Clock className="size-4 text-amber-400 shrink-0" />
+                    <div className="p-1.5 rounded-full bg-white shadow-sm border border-pink-100">
+                      <Clock className="size-3.5 text-amber-400 shrink-0" />
+                    </div>
                     <span>Visita Nuestra Tienda Física</span>
                   </a>
                 </li>
@@ -1961,51 +2016,56 @@ function Index() {
                     href={`https://wa.me/${OWNER_PHONE}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-rose-400 underline font-bold hover:text-rose-300 transition-colors flex items-center gap-1.5"
+                    className="text-pink-500 underline decoration-pink-300 underline-offset-4 font-bold hover:text-pink-400 transition-colors flex items-center gap-2"
                   >
-                    <WhatsAppIcon className="size-4 text-emerald-400" />
-                    Contacto Directo por WhatsApp
+                    <div className="p-1.5 rounded-full bg-emerald-50 shadow-sm border border-emerald-100">
+                      <WhatsAppIcon className="size-3.5 text-emerald-500" />
+                    </div>
+                    Asesoría por WhatsApp
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Col 4: Pagos Seguros */}
-            <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-rose-400 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> Pagos 100% Seguros
+            {/* Col 4: Contacto */}
+            <div className="space-y-5 text-center md:text-left">
+              <h4 className="font-display text-sm font-black uppercase tracking-[0.2em] text-zinc-950 flex items-center justify-center md:justify-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" /> Contacto
               </h4>
-              <p className="text-xs text-zinc-400 leading-relaxed font-normal">
-                Transacciones encriptadas SSL de 256 bits procesadas en tiempo real.
-              </p>
-              <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 pt-1">
-                {["Visa", "MasterCard", "Amex", "Apple Pay", "Google Pay", "Stripe"].map((pay) => (
-                  <span
-                    key={pay}
-                    className="px-3 py-1.5 rounded-lg bg-zinc-900/90 border border-zinc-800 text-[10px] font-bold tracking-wider text-zinc-300 shadow-xs hover:border-rose-500/30 transition-colors"
-                  >
-                    {pay}
-                  </span>
-                ))}
+              <ul className="space-y-3.5 text-sm text-zinc-900 font-medium">
+                <li className="flex items-center justify-center md:justify-start gap-2">
+                  <MapPin className="size-4 text-pink-400 shrink-0" />
+                  <span>4711 4th Ave, Brooklyn, NY</span>
+                </li>
+                <li>
+                  <a href="tel:+19293531953" className="flex items-center justify-center md:justify-start gap-2 hover:text-pink-500 transition-colors">
+                    <Phone className="size-4 text-pink-400 shrink-0" />
+                    <span>+1 (929) 353-1953</span>
+                  </a>
+                </li>
+                <li className="flex items-center justify-center md:justify-start gap-2">
+                  <Clock className="size-4 text-pink-400 shrink-0" />
+                  <span>Mar–Dom: 11 AM – 8 PM</span>
+                </li>
+              </ul>
+              <div className="flex items-center justify-center md:justify-start gap-1.5 pt-1 text-[10px] text-zinc-500 font-medium">
+                <Lock className="size-3 shrink-0" /> Pago seguro con tarjeta o Apple Pay
               </div>
-              <p className="text-[10px] text-zinc-500 font-mono flex items-center justify-center md:justify-start gap-1 pt-1">
-                🔒 Certificado de Seguridad SSL Activo
-              </p>
             </div>
           </div>
 
           {/* Subfooter (Pie de página) */}
-          <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-medium text-zinc-500">
+          <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold text-rose-500/80">
             <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-              <p>© 2026 Isafer Boutique. Todos los derechos reservados. Brooklyn, New York, NY 11201.</p>
-              <span className="hidden sm:inline text-zinc-800">•</span>
+              <p>© 2026 Isafer Boutique. Todos los derechos reservados.</p>
+              <span className="hidden sm:inline text-rose-300">•</span>
               <p>
                 Diseño por{" "}
                 <a
                   href="https://mynextbymusa.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-rose-400 hover:text-rose-300 font-black transition-colors underline decoration-dotted underline-offset-4"
+                  className="text-pink-500 hover:text-pink-400 font-black transition-colors underline decoration-dotted underline-offset-4"
                 >
                   MYNEXT
                 </a>
@@ -2014,19 +2074,19 @@ function Index() {
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setLegalType("privacy")}
-                className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 font-medium"
+                className="hover:text-pink-600 transition-colors cursor-pointer bg-transparent border-0 p-0 font-bold"
               >
                 {t("footer_privacy")}
               </button>
               <button
                 onClick={() => setLegalType("terms")}
-                className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 font-semibold"
+                className="hover:text-pink-600 transition-colors cursor-pointer bg-transparent border-0 p-0 font-bold"
               >
                 {t("footer_terms")}
               </button>
               <button
                 onClick={() => setLegalType("cookies")}
-                className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 font-semibold"
+                className="hover:text-pink-600 transition-colors cursor-pointer bg-transparent border-0 p-0 font-bold"
               >
                 {t("footer_cookies")}
               </button>
@@ -2104,11 +2164,11 @@ function Index() {
                   </AccordionTrigger>
                   <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
                     {[
-                      { label: t("catalog_filter_all"), category: "Todos", icon: Sparkles },
+                      { label: t("catalog_filter_all"), category: "Todos", icon: Grid },
                       { label: t("catalog_filter_shapewear"), category: "Licras", icon: Sliders },
                       { label: t("catalog_filter_dresses"), category: "Vestidos", icon: Crown },
                       { label: t("catalog_filter_sets"), category: "Tops & Sets", icon: Layers },
-                      { label: "Bodys & Corsets Moldeadores", category: "Bodys & Corsets", icon: Sparkles },
+                      { label: "Bodys & Corsets Moldeadores", category: "Bodys & Corsets", icon: Flame },
                       { label: "Accesorios Luxe & Glam", category: "Accesorios & Glam", icon: Gem },
                       { label: t("catalog_filter_protection"), category: "Gas Pimienta", icon: ShieldCheck },
                     ].map((item) => (
@@ -2318,7 +2378,7 @@ function Index() {
                       }, 100);
                     }}
                   >
-                    <div className="w-10 h-12 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
+                    <div className="relative w-10 h-12 rounded-lg overflow-hidden bg-zinc-50 shrink-0">
                       <ProductCrop product={p} />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -2378,7 +2438,7 @@ function Index() {
                 .filter((p) => favorites[p.id])
                 .map((p) => (
                   <div key={p.id} className="flex gap-4 p-3 rounded-2xl border border-rose-100/50 bg-white/50 shadow-xs relative group">
-                    <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 shrink-0">
+                    <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 shrink-0">
                       <ProductCrop product={p} />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
@@ -2659,6 +2719,15 @@ function Index() {
 
       {/* MODAL / PESTAÑA SOBRE NOSOTROS & NUESTRA HISTORIA */}
       <AboutUsModal open={aboutUsModalOpen} onOpenChange={setAboutUsModalOpen} />
+
+      {/* FIXED FULLSCREEN ABOUT PAGE */}
+      {currentView === "about" && (
+        <AboutPage 
+          onBackToShop={() => setCurrentView("shop")} 
+          favCount={favCount}
+          onOpenFavorites={() => setFavoritesDrawerOpen(true)}
+        />
+      )}
     </div>
   );
 }

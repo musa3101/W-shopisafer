@@ -10,7 +10,6 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import faviconUrl from "../assets/favicon.png?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "../components/ui/sonner";
 
@@ -103,11 +102,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "icon",
         type: "image/png",
-        href: faviconUrl,
+        href: "/favicon.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        href: "/apple-touch-icon.png",
       },
       {
         rel: "shortcut icon",
-        href: faviconUrl,
+        href: "/favicon.png",
       },
       {
         rel: "stylesheet",
@@ -143,12 +146,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 import { LanguageProvider } from "../lib/i18n";
 
+import { InitialLoader } from "@/components/InitialLoader";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
+        <InitialLoader />
         <Outlet />
         <Toaster position="bottom-center" />
       </LanguageProvider>
