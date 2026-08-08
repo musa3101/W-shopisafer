@@ -11,7 +11,7 @@ echo -e "${YELLOW}🚀 Iniciando proceso de automatización y despliegue...${NC}
 
 # 1. Compilación del proyecto
 echo -e "${YELLOW}📦 Compilando aplicación localmente...${NC}"
-npm run build
+NODE_OPTIONS="--dns-result-order=ipv4first" npm run build
 echo -e "${GREEN}✓ Aplicación compilada correctamente.${NC}"
 
 # 2. Despliegue a Cloudflare Pages (isaferboutique)

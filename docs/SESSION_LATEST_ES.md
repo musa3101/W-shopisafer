@@ -10,7 +10,7 @@
    - Se configuró la suite completa de pruebas E2E con Playwright en `e2e/` (19 especificaciones).
 
 2. **Auditoría Integral de 3 Fases (Frontend, Backend InsForge y Pruebas Adversariales)**:
-   - Creado y ejecutado el script `scripts/audit_3phases_complete.js` que probó navegación, catálogo, carrito, modales, RLS en Postgres, autenticación, protección de rutas y casos adversariales.
+   - Creado y ejecutado el script `scripts/audit_3phases_complete.js` probando navegación, catálogo, carrito, modales, RLS en Postgres, autenticación, protección de rutas y casos adversariales.
 
 3. **Corrección Total de los 7 Errores Identificados**:
    - **Imágenes Rotas (BUG-001):** Asignación de assets locales optimizados y fallbacks de moda en alta resolución por categoría.
@@ -30,7 +30,13 @@
    - 100% de los componentes traducidos en Español e Inglés sin claves faltantes.
    - 0px de desbordamiento horizontal en Móvil (375px), Tablet (768px) y Escritorio (1440px).
 
-6. **Compilación y Pruebas (100% Superado)**:
+6. **Despliegue Exclusivo en Cloudflare Pages y Limpieza**:
+   - Eliminados los Workers antiguos `isafer` y `shopisafer` mediante la API/CLI de Cloudflare.
+   - Proyecto Cloudflare Pages **`isaferboutique`** vinculado nativamente a GitHub `musa3101/W-shopisafer` (rama `dev`).
+   - URL activa y verificada: `https://isaferboutique.pages.dev` (HTTP 200 OK).
+   - Limpieza completa de archivos temporales e imágenes sueltas en la raíz del proyecto.
+
+7. **Compilación y Pruebas (100% Superado)**:
    - **Playwright E2E:** 19/19 tests aprobados.
    - **Audit 3-Phases:** 19/19 comprobaciones aprobadas.
    - **Vite Build:** Compilación limpia con prerenderizado de 8 páginas static/SSR.
@@ -45,9 +51,8 @@
 - `src/components/TrendingCarousel.tsx` (Card click handler y fallback image)
 - `src/components/InitialLoader.tsx` (Optimización de animación a 1.6s)
 - `src/services/insforgeService.ts` (Validación de pedidos con montos negativos)
-- `scripts/deep_qa_audit.js` (Script de re-auditoría QA)
-- `scripts/audit_3phases_complete.js` (Script de auditoría integral Fases 1, 2 y 3)
-- `scripts/verify_i18n_responsive.js` (Script de comprobación i18n y responsive)
+- `wrangler.jsonc` (Configuración oficial Cloudflare Pages isaferboutique)
+- `scripts/deploy_and_sync.sh` (Script de automatización de cierre y despliegue a Pages y Git)
 - `docs/QA_AUDIT_REPORT_ES.md` (Reporte de auditoría QA)
 - `docs/AUDIT_REPORT_3PHASES_ES.md` (Reporte de auditoría 3 Fases)
 - `docs/SESSION_LATEST_ES.md` (Este archivo)
@@ -60,6 +65,7 @@
 - Todos los 7 errores de la auditoría inicial resueltos y verificados.
 - Vulnerabilidad de acceso directo a `/admin` mitigada con `beforeLoad` guard.
 - Creación de pedidos con datos negativos bloqueada.
+- Eliminación de Workers obsoletos en Cloudflare.
 
 ---
 
