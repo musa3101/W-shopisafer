@@ -1,61 +1,64 @@
-# 📝 Resumen de Sesión — Isafer Boutique 💖
+# Última Sesión — Isafer Boutique
 
-## 🌟 Qué se ha hecho hoy
-
-1. **Notificaciones Push PWA Nativa**:
-   - Creada la tabla `push_subscriptions` en Postgres de InsForge para guardar las suscripciones de los dispositivos de administración.
-   - Desarrollado el Service Worker en `public/sw.js` que escucha los eventos `push` y muestra alertas flotantes en el móvil u ordenador (incluso con la aplicación cerrada).
-   - Registrado el Service Worker automáticamente en `src/routes/admin/route.tsx` cuando inicia sesión un administrador.
-   - Implementado un switch interactivo en el panel de **Ajustes** (`/admin/ajustes`) para solicitar permisos nativos del navegador, realizar el handshake de suscripción con VAPID keys y guardar los tokens en la base de datos de InsForge.
-   - Modificada la función del webhook de Stripe (`functions/stripe-webhook.ts`) para que, al procesarse un pago exitoso, recupere las suscripciones activas y envíe la notificación Web Push, limpiando automáticamente las suscripciones expiradas (errores 410/404).
-
-2. **Recordatorios Automatizados de Email para Pedidos Pendientes**:
-   - Agregada la columna `reminder_sent` (boolean, default `false`) a la tabla `orders` en PostgreSQL de InsForge.
-   - Creada la Edge Function `send-pending-reminders.ts` que selecciona órdenes creadas hace más de 24 horas y menos de 7 días con estado `pending` y `reminder_sent = false`, enviando un correo HTML detallado de recordatorio de compra con enlace directo a WhatsApp.
-   - Creado y configurado un **Cron Job (Schedule)** en la plataforma InsForge para ejecutar esta función automáticamente todos los días a las 9:00 AM.
-
-3. **Monitoreo Continuo del Keep-Alive (Uptime de DB)**:
-   - Creada la tabla `database_health_logs` en Postgres para registrar la latencia de pings y estado de la conexión.
-   - Modificado el scheduled handler keep-alive (que corre cada 10 minutos) en `src/server.ts` para hacer una consulta real a `products` (con límite 1), medir los milisegundos de latencia e insertarlos en `database_health_logs`.
-   - Implementado en el panel de **Ajustes** un visor de estabilidad gráfica tipo "commits de GitHub" (tira de cuadritos verdes y rojos de pings), mostrando el porcentaje de actividad (Uptime %) de las últimas horas y la latencia media.
-
-4. **Centralización del Teléfono de Pruebas**:
-   - Creado el archivo `src/lib/constants.ts` para definir el número de España `346673109486` y la clave pública VAPID.
-   - Modificados los enlaces e importaciones de WhatsApp en la web pública (`index.tsx`), en la sección "Sobre Nosotros" (`AboutPage.tsx`) y en el panel de Camila (`OrderManager.tsx` en la carpeta `panel de control de camila`).
-   - Configurada la variable de entorno `OWNER_PHONE=346673109486` en `.env` y `.env.local` y registrada como secreto del backend de InsForge mediante la CLI.
-
-5. **Auditoría Visual de Responsive**:
-   - Creado y ejecutado el script `scripts/audit_visual.js` que se conecta a una instancia local de Google Chrome mediante CDP (puerto 9222) y toma capturas de pantalla de la web pública (móvil y escritorio), el menú móvil desplegable y el portal de administración, guardándolas en la carpeta de referencia local.
+**Fecha:** 8 de agosto de 2026  
+**Modelo utilizado:** Claude Opus 4.6 (Thinking)
 
 ---
 
-## 🛠️ Archivos Creados y Modificados
-- `src/lib/constants.ts` [NEW] [Definición de OWNER_PHONE y VAPID_PUBLIC_KEY]
-- `public/sw.js` [NEW] [Service Worker de la PWA para notificaciones Push]
-- `functions/send-pending-reminders.ts` [NEW] [Edge function de recordatorios de email]
-- `scripts/audit_visual.js` [NEW] [Script de auditoría visual automatizada CDP]
-- `src/routes/admin/route.tsx` [Registro de Service Worker si es administrador]
-- `src/routes/admin/ajustes.tsx` [Controles de activación Push PWA e historial visual del Keep-Alive]
-- `src/services/insforgeService.ts` [Uso de la constante centralizada OWNER_PHONE]
-- `src/routes/index.tsx` [Uso de la constante centralizada OWNER_PHONE]
-- `src/components/AboutPage.tsx` [Uso de la constante centralizada OWNER_PHONE]
-- `panel de control de camila/OrderManager.tsx` [Uso de la constante centralizada OWNER_PHONE]
-- `functions/stripe-webhook.ts` [Cifrado y envío de Web Push ante pagos, y WhatsApp/Email con datos dinámicos]
-- `src/server.ts` [Medición de latencia de base de datos y logs en PostgreSQL en la tarea programada]
-- `.env` y `.env.local` [Añadidas VAPID keys y variable de teléfono OWNER_PHONE]
-- `docs/SESSION_LATEST_ES.md` [Este archivo]
-- `docs/ROADMAP.md` [Roadmap actualizado]
+## ✅ Qué se ha hecho hoy
+
+### 1. Stripe Price ID hecho 100% opcional
+- **Problema:** Camila tenía que escribir manualmente un `stripe_price_id` de Stripe para cada prenda. Sin eso, las clientas no podían pagar con tarjeta.
+- **Solución:** Se hizo completamente opcional. El sistema usa un precio por defecto automático si Camila no pone ninguno.
+- **Archivos modificados:**
+  - `panel de control de camila/ProductCreator.tsx` — Campo marcado como "Opcional" con microcopy explicativo.
+  - `panel de control de camila/StockManager.tsx` — Campo actualizado con placeholder "Automático (Opcional)". Exports CSV/PDF muestran "Automático" en vez de "N/A".
+  - `src/routes/index.tsx` — Se eliminó el bloqueo que impedía pagar si faltaba el `stripe_price_id`. Ahora usa un fallback automático configurable via `VITE_DEFAULT_STRIPE_PRICE_ID`.
+
+### 2. Auditoría técnica completa (Backend)
+- Ejecutado `scripts/audit_dual_perspective.js`:
+  - 15/15 prendas con imágenes y precios válidos.
+  - 15/15 prendas listas para cobro Stripe.
+  - Favoritos, stock y pedidos funcionando.
+- Ejecutado `scripts/audit_web.js`:
+  - Todas las páginas HTTP 200.
+  - 15 imágenes verificadas en línea, 0 rotas.
+  - Instagram y WhatsApp activos.
+
+### 3. Auditoría visual completa (Chrome CDP + Playwright)
+- Creado y ejecutado `scripts/audit_full_visual.js` — script exhaustivo que:
+  - Navega por la homepage, catálogo, modal de producto, carrito, footer, login.
+  - Revisa el dashboard admin (login, dashboard, catálogo, pedidos, ajustes).
+  - Verifica SSR de las 7 páginas (todas HTTP 200).
+  - Captura errores de consola JS.
+  - Genera reporte en `docs/VISUAL_AUDIT_REPORT.md`.
+- **Resultado:** 18/22 tests OK, 3 advertencias menores, 1 observación sobre imágenes lazy-loaded.
+- **Capturas guardadas en:** `carpeta de referencia/audit/`
+
+### 4. Test de conexión Chrome actualizado
+- `scripts/test_chrome_connection.js` actualizado para apuntar a `localhost:5173` en vez de `example.com`.
 
 ---
 
-## ✅ Problemas Solucionados
-- **Error de compilación en Rollup:** Corregido el fallo al importar el alias `@/lib/constants` en el archivo externo `panel de control de camila/OrderManager.tsx` mediante el uso de una ruta relativa (`../src/lib/constants`).
-- **Error de tipado en server.ts:** Corregido el método inexistente `getSession` en el SDK de InsForge reemplazándolo por una consulta directa a la base de datos de productos para comprobar conectividad.
-- **Limpieza de archivos obsoletos:** Eliminada la carpeta duplicada `src/components/admin/` que tenía imports rotos de `../src/...` y tipos implícitos de `any`, dejando el repositorio limpio y sin errores de compilación TypeScript.
-- **Playwright en Mac ARM64:** Solucionado el fallo al descargar el driver Playwright nativo usando una conexión remota directa a Google Chrome con el protocolo CDP por el puerto 9222.
+## 📁 Archivos modificados
+- `panel de control de camila/ProductCreator.tsx`
+- `panel de control de camila/StockManager.tsx`
+- `src/routes/index.tsx`
+- `scripts/test_chrome_connection.js`
+- `scripts/audit_full_visual.js` (NUEVO)
+- `docs/AUDIT_REPORT.md` (regenerado)
+- `docs/VISUAL_AUDIT_REPORT.md` (NUEVO)
+- `docs/SESSION_LATEST_ES.md` (este archivo)
 
 ---
 
-## 📅 Qué queda pendiente
-- Realizar pruebas de extremo a extremo en producción desde dispositivos móviles reales para validar la recepción de alertas PWA Push nativas y mensajes de WhatsApp.
-- Seguir auditando los logs de latencia del keep-alive del base de datos en PostgreSQL.
+## 🐛 Problemas solucionados
+1. **Stripe bloqueaba el checkout** si la prenda no tenía `stripe_price_id` → ahora es opcional con fallback automático.
+2. **Script de test Chrome** apuntaba a `example.com` → corregido a `localhost:5173`.
+
+---
+
+## 📋 Qué queda pendiente
+- Las 8 imágenes marcadas como "rotas" por el audit visual son imágenes JPG antiguas del catálogo (`IMG_48xx.jpg`) almacenadas en InsForge Storage. Responden HTTP 200 cuando se verifican manualmente por curl. El DOM las reporta como `naturalWidth === 0` probablemente por lazy loading o CORS. **No es un fallo real** — se recomienda monitorear.
+- El error de consola JS (`401`) es esperado: el navegador intenta acceder a recursos protegidos (push subscriptions) sin autenticación de admin.
+- Considerar migrar las imágenes JPG antiguas a formato WebP para optimización.

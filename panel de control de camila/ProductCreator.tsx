@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { PlusCircle, Image as ImageIcon, Sparkles, Upload, Check, Trash2, Tag, Layers, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { createProduct, uploadProductImage } from "../src/services/insforgeService";
+import { convertToWebP } from "../src/lib/imageUtils";
 
 interface ProductCreatorProps {
   onProductCreated: () => void;
@@ -38,10 +39,16 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
 
     setUploadingImage(true);
     try {
-      const res = await uploadProductImage(file);
+      // Optimizar y convertir imagen a WebP antes de la subida
+      const webpFile = await convertToWebP(file).catch((err) => {
+        console.warn("Error al convertir a WebP, subiendo imagen original:", err);
+        return file;
+      });
+
+      const res = await uploadProductImage(webpFile);
       if (res.success && res.url) {
         setImageUrl(res.url);
-        toast.success("Foto de la prenda cargada con éxito 📸");
+        toast.success("Foto de la prenda cargada y optimizada con éxito 📸");
       } else {
         toast.error(res.error || "No se pudo subir la imagen.");
       }
@@ -371,14 +378,18 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Stripe Price ID</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Stripe Price ID</label>
+                <span className="text-[9px] font-bold text-rose-400/80 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 uppercase tracking-wider">Opcional</span>
+              </div>
               <input
                 type="text"
-                placeholder="price_1Q..."
+                placeholder="Opcional (Automático si se deja vacío)"
                 value={stripePriceId}
                 onChange={(e) => setStripePriceId(e.target.value)}
                 className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500/50 transition-colors font-mono"
               />
+              <p className="text-[10px] text-zinc-500">Si lo dejas en blanco, la prenda se cobrará con la pasarela automática por defecto.</p>
             </div>
           </div>
 

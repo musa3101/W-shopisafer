@@ -115,7 +115,7 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
       { header: "Etiqueta", accessor: p => p.badge || "Colección" },
       { header: "Precio ($ USD)", accessor: p => getProductState(p.id, p).price },
       { header: "Stock (Unidades)", accessor: p => getProductState(p.id, p).stock },
-      { header: "Stripe Price ID", accessor: p => getProductState(p.id, p).stripe_price_id || "N/A" },
+      { header: "Stripe Price ID", accessor: p => getProductState(p.id, p).stripe_price_id || "Automático" },
       { header: "Descripción", accessor: p => p.description || "" }
     ];
     exportToCSV("Inventario_Isafer_Boutique", cols, filteredProducts);
@@ -127,7 +127,7 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
       { header: "Detalles", accessor: p => p.description || "N/A" },
       { header: "Precio USD", accessor: p => `$${getProductState(p.id, p).price.toFixed(2)}` },
       { header: "Stock", accessor: p => `${getProductState(p.id, p).stock} u.` },
-      { header: "Stripe ID", accessor: p => getProductState(p.id, p).stripe_price_id || "Sin vincular" }
+      { header: "Stripe ID", accessor: p => getProductState(p.id, p).stripe_price_id || "Automático" }
     ];
     const totalValuation = filteredProducts.reduce((sum, p) => sum + (getProductState(p.id, p).price * getProductState(p.id, p).stock), 0);
     printReport(
@@ -334,15 +334,15 @@ export function StockManager({ products, onProductsUpdated }: StockManagerProps)
 
                   {/* Stripe Price ID */}
                   <div className="flex flex-col gap-1 w-full sm:w-auto">
-                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Stripe Price ID</label>
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-wider">Stripe Price ID (Opcional)</label>
                     <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-2xl px-3 py-2">
                       <CreditCard className="w-4 h-4 text-zinc-600 mr-2 shrink-0" />
                       <input 
                         type="text"
-                        placeholder="price_..."
+                        placeholder="Automático (Opcional)"
                         value={state.stripe_price_id}
                         onChange={(e) => handleUpdateLocal(p.id, { stripe_price_id: e.target.value }, p)}
-                        className="w-full sm:w-32 bg-transparent text-xs font-mono text-zinc-300 focus:outline-none"
+                        className="w-full sm:w-36 bg-transparent text-xs font-mono text-zinc-300 focus:outline-none"
                       />
                     </div>
                   </div>

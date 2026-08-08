@@ -34,10 +34,10 @@ export function IsaferLogo({
   }
 
   const sizeClasses = {
-    sm: "h-9 sm:h-11",
-    md: "h-12 sm:h-14",
-    lg: "h-16 sm:h-20",
-    xl: "h-24 sm:h-28",
+    sm: "h-10 sm:h-12",
+    md: "h-14 sm:h-16 md:h-18",
+    lg: "h-18 sm:h-22",
+    xl: "h-26 sm:h-32",
   }[size];
 
   return (
@@ -45,7 +45,7 @@ export function IsaferLogo({
       <img
         src={logoHeaderBarbie}
         alt="ISAFÉR BOUTIQUE BROOKLYN"
-        className={`${sizeClasses} w-auto object-contain transition-transform duration-300 hover:scale-105 rounded-xl`}
+        className={`${sizeClasses} w-auto object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply filter contrast-115`}
       />
     </div>
   );

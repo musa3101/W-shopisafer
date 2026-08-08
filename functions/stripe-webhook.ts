@@ -56,6 +56,24 @@ export default async function (req: Request) {
 
           const ownerPhone = Deno.env.get("OWNER_PHONE") || "19296772514";
 
+          // 1.1. Eliminar el carrito abandonado de la base de datos si existe para este cliente
+          if (customerEmail && !customerEmail.includes("cliente@isaferboutique.com")) {
+            console.log(`Eliminando carrito remoto para el email ${customerEmail} (compra realizada)...`);
+            try {
+              const { error: cartDeleteError } = await insforge.database
+                .from("carts")
+                .delete()
+                .eq("customer_email", customerEmail);
+              if (cartDeleteError) {
+                console.warn(`No se pudo eliminar el carrito para ${customerEmail}:`, cartDeleteError.message);
+              } else {
+                console.log(`✓ Carrito remoto para ${customerEmail} eliminado.`);
+              }
+            } catch (err: any) {
+              console.error("Excepción al intentar eliminar el carrito:", err.message);
+            }
+          }
+
           // 2. Enviar email de confirmación si el cliente tiene email
           if (customerEmail) {
             console.log(`Enviando correo de confirmación a ${customerEmail}...`);

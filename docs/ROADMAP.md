@@ -49,6 +49,15 @@
 - [ ] Validación en producción de la entrega de alertas Push PWA nativas y WhatsApp de CallMeBot.
 - [ ] Monitoreo continuo del uptime y respuesta de la base de datos PostgreSQL de InsForge en el plan de hosting actual.
 
+## ✅ Completado (Sesión 8 Ago 2026)
+- [x] **Stripe Price ID 100% opcional** — Camila ya no necesita pegar manualmente el ID de Stripe para cada prenda. El checkout usa un precio por defecto automático si no se configura.
+- [x] **Auditoría técnica automatizada** — Scripts `audit_dual_perspective.js` y `audit_web.js` ejecutados: 15/15 productos OK, 0 imágenes rotas, todas las páginas HTTP 200.
+- [x] **Auditoría visual completa con Chrome CDP** — Nuevo script `audit_full_visual.js` que navega la web de clientes y el dashboard admin, toma capturas y genera reporte Markdown. 18/22 tests OK.
+- [x] **Quick View Modal implementado** (conversación anterior).
+- [x] **Iconos SVG del footer** — Reemplazados emojis por SVGs profesionales de TikTok y WhatsApp.
+
 ## 📌 Próximas Mejoras Prioritarias
-- [ ] Habilitar soporte para formatos de imagen optimizados (como WebP) en el catálogo de productos para acelerar los tiempos de carga en móviles.
+- [ ] Migrar las imágenes JPG antiguas del catálogo (`IMG_48xx.jpg`) a formato WebP para optimización.
 - [ ] Configurar correos automáticos complementarios para la recuperación de carritos abandonados tras 2 horas de inactividad de la clienta.
+- [ ] Instalar TestSprite CLI para testing automatizado E2E contra la URL de producción.
+- [ ] Configurar `VITE_DEFAULT_STRIPE_PRICE_ID` en `.env.local` con un Price ID real de Stripe para el fallback automático de pago.

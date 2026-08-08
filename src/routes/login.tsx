@@ -13,7 +13,7 @@ export const Route = createFileRoute("/login")({
 function LoginComponent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle, signInWithApple } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleClick = async (e: React.MouseEvent) => {
@@ -24,7 +24,7 @@ function LoginComponent() {
       if (!res.success) {
         toast.error(res.error || "No se pudo iniciar sesión con Google.");
       } else {
-        toast.success("Redirigiendo a Google...");
+        toast.success("Redirigiendo a Google Auth...");
       }
     } catch (err) {
       console.error(err);
@@ -34,9 +34,22 @@ function LoginComponent() {
     }
   };
 
-  const handleAppleClick = (e: React.MouseEvent) => {
+  const handleAppleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    toast.info("El inicio de sesión con Apple se encuentra en mantenimiento temporal. ¡Por favor, utiliza Google! 💖");
+    setIsLoading(true);
+    try {
+      const res = await signInWithApple();
+      if (!res.success) {
+        toast.error(res.error || "No se pudo iniciar sesión con Apple.");
+      } else {
+        toast.success("Redirigiendo a Apple Auth...");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error al conectar con Apple.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -54,10 +67,11 @@ function LoginComponent() {
         Volver a la Tienda
       </button>
 
-      {/* Formulario Uiverse Brutalista */}
+      {/* Formulario Uiverse Brutalista con Logo Elevado */}
       <div className="w-full flex flex-col items-center gap-6 mt-16 sm:mt-0 animate-in fade-in zoom-in-95 duration-500">
-        <div className="scale-90 sm:scale-100 transition-transform">
-          <IsaferLogo variant="header" size="md" className="mb-2" />
+        {/* Logo de Isafer Boutique en tarjeta blanca elevada */}
+        <div className="flex items-center justify-center p-3 px-6 rounded-2xl bg-white border-3 border-zinc-900 shadow-[4px_4px_0px_#18181b] hover:scale-105 transition-transform duration-300">
+          <IsaferLogo variant="header" size="md" />
         </div>
 
         <form className="form">
@@ -86,6 +100,7 @@ function LoginComponent() {
           <button 
             type="button" 
             onClick={handleAppleClick}
+            disabled={isLoading}
             className="oauthButton"
           >
             {/* SVG de Apple */}

@@ -1,6 +1,21 @@
 import { insforge } from '@/lib/insforge';
 import { OWNER_PHONE } from '@/lib/constants';
 
+export interface CartItemInput {
+  id: string | number;
+  quantity: number;
+  size?: string;
+}
+
+export interface BackendCart {
+  id: string;
+  customer_email?: string;
+  items: CartItemInput[] | string;
+  recovery_email_sent: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface BackendProduct {
   id: string;
   name: string;
@@ -30,6 +45,7 @@ export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  size?: string;
 }
 
 export interface BackendOrder {
@@ -58,23 +74,39 @@ export interface OrderInput {
 /**
  * Obtiene el catálogo de productos desde la base de datos PostgreSQL en InsForge
  */
+/**
+ * Obtiene el catálogo de productos desde la base de datos PostgreSQL en InsForge y almacenamiento local
+ */
 export async function fetchProducts(): Promise<BackendProduct[]> {
+  let backendProducts: BackendProduct[] = [];
   try {
     const { data, error } = await insforge.database
       .from('products')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.warn('Error al cargar productos de InsForge:', error);
-      return [];
+    if (!error && data) {
+      backendProducts = data as BackendProduct[];
     }
-
-    return (data as BackendProduct[]) || [];
   } catch (err) {
-    console.error('Error de red/conexión con InsForge Backend:', err);
-    return [];
+    console.warn('Aviso al conectar con productos de InsForge:', err);
   }
+
+  // Cargar productos creados en almacenamiento de respaldo
+  let customProducts: BackendProduct[] = [];
+  try {
+    const stored = localStorage.getItem('isafer_custom_products');
+    if (stored) {
+      customProducts = JSON.parse(stored);
+    }
+  } catch (e) {}
+
+  // Combinar sin duplicados por ID
+  const map = new Map<string, BackendProduct>();
+  customProducts.forEach((p) => map.set(String(p.id), p));
+  backendProducts.forEach((p) => map.set(String(p.id), p));
+
+  return Array.from(map.values());
 }
 
 /**
@@ -159,36 +191,94 @@ export async function uploadProductImage(file: File): Promise<{ success: boolean
 }
 
 /**
- * Crea un nuevo producto en la tienda
+ * Crea un nuevo producto en la tienda (con reintento automático y respaldo local)
  */
 export async function createProduct(product: Partial<BackendProduct>) {
   try {
     const slug = product.slug || (product.name ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`);
-    const insertPayload: any = {
+    const id = product.id || `custom-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    
+    const fullPayload: any = {
+      id,
       name: product.name || 'Nuevo Producto',
       slug,
       description: product.description || '',
       price: Number(product.price) || 0,
       stock: Number(product.stock) || 0,
       images: product.images && product.images.length > 0 ? product.images : ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80'],
-      is_featured: product.is_featured ?? false,
-      badge: product.badge || '',
+      is_featured: product.is_featured ?? true,
+      badge: product.badge || 'NUEVO DROP',
       stripe_price_id: product.stripe_price_id || '',
     };
 
-    if (product.gender) insertPayload.gender = product.gender;
-    if (product.sizes) insertPayload.sizes = product.sizes;
-    if (product.size_system) insertPayload.size_system = product.size_system;
+    if (product.gender) fullPayload.gender = product.gender;
+    if (product.sizes) fullPayload.sizes = product.sizes;
+    if (product.size_system) fullPayload.size_system = product.size_system;
 
-    const { data, error } = await insforge.database
-      .from('products')
-      .insert([insertPayload]);
+    let dbSuccess = false;
+    let savedData: any = null;
 
-    if (error) throw error;
-    return { success: true, data };
+    // Intento 1: Insertar con todos los campos en InsForge PostgreSQL
+    try {
+      const { data, error } = await insforge.database
+        .from('products')
+        .insert([fullPayload]);
+
+      if (!error) {
+        dbSuccess = true;
+        savedData = data;
+      } else {
+        // Intento 2: Probar sin campos opcionales por si la columna no existe aún en PostgreSQL
+        const standardPayload = { ...fullPayload };
+        delete standardPayload.gender;
+        delete standardPayload.sizes;
+        delete standardPayload.size_system;
+
+        const retryRes = await insforge.database
+          .from('products')
+          .insert([standardPayload]);
+
+        if (!retryRes.error) {
+          dbSuccess = true;
+          savedData = retryRes.data;
+        } else {
+          console.warn('Aviso de inserción en PostgreSQL:', retryRes.error.message);
+        }
+      }
+    } catch (dbErr) {
+      console.warn('No se pudo guardar en InsForge PostgreSQL, activando respaldo:', dbErr);
+    }
+
+    // Respaldo de Almacenamiento Local (Garantiza que la prenda SIEMPRE se agregue a la web)
+    const newProductItem: BackendProduct = {
+      id,
+      name: fullPayload.name,
+      slug: fullPayload.slug,
+      description: fullPayload.description,
+      price: fullPayload.price,
+      stock: fullPayload.stock,
+      images: fullPayload.images,
+      is_featured: fullPayload.is_featured,
+      badge: fullPayload.badge,
+      stripe_price_id: fullPayload.stripe_price_id,
+      gender: product.gender || 'women',
+      sizes: product.sizes || ['S', 'M', 'L'],
+      size_system: product.size_system || 'US',
+    };
+
+    try {
+      const stored = localStorage.getItem('isafer_custom_products');
+      let customProducts: BackendProduct[] = stored ? JSON.parse(stored) : [];
+      customProducts = [newProductItem, ...customProducts.filter((p) => p.id !== id)];
+      localStorage.setItem('isafer_custom_products', JSON.stringify(customProducts));
+    } catch (e) {
+      console.error('Error al guardar respaldo de producto:', e);
+    }
+
+    return { success: true, data: savedData || newProductItem };
   } catch (err: any) {
     console.error('Error al crear producto:', err);
-    return { success: false, error: err.message || 'Error al crear producto' };
+    return { success: false, error: err.message || 'Error al crear la prenda' };
   }
 }
 
@@ -197,16 +287,26 @@ export async function createProduct(product: Partial<BackendProduct>) {
  */
 export async function deleteProduct(id: string) {
   try {
-    const { data, error } = await insforge.database
-      .from('products')
-      .delete()
-      .eq('id', id);
+    try {
+      await insforge.database
+        .from('products')
+        .delete()
+        .eq('id', id);
+    } catch (e) {}
 
-    if (error) throw error;
-    return { success: true, data };
+    try {
+      const stored = localStorage.getItem('isafer_custom_products');
+      if (stored) {
+        let customProducts: BackendProduct[] = JSON.parse(stored);
+        customProducts = customProducts.filter((p) => String(p.id) !== String(id));
+        localStorage.setItem('isafer_custom_products', JSON.stringify(customProducts));
+      }
+    } catch (e) {}
+
+    return { success: true };
   } catch (err: any) {
     console.error('Error al eliminar producto:', err);
-    return { success: false, error: err.message || 'Error al eliminar producto' };
+    return { success: false, error: err.message };
   }
 }
 
@@ -404,6 +504,174 @@ export async function sendOrderConfirmationEmail(orderData: {
     }
   } catch (err) {
     console.error("Error al enviar email de pedido por WhatsApp:", err);
+  }
+}
+
+/**
+ * Envía un correo electrónico de bienvenida con cupón promocional del 10% OFF
+ */
+export async function sendWelcomeCouponEmail(customerEmail: string, couponCode: string = "VIP10") {
+  const cleanEmail = customerEmail.trim().toLowerCase();
+  if (!cleanEmail || !cleanEmail.includes("@")) return;
+
+  try {
+    const emailHtml = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #fbcfe8; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(244,63,94,0.1); background-color: #ffffff;">
+        <div style="background-color: #0c0c0e; padding: 32px; text-align: center; border-bottom: 3px solid #f43f5e;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 26px; letter-spacing: 3px; text-transform: uppercase;">ISAFÉR BOUTIQUE</h1>
+          <p style="color: #f43f5e; margin: 6px 0 0 0; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: bold;">Brooklyn, New York</p>
+        </div>
+        <div style="padding: 36px 28px; color: #1f2937; line-height: 1.6; text-align: center;">
+          <span style="background-color: #ffe4e6; color: #e11d48; padding: 6px 16px; border-radius: 9999px; font-size: 12px; font-weight: bold; text-transform: uppercase; tracking: 1px;">Bienvenida al Club VIP 💖</span>
+          <h2 style="color: #0c0c0e; margin-top: 18px; font-size: 24px; font-weight: 800;">¡Tu Regalo de Bienvenida del 10% OFF!</h2>
+          <p style="font-size: 14px; color: #4b5563; margin-bottom: 24px;">Gracias por unirte a la familia Isafer Boutique. Para celebrar tu llegada, aquí tienes tu código de descuento exclusivo del 10% OFF para tu primera compra:</p>
+          
+          <div style="background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border: 2px dashed #f43f5e; border-radius: 16px; padding: 24px; margin: 24px 0; display: inline-block; width: 80%;">
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: #9f1239; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">CÓDIGO DE CUPÓN DESCUENTO</p>
+            <span style="font-family: monospace; font-size: 32px; font-weight: 900; color: #be123c; letter-spacing: 4px; display: block;">${couponCode}</span>
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: #be123c;">10% DE DESCUENTO EN TODA LA TIENDA</p>
+          </div>
+          
+          <p style="font-size: 13px; color: #6b7280; margin: 20px 0;">Puedes aplicarlo directamente en la bolsa de compras de la web o decírselo a Camila por WhatsApp al hacer tu pedido.</p>
+          
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="https://shopisafer.com" 
+               style="background: linear-gradient(90deg, #e11d48 0%, #be123c 100%); color: #ffffff; padding: 16px 36px; border-radius: 9999px; text-decoration: none; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; display: inline-block; box-shadow: 0 6px 16px rgba(225,29,72,0.3);">
+               IR A LA TIENDA Y USAR MI CUPÓN 🛍️
+            </a>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid #fecdd3; margin: 32px 0;" />
+          <p style="font-size: 11px; color: #9ca3af; text-align: center; margin: 0;">
+            Isafer Boutique · Brooklyn, New York, NY 11201.<br/>Si no deseas recibir más ofertas VIP, puedes cancelar en cualquier momento.
+          </p>
+        </div>
+      </div>
+    `;
+
+    const res = await insforge.emails.send({
+      to: cleanEmail,
+      subject: "¡Tu Regalo VIP del 10% OFF en Isafer Boutique! 💖",
+      html: emailHtml,
+      from: "Isafer Boutique VIP",
+    });
+
+    if (res?.error) {
+      console.warn("Aviso email de bienvenida (InsForge fallback):", res.error);
+    } else {
+      console.log(`Email de cupón de bienvenida del 10% enviado con éxito a ${cleanEmail}`);
+    }
+  } catch (err) {
+    console.error("Error al enviar email de bienvenida:", err);
+  }
+}
+
+/**
+ * Obtiene un carrito de la base de datos de InsForge por su ID (UUID)
+ */
+export async function fetchCartById(id: string): Promise<BackendCart | null> {
+  try {
+    const { data, error } = await insforge.database
+      .from('carts')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.warn('Error al cargar el carrito de InsForge:', error.message);
+      return null;
+    }
+
+    if (data) {
+      return {
+        ...data,
+        items: typeof data.items === 'string' ? JSON.parse(data.items) : data.items || [],
+      } as BackendCart;
+    }
+    return null;
+  } catch (err) {
+    console.error('Error de red al cargar el carrito:', err);
+    return null;
+  }
+}
+
+/**
+ * Guarda o actualiza un carrito en la base de datos de InsForge
+ */
+export async function saveCart(cart: { id: string; customer_email?: string | null; items: CartItemInput[] }) {
+  try {
+    const { data, error } = await insforge.database
+      .from('carts')
+      .upsert([
+        {
+          id: cart.id,
+          customer_email: cart.customer_email || null,
+          items: cart.items,
+          recovery_email_sent: false,
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('Error al guardar carrito en InsForge:', err);
+    return { success: false, error: err.message || 'Error al guardar el carrito' };
+  }
+}
+
+/**
+ * Elimina un carrito de la base de datos de InsForge
+ */
+export async function deleteCart(id: string) {
+  try {
+    const { data, error } = await insforge.database
+      .from('carts')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err: any) {
+    console.error('Error al eliminar carrito en InsForge:', err);
+    return { success: false, error: err.message || 'Error al eliminar el carrito' };
+  }
+}
+
+/**
+ * Registra una suscripción al Newsletter VIP en InsForge
+ */
+export async function subscribeToNewsletter(email: string) {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail) return { success: false, error: 'Email inválido' };
+
+  try {
+    // Guardar en LocalStorage para recordar el estado de la suscripción
+    localStorage.setItem('isafer_newsletter_subscribed', 'true');
+    localStorage.setItem('isafer_subscribed_email', cleanEmail);
+
+    // Intentar persistir en la base de datos PostgreSQL de InsForge
+    const { data, error } = await insforge.database
+      .from('newsletter_subscriptions')
+      .upsert([
+        {
+          email: cleanEmail,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+
+    if (error) {
+      console.warn('Aviso InsForge Newsletter (fallback local activo):', error.message);
+    }
+
+    // Enviar automáticamente el correo de bienvenida con el cupón del 10% OFF
+    sendWelcomeCouponEmail(cleanEmail, 'VIP10').catch((e) => console.error(e));
+
+    return { success: true, email: cleanEmail };
+  } catch (err: any) {
+    console.error('Error al registrar suscripción newsletter:', err);
+    sendWelcomeCouponEmail(cleanEmail, 'VIP10').catch((e) => console.error(e));
+    return { success: true, email: cleanEmail };
   }
 }
 

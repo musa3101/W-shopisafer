@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation, Language } from "../lib/i18n";
+import { useTranslation } from "../lib/i18n";
 import { Globe } from "lucide-react";
 
 export const LanguageSelector: React.FC = () => {
@@ -7,34 +7,38 @@ export const LanguageSelector: React.FC = () => {
 
   return (
     <div 
-      className="inline-flex items-center gap-1.5 p-1 rounded-full bg-black/40 border border-primary/30 backdrop-blur-md shadow-sm transition-all hover:border-primary/60"
+      className="inline-flex items-center gap-1.5 p-1 rounded-full bg-white border border-rose-200/80 shadow-sm transition-all hover:border-rose-300"
       title={t("lang_switch_tooltip")}
     >
-      <Globe className="w-3.5 h-3.5 ml-1.5 text-primary animate-pulse" />
-      <div className="flex items-center gap-0.5">
+      <div className="pl-2 flex items-center text-rose-500">
+        <Globe className="w-3.5 h-3.5" />
+      </div>
+      <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => setLanguage("en")}
-          className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider transition-all duration-200 cursor-pointer ${
+          className={`px-3 py-1 rounded-full text-[10px] font-extrabold tracking-widest uppercase transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
             language === "en"
-              ? "bg-gradient-to-r from-primary to-amber-400 text-black shadow-md scale-105"
-              : "text-muted-foreground hover:text-white"
+              ? "bg-rose-500 text-white shadow-sm scale-105 font-mono"
+              : "text-zinc-600 hover:text-zinc-950 hover:bg-rose-50/50 font-mono"
           }`}
           aria-label="Switch to English (US)"
         >
-          🇺🇸 EN
+          <span>🇺🇸</span>
+          <span>EN</span>
         </button>
         <button
           type="button"
           onClick={() => setLanguage("es")}
-          className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider transition-all duration-200 cursor-pointer ${
+          className={`px-3 py-1 rounded-full text-[10px] font-extrabold tracking-widest uppercase transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
             language === "es"
-              ? "bg-gradient-to-r from-primary to-amber-400 text-black shadow-md scale-105"
-              : "text-muted-foreground hover:text-white"
+              ? "bg-rose-500 text-white shadow-sm scale-105 font-mono"
+              : "text-zinc-600 hover:text-zinc-950 hover:bg-rose-50/50 font-mono"
           }`}
           aria-label="Cambiar a Español"
         >
-          🇪🇸 ES
+          <span>🇪🇸</span>
+          <span>ES</span>
         </button>
       </div>
     </div>

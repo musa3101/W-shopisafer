@@ -75,21 +75,21 @@ async function run() {
       page = await context.newPage();
     }
 
-    const testUrl = 'https://example.com';
+    const testUrl = 'http://localhost:5173/';
     console.log(`Navigating page to ${testUrl}...`);
     await page.goto(testUrl, { waitUntil: 'load', timeout: 30000 });
 
     const title = await page.title();
     console.log(`Page title loaded successfully: "${title}"`);
 
-    // Ensure the folder exists
-    const screenshotDir = path.dirname(SCREENSHOT_PATH);
+    const localScreenshotPath = '/Users/musa/Downloads/sopisafer/carpeta de referencia/home_verification.png';
+    const screenshotDir = path.dirname(localScreenshotPath);
     if (!fs.existsSync(screenshotDir)) {
       fs.mkdirSync(screenshotDir, { recursive: true });
     }
 
-    console.log(`Taking screenshot and saving it to ${SCREENSHOT_PATH}...`);
-    await page.screenshot({ path: SCREENSHOT_PATH });
+    console.log(`Taking screenshot and saving it to ${localScreenshotPath}...`);
+    await page.screenshot({ path: localScreenshotPath });
     console.log('Screenshot saved successfully!');
 
     await browser.close();

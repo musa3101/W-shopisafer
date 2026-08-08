@@ -26,17 +26,22 @@ import {
   Search,
   Mail,
   Lock,
+  Gem,
+  Crown,
+  Layers,
+  Sliders,
   Shield,
   FileText,
   Cookie,
 } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { TikTokIcon, WhatsAppIcon } from "@/components/SocialIcons";
 
 import heroImage from "@/assets/rosse-hero.jpg";
 import camilaOwnerHero from "@/assets/camila-owner-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
-import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail } from "@/services/insforgeService";
+import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail, fetchCartById, saveCart, deleteCart, subscribeToNewsletter } from "@/services/insforgeService";
 import { fetchUserFavorites, addFavorite, removeFavorite, syncGuestFavorites } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
@@ -44,6 +49,7 @@ import { CustomerAccountModal } from "@/components/CustomerAccountModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
 import { AboutUsModal } from "@/components/AboutUsModal";
 import { AboutPage } from "@/components/AboutPage";
+import { ProductDetailModal, ProductItem } from "@/components/ProductDetailModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
@@ -119,17 +125,7 @@ function AnimatedOfferBanner() {
   );
 }
 
-interface ProductItem {
-  id: string | number;
-  name: string;
-  price: number;
-  category: string;
-  tag: string;
-  position?: string;
-  image?: string;
-  description: string;
-  stripe_price_id?: string;
-}
+
 
 const products: ProductItem[] = [
   {
@@ -242,7 +238,30 @@ const products: ProductItem[] = [
   },
 ];
 
-type Cart = Record<string | number, number>;
+export interface CartLineItem {
+  cartItemId: string;
+  productId: string | number;
+  quantity: number;
+  size: string;
+}
+
+type Cart = Record<string, CartLineItem>;
+
+function getOptimizedImageUrl(url?: string): string | undefined {
+  if (!url) return url;
+  if (url.includes("images.unsplash.com")) {
+    try {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set("fm", "webp");
+      if (!urlObj.searchParams.has("w")) urlObj.searchParams.set("w", "800");
+      if (!urlObj.searchParams.has("q")) urlObj.searchParams.set("q", "80");
+      return urlObj.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+  return url;
+}
 
 function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string; product?: ProductItem }) {
   const p = product ?? (id !== undefined ? products.find(prod => String(prod.id) === String(id)) : undefined);
@@ -250,7 +269,7 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
   if (p.image) {
     return (
       <img
-        src={p.image}
+        src={getOptimizedImageUrl(p.image)}
         alt={alt || p.name}
         loading="lazy"
         className="absolute top-0 left-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -259,7 +278,7 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
   }
   return (
     <img
-      src={productsImage}
+      src={getOptimizedImageUrl(productsImage)}
       alt={alt || p.name}
       loading="lazy"
       width={1536}
@@ -274,6 +293,9 @@ function Index() {
   const { t, language, setLanguage } = useTranslation();
   const [productsList, setProductsList] = useState<ProductItem[]>(products);
   const [cart, setCart] = useState<Cart>({});
+  const [selectedProductForModal, setSelectedProductForModal] = useState<ProductItem | null>(null);
+  const [productModalOpen, setProductModalOpen] = useState(false);
+  const [isCartInitialized, setIsCartInitialized] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("Todos");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -307,8 +329,8 @@ function Index() {
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   useEffect(() => {
-    // 7 segundos para la foto de Camila (index 0), 5 segundos para las demás
-    const duration = currentHeroIndex === 0 ? 7000 : 5000;
+    // 16 segundos para la foto oficial de Camila (index 0), 6 segundos para las demás
+    const duration = currentHeroIndex === 0 ? 16000 : 6000;
     const timer = setTimeout(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
     }, duration);
@@ -343,6 +365,7 @@ function Index() {
             image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
             description: bp.description || "",
             stripe_price_id: bp.stripe_price_id,
+            sizes: bp.sizes && bp.sizes.length > 0 ? bp.sizes : undefined,
           };
         });
         setProductsList(mapped);
@@ -356,12 +379,128 @@ function Index() {
     loadProductsFromInsForge();
   }, []);
 
+  // Comprobar si hay un carrito para recuperar en la URL (?recover_cart=UUID) o en localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const recoverCartId = params.get("recover_cart");
+
+    if (recoverCartId) {
+      toast.loading("Recuperando tu bolsa de compras...");
+      fetchCartById(recoverCartId)
+        .then((dbCart) => {
+          toast.dismiss();
+          if (dbCart && Array.isArray(dbCart.items) && dbCart.items.length > 0) {
+            const restoredCart: Cart = {};
+            dbCart.items.forEach((item: any) => {
+              if (item.id !== undefined && item.quantity !== undefined) {
+                const size = item.size || "S";
+                const cartKey = `${item.id}::${size}`;
+                restoredCart[cartKey] = {
+                  cartItemId: cartKey,
+                  productId: item.id,
+                  quantity: item.quantity,
+                  size: size,
+                };
+              }
+            });
+
+            setCart(restoredCart);
+            localStorage.setItem("isafer_cart_id", dbCart.id);
+            setCartOpen(true);
+            toast.success("¡Hemos recuperado tu bolsa de compras con éxito! 🛍️💖", { duration: 6000 });
+          } else {
+            toast.error("El enlace de recuperación ha expirado o el carrito ya no está disponible.");
+          }
+        })
+        .catch((err) => {
+          toast.dismiss();
+          console.error("Error al recuperar el carrito abandonado:", err);
+        })
+        .finally(() => {
+          setIsCartInitialized(true);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        });
+    } else {
+      const localCartId = localStorage.getItem("isafer_cart_id");
+      if (localCartId) {
+        fetchCartById(localCartId)
+          .then((dbCart) => {
+            if (dbCart && Array.isArray(dbCart.items) && dbCart.items.length > 0) {
+              const restoredCart: Cart = {};
+              dbCart.items.forEach((item: any) => {
+                if (item.id !== undefined && item.quantity !== undefined) {
+                  const size = item.size || "S";
+                  const cartKey = `${item.id}::${size}`;
+                  restoredCart[cartKey] = {
+                    cartItemId: cartKey,
+                    productId: item.id,
+                    quantity: item.quantity,
+                    size: size,
+                  };
+                }
+              });
+              setCart(restoredCart);
+            }
+          })
+          .catch((err) => console.warn("No se pudo sincronizar el carrito al inicio:", err))
+          .finally(() => {
+            setIsCartInitialized(true);
+          });
+      } else {
+        setIsCartInitialized(true);
+      }
+    }
+  }, []);
+
+  // Sincronizar cambios del carrito local con PostgreSQL en InsForge
+  useEffect(() => {
+    if (!isCartInitialized) return;
+
+    const cartItemsArray = Object.values(cart);
+    const hasItems = cartItemsArray.length > 0;
+    const localCartId = localStorage.getItem("isafer_cart_id");
+
+    if (!hasItems) {
+      if (localCartId) {
+        deleteCart(localCartId)
+          .then(() => localStorage.removeItem("isafer_cart_id"))
+          .catch((err) => console.warn("Error al borrar el carrito vacío en el backend:", err));
+      }
+      return;
+    }
+
+    const itemsMapped = cartItemsArray.map((item) => ({
+      id: item.productId,
+      quantity: item.quantity,
+      size: item.size,
+    }));
+
+    const customerEmail = user?.email || null;
+    const cartId = localCartId || crypto.randomUUID();
+
+    if (!localCartId) {
+      localStorage.setItem("isafer_cart_id", cartId);
+    }
+
+    saveCart({
+      id: cartId,
+      customer_email: customerEmail,
+      items: itemsMapped,
+    }).catch((err) => console.error("Error al sincronizar el carrito en InsForge:", err));
+  }, [cart, user, isCartInitialized]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const payment = params.get("payment");
 
     if (payment === "success") {
       setCart({});
+      const localCartId = localStorage.getItem("isafer_cart_id");
+      if (localCartId) {
+        deleteCart(localCartId)
+          .then(() => localStorage.removeItem("isafer_cart_id"))
+          .catch((err) => console.error("Error al borrar carrito tras pago exitoso:", err));
+      }
       toast.success("🎉 ¡Pago Exitoso! Tu orden se está procesando.", {
         duration: 8000,
         description: "Muchas gracias por tu compra. Te enviaremos un correo para coordinar tu envío.",
@@ -428,10 +567,49 @@ function Index() {
     }
   }, [language]);
 
-  const itemCount = Object.values(cart).reduce((sum, count) => sum + count, 0);
+  const itemCount = useMemo(
+    () => Object.values(cart).reduce((sum, item) => sum + item.quantity, 0),
+    [cart]
+  );
+
+  const favCount = useMemo(
+    () => Object.keys(favorites).length,
+    [favorites]
+  );
+
   const subtotal = useMemo(
-    () => productsList.reduce((sum, product) => sum + product.price * (cart[product.id] ?? 0), 0),
-    [cart, productsList],
+    () =>
+      Object.values(cart).reduce((sum, item) => {
+        const product = productsList.find((p) => String(p.id) === String(item.productId));
+        return sum + (product ? product.price * item.quantity : 0);
+      }, 0),
+    [cart, productsList]
+  );
+
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
+
+  const handleApplyCoupon = (codeToApply?: string) => {
+    const code = (codeToApply || couponCodeInput).trim().toUpperCase();
+    if (!code) {
+      toast.error("Por favor introduce un código de cupón.");
+      return;
+    }
+
+    if (code === "VIP10" || code === "BARBIELUXE10" || code === "ISAFER10" || code === "VIP") {
+      setAppliedCoupon(code);
+      setDiscountPercent(10);
+      toast.success(`¡Cupón ${code} del 10% OFF aplicado con éxito! 💖`);
+      setCouponCodeInput("");
+    } else {
+      toast.error("Código de cupón no válido o expirado.");
+    }
+  };
+
+  const finalTotal = useMemo(
+    () => subtotal * (1 - discountPercent / 100),
+    [subtotal, discountPercent]
   );
 
   // Cargar favoritos al inicio y sincronizar si el usuario inicia sesión
@@ -555,33 +733,69 @@ function Index() {
     }
   };
 
-  const addProduct = (id: string | number) => {
-    const item = productsList.find((p) => String(p.id) === String(id));
-    setCart((current) => ({ ...current, [id]: (current[id] ?? 0) + 1 }));
-    setCartOpen(true);
-    if (item) {
-      toast.success(`${item.name} añadido a tu bolsa ✨`);
+  const openProductModal = (idOrProduct: string | number | ProductItem) => {
+    if (typeof idOrProduct === "object" && idOrProduct !== null) {
+      setSelectedProductForModal(idOrProduct);
+      setProductModalOpen(true);
+    } else {
+      const p = productsList.find((item) => String(item.id) === String(idOrProduct));
+      if (p) {
+        setSelectedProductForModal(p);
+        setProductModalOpen(true);
+      }
     }
   };
 
-  const updateProduct = (id: string | number, change: number) =>
+  const handleAddToCartFromModal = (id: string | number, size: string, quantityToAdd: number = 1) => {
+    const item = productsList.find((p) => String(p.id) === String(id));
+    const cartKey = `${id}::${size}`;
+
     setCart((current) => {
-      const quantity = Math.max(0, (current[id] ?? 0) + change);
+      const existing = current[cartKey];
+      const newQuantity = (existing?.quantity ?? 0) + quantityToAdd;
+      return {
+        ...current,
+        [cartKey]: {
+          cartItemId: cartKey,
+          productId: id,
+          quantity: newQuantity,
+          size: size,
+        },
+      };
+    });
+
+    setProductModalOpen(false);
+    setCartOpen(true);
+    if (item) {
+      toast.success(`¡${item.name} (${size}) añadido a tu bolsa! ✨`, { duration: 3000 });
+    }
+  };
+
+  const addProduct = (id: string | number) => {
+    openProductModal(id);
+  };
+
+  const updateProduct = (cartKey: string, change: number) =>
+    setCart((current) => {
+      const existing = current[cartKey];
+      if (!existing) return current;
+      const quantity = existing.quantity + change;
       const next = { ...current };
-      if (quantity === 0) delete next[id];
-      else next[id] = quantity;
+      if (quantity <= 0) delete next[cartKey];
+      else next[cartKey] = { ...existing, quantity };
       return next;
     });
 
-  const removeProduct = (id: string | number) => {
-    const item = productsList.find((p) => String(p.id) === String(id));
+  const removeProduct = (cartKey: string) => {
+    const existing = cart[cartKey];
+    const item = existing ? productsList.find((p) => String(p.id) === String(existing.productId)) : null;
     setCart((current) => {
       const next = { ...current };
-      delete next[id];
+      delete next[cartKey];
       return next;
     });
     if (item) {
-      toast.info(`${item.name} eliminado de la bolsa`);
+      toast.info(`${item.name} (${existing?.size || ''}) eliminado de la bolsa`);
     }
   };
 
@@ -593,19 +807,25 @@ function Index() {
   };
 
   const handleCheckout = () => {
-    const activeItems = productsList.filter((p) => cart[p.id]);
+    const activeCartItems = Object.values(cart);
 
-    if (activeItems.length === 0) {
+    if (activeCartItems.length === 0) {
       toast.error("Tu bolsa está vacía");
       return;
     }
 
-    const itemsText = activeItems
-      .map((p) => `- ${cart[p.id]}x ${p.name} ($${(p.price * cart[p.id]).toFixed(2)})`)
+    const itemsText = activeCartItems
+      .map((item) => {
+        const p = productsList.find((prod) => String(prod.id) === String(item.productId));
+        if (!p) return null;
+        return `- ${item.quantity}x ${p.name} (Talla: ${item.size}) ($${(p.price * item.quantity).toFixed(2)})`;
+      })
+      .filter(Boolean)
       .join("%0A");
 
-    const subtotalFormatted = subtotal.toFixed(2);
-    const whatsappUrl = `https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%3A%0A%0A${itemsText}%0A%0ASubtotal%3A%20%24${subtotalFormatted}%0A%0A%C2%BFMe%20confirmas%20disponibilidad%20y%20m%C3%A9todo%20de%20entrega%3F`;
+    const subtotalFormatted = finalTotal.toFixed(2);
+    const couponInfo = appliedCoupon ? `%0ACup%C3%B3n%20Aplicado%3A%20${appliedCoupon}%20(-10%25)` : "";
+    const whatsappUrl = `https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%3A%0A%0A${itemsText}${couponInfo}%0A%0ATotal%20Final%3A%20%24${subtotalFormatted}%0A%0A%C2%BFMe%20confirmas%20disponibilidad%20y%20m%C3%A9todo%20de%20entrega%3F`;
 
     const win = window.open(whatsappUrl, "_blank");
     if (!win) {
@@ -617,17 +837,30 @@ function Index() {
 
     const customerEmail = user?.email || "cliente@isaferboutique.com";
     const customerName = user?.email ? user.email.split("@")[0] : "Cliente Web (WhatsApp)";
-    const itemsMapped = activeItems.map((p) => ({
-      product_id: String(p.id),
-      name: p.name,
-      price: p.price,
-      quantity: cart[p.id],
-    }));
+    const itemsMapped = activeCartItems.map((item) => {
+      const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+      return {
+        product_id: String(p.id),
+        name: `${p.name} (${item.size})`,
+        price: p.price,
+        quantity: item.quantity,
+        size: item.size,
+      };
+    });
+
+    // Eliminar el carrito guardado del backend y localmente tras checkout exitoso
+    const localCartId = localStorage.getItem("isafer_cart_id");
+    if (localCartId) {
+      deleteCart(localCartId)
+        .then(() => localStorage.removeItem("isafer_cart_id"))
+        .catch((err) => console.error("Error al borrar el carrito tras checkout de WhatsApp:", err));
+    }
+    setCart({});
 
     createOrder({
       customer_name: customerName,
       customer_email: customerEmail,
-      total_amount: subtotal,
+      total_amount: finalTotal,
       items: itemsMapped,
     })
       .then((res) => {
@@ -635,7 +868,7 @@ function Index() {
           sendOrderConfirmationEmail({
             customerName,
             customerEmail,
-            totalAmount: subtotal,
+            totalAmount: finalTotal,
             items: itemsMapped,
             orderId: res.data.id,
           });
@@ -643,50 +876,59 @@ function Index() {
       })
       .catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
   };
+
   const handleWhatsAppCheckout = () => {
-    const activeItems = productsList.filter((p) => cart[p.id]);
-    if (activeItems.length === 0) {
+    const activeCartItems = Object.values(cart);
+    if (activeCartItems.length === 0) {
       toast.error("Tu bolsa está vacía");
       return;
     }
-    const text = activeItems.map((p) => `- ${cart[p.id]}x ${p.name} ($${p.price})`).join('\n');
+    const text = activeCartItems
+      .map((item) => {
+        const p = productsList.find((prod) => String(prod.id) === String(item.productId));
+        if (!p) return null;
+        return `- ${item.quantity}x ${p.name} (Talla: ${item.size}) ($${(p.price * item.quantity).toFixed(2)})`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
     const msg = `Hola Isafer Boutique, quiero pedir lo siguiente:\n\n${text}\n\nTotal estimado: $${subtotal.toFixed(2)} USD`;
     window.open(`https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   const handleStripeCheckout = async () => {
     setIsCheckingOut(true);
-    const activeItems = productsList.filter((p) => cart[p.id]);
+    const activeCartItems = Object.values(cart);
 
-    if (activeItems.length === 0) {
+    if (activeCartItems.length === 0) {
       toast.error("Tu bolsa está vacía");
+      setIsCheckingOut(false);
       return;
     }
 
-    // Verificar si todos los items seleccionados tienen un Stripe Price ID asignado
-    const itemsWithoutPrice = activeItems.filter((p) => !p.stripe_price_id);
-    if (itemsWithoutPrice.length > 0) {
-      toast.error(
-        `El artículo "${itemsWithoutPrice[0].name}" no se puede pagar con tarjeta todavía. Contacta con nosotros por WhatsApp.`,
-        { duration: 5000 }
-      );
-      return;
-    }
+    // Stripe Price ID global por defecto si la prenda no tiene uno asignado manualmente
+    const DEFAULT_STRIPE_PRICE_ID = import.meta.env.VITE_DEFAULT_STRIPE_PRICE_ID || "price_1Q_boutique_default";
 
     toast.loading("Creando pedido y preparando pago seguro...");
 
     try {
+      const orderItemsMapped = activeCartItems.map((item) => {
+        const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+        return {
+          product_id: String(p.id),
+          name: `${p.name} (${item.size})`,
+          price: p.price,
+          quantity: item.quantity,
+          size: item.size,
+        };
+      });
+
       // 1. Crear el pedido en estado 'pending' en la base de datos de InsForge
       const orderRes = await createOrder({
         customer_name: user?.email ? user.email.split("@")[0] : "Cliente Web (Stripe)",
         customer_email: user?.email || "cliente@isaferboutique.com",
         total_amount: subtotal,
-        items: activeItems.map((p) => ({
-          product_id: String(p.id),
-          name: p.name,
-          price: p.price,
-          quantity: cart[p.id],
-        })),
+        items: orderItemsMapped,
         stripe_session_id: 'pending_session',
       });
 
@@ -699,10 +941,13 @@ function Index() {
       const createdOrderId = orderRes.data.id;
 
       // 2. Crear la sesión de Stripe Checkout pasando el order_id en metadata
-      const lineItems = activeItems.map((p) => ({
-        priceId: p.stripe_price_id!,
-        quantity: cart[p.id],
-      }));
+      const lineItems = activeCartItems.map((item) => {
+        const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+        return {
+          priceId: (p.stripe_price_id && p.stripe_price_id.trim()) ? p.stripe_price_id.trim() : DEFAULT_STRIPE_PRICE_ID,
+          quantity: item.quantity,
+        };
+      });
 
       const { data, error } = await insforge.payments.stripe.createCheckoutSession("test", {
         mode: "payment",
@@ -754,23 +999,23 @@ function Index() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900 dark:selection:text-amber-100">
 
-      {/* 2. HEADER NAVBAR */}
-      <header className="sticky top-0 z-40 border-b border-rose-100 bg-[#fff8fa]/95 text-zinc-800 backdrop-blur-xl transition-all">
-        <div className="relative mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-8">
+      {/* 2. HEADER NAVBAR LUXE */}
+      <header className="sticky top-0 z-40 border-b border-rose-100/80 bg-[#fff8fa]/90 text-zinc-800 backdrop-blur-2xl transition-all shadow-xs">
+        <div className="relative mx-auto flex h-18 sm:h-22 max-w-7xl items-center justify-between px-5 sm:px-8">
           {/* Left Menu Trigger for Fullscreen Menu */}
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-zinc-700 hover:text-rose-600 hover:bg-rose-100/50 cursor-pointer"
+              className="rounded-full text-zinc-800 hover:text-rose-600 hover:bg-rose-100/50 cursor-pointer transition-transform active:scale-95"
               onClick={() => setFullScreenMenuOpen(true)}
               aria-label="Abrir menú de navegación"
             >
-              <Menu className="size-5" />
+              <Menu className="size-5 sm:size-6" />
             </Button>
           </div>
 
-          {/* Center Brand Logo (Absolute Center) */}
+          {/* Center Brand Logo (Sin fondo blanco, más grande y elegante) */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
             <a
               href="#inicio"
@@ -778,23 +1023,15 @@ function Index() {
                 e.preventDefault();
                 scrollToSection("inicio");
               }}
-              className="cursor-pointer"
+              className="cursor-pointer py-1"
               aria-label="Isafer Boutique Inicio"
             >
               <IsaferLogo variant="header" size="md" />
             </a>
           </div>
 
-          {/* Right Action Icons: Search, Profile & Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* Botón Acerca de Nosotros (Estilo Camila Sevilla) */}
-            <button
-              onClick={() => setCurrentView("about")}
-              className="hidden lg:inline-flex items-center text-[11px] font-black uppercase tracking-widest text-zinc-700 hover:text-rose-600 px-3 py-1.5 rounded-full transition-colors cursor-pointer mr-1"
-            >
-              Acerca de Nosotros
-            </button>
-
+          {/* Right Action Icons: Search, Profile, Favorites & Cart */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Botón de Búsqueda */}
             <Button
               variant="ghost"
@@ -849,6 +1086,23 @@ function Index() {
               </Link>
             )}
 
+            {/* Botón de Favoritos (Corazón al lado de la Cesta) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative rounded-full size-9 sm:size-10 text-zinc-700 hover:text-rose-500 hover:bg-rose-100/40 transition-transform active:scale-95 cursor-pointer"
+              onClick={() => setFavoritesDrawerOpen(true)}
+              title="Mis Favoritos"
+              aria-label="Ver productos favoritos"
+            >
+              <Heart className={`size-5 ${favCount > 0 ? "fill-rose-500 text-rose-500" : ""}`} />
+              {favCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex size-4 sm:size-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-xs">
+                  {favCount}
+                </span>
+              )}
+            </Button>
+
             {/* Cart Trigger */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
               <SheetTrigger asChild>
@@ -895,11 +1149,12 @@ function Index() {
                       </Button>
                     </div>
                   ) : (
-                    productsList
-                      .filter((product) => cart[product.id])
-                      .map((product) => (
+                    Object.entries(cart).map(([cartKey, item]) => {
+                      const product = productsList.find((p) => String(p.id) === String(item.productId));
+                      if (!product) return null;
+                      return (
                         <div
-                          key={product.id}
+                          key={cartKey}
                           className="grid grid-cols-[72px_minmax(0,1fr)] gap-4 rounded-xl border border-rose-100 bg-[#fffafb] p-3"
                         >
                           <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-zinc-100 border border-rose-100/50">
@@ -908,11 +1163,15 @@ function Index() {
                           <div className="min-w-0 flex flex-col justify-between">
                             <div>
                               <p className="truncate font-extrabold text-sm text-zinc-900">{product.name}</p>
-                              <p className="text-xs text-zinc-400 mt-0.5 font-sans">Talla: Única · Color: Único</p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="inline-flex items-center rounded-md bg-rose-100/80 px-2 py-0.5 text-[10px] font-black text-rose-700 uppercase tracking-wider">
+                                  Talla: {item.size}
+                                </span>
+                              </div>
                             </div>
                             <div className="flex items-center justify-between mt-2">
                               <p className="text-xs text-rose-600 font-mono font-black">
-                                ${product.price.toFixed(2)} USD
+                                ${(product.price * item.quantity).toFixed(2)} USD
                               </p>
                               <div className="flex items-center gap-2">
                                 <div className="flex items-center border border-rose-100 rounded-full bg-white shadow-xs">
@@ -920,17 +1179,17 @@ function Index() {
                                     variant="ghost"
                                     size="icon"
                                     className="size-7 rounded-full text-zinc-650 hover:text-rose-600 hover:bg-rose-50/40"
-                                    onClick={() => updateProduct(product.id, -1)}
+                                    onClick={() => updateProduct(cartKey, -1)}
                                     aria-label={`Quitar uno de ${product.name}`}
                                   >
                                     <Minus className="size-3" />
                                   </Button>
-                                  <span className="w-5 text-center text-xs font-bold text-zinc-800">{cart[product.id]}</span>
+                                  <span className="w-5 text-center text-xs font-bold text-zinc-800">{item.quantity}</span>
                                   <Button
                                     variant="ghost"
                                     size="icon"
                                     className="size-7 rounded-full text-zinc-650 hover:text-rose-600 hover:bg-rose-50/40"
-                                    onClick={() => updateProduct(product.id, 1)}
+                                    onClick={() => updateProduct(cartKey, 1)}
                                     aria-label={`Añadir uno de ${product.name}`}
                                   >
                                     <Plus className="size-3" />
@@ -940,7 +1199,7 @@ function Index() {
                                   variant="ghost"
                                   size="icon"
                                   className="size-7 rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50/30"
-                                  onClick={() => removeProduct(product.id)}
+                                  onClick={() => removeProduct(cartKey)}
                                   aria-label={`Eliminar ${product.name}`}
                                 >
                                   <Trash2 className="size-3.5" />
@@ -949,16 +1208,54 @@ function Index() {
                             </div>
                           </div>
                         </div>
-                      ))
+                      );
+                    })
                   )}
                 </div>
 
                 {itemCount > 0 && (
                   <div className="border-t border-rose-100/40 pt-5 space-y-3">
-                    <div className="flex items-center justify-between text-sm font-bold">
-                      <span className="text-zinc-550">Subtotal</span>
-                      <span className="text-xl font-mono text-zinc-900">${subtotal.toFixed(2)} USD</span>
+                    {/* Campo de Cupón de Descuento VIP */}
+                    <div className="space-y-1.5 p-3 rounded-2xl bg-rose-50/40 border border-rose-100/60">
+                      <label className="text-[10px] font-extrabold text-zinc-600 uppercase tracking-widest flex items-center justify-between">
+                        <span>¿Tienes un cupón VIP?</span>
+                        {appliedCoupon && (
+                          <span className="text-emerald-600 font-mono font-black">{appliedCoupon} (-10%)</span>
+                        )}
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Ej: VIP10"
+                          value={couponCodeInput}
+                          onChange={(e) => setCouponCodeInput(e.target.value)}
+                          className="flex-1 rounded-xl border border-rose-200/80 bg-white px-3 py-2 text-xs font-mono font-bold text-zinc-900 uppercase placeholder-zinc-400 focus:border-rose-500 focus:outline-none"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleApplyCoupon()}
+                          className="rounded-xl border-rose-200 bg-white text-rose-700 hover:bg-rose-100 font-extrabold text-xs uppercase px-4 cursor-pointer"
+                        >
+                          Aplicar
+                        </Button>
+                      </div>
                     </div>
+
+                    <div className="space-y-1 pt-1">
+                      {discountPercent > 0 && (
+                        <div className="flex items-center justify-between text-xs text-rose-600 font-bold">
+                          <span>Descuento VIP ({discountPercent}%)</span>
+                          <span className="font-mono">-${(subtotal * (discountPercent / 100)).toFixed(2)} USD</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between text-sm font-bold">
+                        <span className="text-zinc-700">{discountPercent > 0 ? "Total con Descuento" : "Subtotal"}</span>
+                        <span className="text-xl font-mono text-zinc-950 font-black">${finalTotal.toFixed(2)} USD</span>
+                      </div>
+                    </div>
+
                     <Button
                       className="w-full h-14 rounded-2xl bg-[#ff007f] text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all cursor-pointer flex items-center justify-center gap-2"
                       onClick={handleStripeCheckout}
@@ -973,7 +1270,7 @@ function Index() {
                       className="w-full h-14 rounded-2xl border-emerald-250 bg-emerald-50 text-emerald-700 font-extrabold text-xs uppercase tracking-[0.2em] shadow-sm hover:bg-emerald-100 hover:text-emerald-800 transition-all cursor-pointer flex items-center justify-center gap-2"
                       onClick={handleWhatsAppCheckout}
                     >
-                      <MessageCircle className="size-4" />
+                      <WhatsAppIcon className="size-4 text-emerald-600" />
                       Pedir por WhatsApp
                     </Button>
                     <p className="text-center text-[10px] text-zinc-400 font-mono mt-2 flex items-center justify-center gap-1">
@@ -1015,43 +1312,43 @@ function Index() {
                   fetchPriority={index === 0 ? "high" : "low"}
                   className={`absolute inset-0 h-full w-full filter contrast-105 transition-transform duration-3000 ease-out ${
                     index === 0
-                      ? "object-cover sm:object-contain lg:object-cover object-[center_35%] lg:object-[65%_center]"
+                      ? "object-cover object-[center_68%] sm:object-[center_72%] lg:object-[center_68%]"
                       : "object-cover object-[55%_center]"
                   } ${isActive ? "scale-100" : "scale-105"}`}
                 />
               </div>
             );
           })}
-          {/* Degradados sutiles: muy ligeros en móvil para dar protagonismo a la foto, profundos en desktop */}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/20 to-transparent sm:from-zinc-950 sm:via-zinc-950/50 sm:to-zinc-950/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/40 via-transparent to-transparent sm:from-zinc-950/95 sm:via-zinc-950/40 sm:to-transparent" />
+          {/* Degradados sutiles y transparentes para permitir visualizar a Camila y su boutique en alta definición en Mac */}
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/85 via-zinc-950/15 to-transparent sm:from-zinc-950/75 sm:via-transparent sm:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/70 via-zinc-950/20 to-transparent sm:from-zinc-950/65 sm:via-transparent sm:to-transparent" />
 
-          {/* Ajuste de márgenes de cabecera en móvil */}
+          {/* Ajuste de márgenes y tipografía de alta visibilidad */}
           <div className="relative mx-auto w-full max-w-7xl px-5 pb-10 pt-28 sm:px-10 lg:px-16">
-            <div className="max-w-2xl">
-              {/* Título Display adaptado a móviles */}
-              <h1 className="font-display text-[26px] sm:text-6xl font-black leading-[0.95] sm:leading-[1.0] tracking-tight text-white uppercase text-balance">
+            <div className="max-w-xl">
+              {/* Título Display adaptado a móviles y escritorio */}
+              <h1 className="font-display text-[26px] sm:text-6xl font-black leading-[0.95] sm:leading-[1.0] tracking-tight text-white uppercase text-balance drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
                 {t("hero_title_1").includes("y") ? "Sensual &" : "Sexy &"}
                 <br />
-                <span className="italic font-serif font-normal text-rose-400 drop-shadow-sm normal-case text-2xl sm:text-5xl">
+                <span className="italic font-serif font-normal text-rose-400 drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] normal-case text-2xl sm:text-5xl">
                   {t("hero_title_1").includes("y") ? "Elegante" : "Elegant"}
                 </span>
               </h1>
 
-              <p className="mt-1.5 text-[9px] sm:text-xs font-mono tracking-[0.2em] sm:tracking-[0.25em] text-rose-300/90 uppercase font-bold">
+              <p className="mt-2 text-[9px] sm:text-xs font-mono tracking-[0.2em] sm:tracking-[0.25em] text-rose-300 uppercase font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                 Isafer Boutique · Brooklyn, NY
               </p>
 
-              {/* Body Text (oculto en móvil para mayor claridad visual) */}
-              <p className="mt-4 max-w-lg text-xs sm:text-sm leading-relaxed text-zinc-300/90 font-normal hidden sm:block">
+              {/* Body Text */}
+              <p className="mt-4 max-w-lg text-xs sm:text-sm leading-relaxed text-zinc-100 font-medium hidden sm:block drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
                 {t("hero_subtitle")}
               </p>
 
-              {/* Botón CTA compacto en móvil */}
+              {/* Botón CTA compacto */}
               <div className="mt-4 sm:mt-6 flex items-center">
                 <Button
                   asChild
-                  className="h-9 sm:h-10 rounded-full px-5 sm:px-6 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.15em] sm:tracking-[0.18em] bg-rose-600 hover:bg-rose-500 text-white shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer border border-rose-400/30"
+                  className="h-9 sm:h-11 rounded-full px-5 sm:px-7 text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.15em] sm:tracking-[0.18em] bg-rose-600 hover:bg-rose-500 text-white shadow-xl transition-all hover:scale-105 active:scale-95 cursor-pointer border border-rose-400/40"
                 >
                   <a
                     href="#coleccion"
@@ -1067,22 +1364,22 @@ function Index() {
               </div>
 
               {/* Social Proof Stats - hidden on mobile */}
-              <div className="mt-12 hidden sm:flex items-center gap-6 pt-6 border-t border-zinc-800/80 text-xs text-zinc-400">
+              <div className="mt-8 hidden sm:flex items-center gap-6 pt-6 border-t border-white/20 text-xs text-zinc-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
                 <div className="flex items-center gap-1.5">
                   <div className="flex -space-x-1">
                     {[1, 2, 3, 4].map((i) => (
                       <span
                         key={i}
-                        className="inline-flex size-6 items-center justify-center rounded-full bg-primary/20 border border-primary text-[10px] font-bold text-primary"
+                        className="inline-flex size-6 items-center justify-center rounded-full bg-rose-600/30 border border-rose-400 text-[10px] font-bold text-rose-300"
                       >
                         ★
                       </span>
                     ))}
                   </div>
-                  <span className="font-semibold text-zinc-200 ml-1">4.9/5 Rating</span>
+                  <span className="font-semibold text-zinc-100 ml-1">4.9/5 Rating</span>
                 </div>
-                <span className="text-zinc-700">•</span>
-                <span className="text-zinc-300 font-medium">+1,200 Pedidos en NYC & EE. UU.</span>
+                <span className="text-zinc-500">•</span>
+                <span className="text-zinc-100 font-medium">+1,200 Pedidos en NYC & EE. UU.</span>
               </div>
             </div>
           </div>
@@ -1240,7 +1537,8 @@ function Index() {
                 return (
                   <article
                     key={product.id}
-                    className={`group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-card p-2 sm:p-3 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${shouldHide}`}
+                    onClick={() => openProductModal(product)}
+                    className={`group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 dark:border-zinc-800 bg-card p-2 sm:p-3 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer ${shouldHide}`}
                   >
                     <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                       <ProductCrop product={product} />
@@ -1268,17 +1566,6 @@ function Index() {
                         />
                       </button>
 
-                      {/* Quick Add Button Overlay (Desktop) */}
-                      <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
-                        <Button
-                          id={idx === 0 ? "add-to-cart-first-product" : undefined}
-                          data-testid="add-to-cart-button"
-                          className="w-full rounded-full h-11 text-xs font-bold uppercase tracking-wider bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-xl cursor-pointer"
-                          onClick={() => addProduct(product.id)}
-                        >
-                          <Plus className="mr-1 size-4" /> {t("catalog_add_to_cart")}
-                        </Button>
-                      </div>
                     </div>
 
                     <div className="p-2 pt-3 flex flex-col flex-1 justify-between">
@@ -1306,7 +1593,10 @@ function Index() {
                           variant="default"
                           size="sm"
                           className="rounded-full h-9 px-3.5 text-xs font-bold bg-zinc-950 hover:bg-zinc-900 text-white border border-zinc-800 transition-transform active:scale-95 flex sm:hidden items-center gap-1 cursor-pointer"
-                          onClick={() => addProduct(product.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openProductModal(product);
+                          }}
                           aria-label={t("catalog_add_to_cart")}
                         >
                           <Plus className="size-3.5" />
@@ -1318,7 +1608,10 @@ function Index() {
                           variant="outline"
                           size="sm"
                           className="rounded-full h-9 w-9 p-0 sm:w-auto sm:px-3 text-xs font-semibold border-zinc-300 dark:border-zinc-700 hover:bg-zinc-950 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-950 hidden sm:flex"
-                          onClick={() => addProduct(product.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openProductModal(product);
+                          }}
                           aria-label={t("catalog_add_to_cart")}
                         >
                           <ShoppingBag className="size-3.5 sm:mr-1" />
@@ -1456,7 +1749,7 @@ function Index() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Agendar Cita previa <MessageCircle className="ml-2 size-4" />
+                    Agendar Cita previa <WhatsAppIcon className="ml-2 size-4 text-emerald-400" />
                   </a>
                 </Button>
               </div>
@@ -1480,7 +1773,7 @@ function Index() {
                   rel="noreferrer"
                   className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 transition-all shadow-sm"
                 >
-                  🎵 TikTok @shop_isafer1
+                  <TikTokIcon className="size-4 text-cyan-400" /> TikTok @shop_isafer1
                 </a>
               </div>
             </div>
@@ -1488,182 +1781,231 @@ function Index() {
         </section>
       </main>
 
-      {/* 8. FOOTER E-COMMERCE ENRIQUECIDO (Premium Light Theme) */}
-      <footer className="border-t border-zinc-800/60 bg-[#111111] text-zinc-400 pt-16 pb-12 transition-all">
-        <div className="mx-auto max-w-7xl px-4 sm:px-8">
-          {/* VIP Newsletter Box */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-zinc-900 via-[#18181b] to-zinc-900 border border-zinc-800 p-8 sm:p-12 mb-16 shadow-2xl">
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 text-center lg:text-left">
-              <div className="space-y-2 max-w-xl">
-                <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#ff007f]/10 border border-[#ff007f]/20 text-[#ff007f] text-[10px] font-mono font-bold tracking-widest uppercase">
-                  <Sparkles className="size-3 text-[#ff007f]" /> {t("newsletter_title")}
-                </span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight">
-                  {t("newsletter_subtitle")}
-                </h3>
-              </div>
+      {/* 8. FOOTER E-COMMERCE LUXE (Organizado para Mac & Widescreen) */}
+      <footer className="border-t border-zinc-800/80 bg-[#0c0c0e] text-zinc-400 pt-16 pb-12 transition-all">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+          {/* VIP Newsletter Box (Diseño Editorial Centrado Luxe) */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-950 via-[#1e1319] to-zinc-950 border border-rose-500/30 p-8 sm:p-14 mb-16 shadow-[0_10px_40px_rgba(244,63,94,0.12)] flex flex-col items-center text-center">
+            {/* Luces de Neón Ambientales */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-rose-500/10 rounded-full filter blur-3xl -z-0 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/10 rounded-full filter blur-2xl -z-0 pointer-events-none" />
 
+            <div className="relative z-10 w-full flex flex-col items-center">
+              {/* Badge VIP */}
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-[10px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase mb-4 shadow-xs">
+                <Sparkles className="size-3.5 text-rose-400 animate-pulse" /> CLUB VIP · ISAFÉR BOUTIQUE
+              </span>
+
+              {/* Título Principal */}
+              <h3 className="font-display text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight max-w-2xl">
+                Consigue <span className="font-serif italic font-normal text-rose-400 drop-shadow-md">10% OFF</span> en tu primer pedido
+              </h3>
+
+              {/* Subtítulo */}
+              <p className="mt-3 text-xs sm:text-sm text-zinc-300 font-medium max-w-lg leading-relaxed">
+                Recibe avisos VIP de lanzamientos secretos, ventas exclusivas y ofertas semanales directamente en tu email.
+              </p>
+
+              {/* Formulario Unificado en Barra de Entrada Elegante */}
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   if (newsletterEmail) {
-                    toast.success("¡Bienvenida al Club VIP! 💖", {
-                      description: "Te hemos enviado tu cupón de 10% OFF.",
-                    });
-                    setNewsletterEmail("");
+                    const res = await subscribeToNewsletter(newsletterEmail);
+                    if (res.success) {
+                      toast.success("¡Bienvenida al Club VIP! 💖", {
+                        description: `Te hemos guardado en la lista VIP y enviado tu cupón de 10% OFF a ${res.email}.`,
+                      });
+                      setNewsletterEmail("");
+                    }
                   }
                 }}
-                className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0 max-w-md"
+                className="mt-8 w-full max-w-xl flex flex-col sm:flex-row items-center p-1.5 rounded-2xl sm:rounded-full bg-zinc-950/90 border border-rose-500/40 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-500/30 shadow-2xl transition-all duration-300 gap-2"
               >
-                <div className="relative flex-1">
-                  <Mail className="absolute left-4 top-3.5 size-4 text-zinc-500" />
+                <div className="relative flex-1 w-full flex items-center pl-4 py-1">
+                  <Mail className="size-4 text-rose-400 shrink-0" />
                   <input
                     type="email"
                     required
-                    placeholder={t("newsletter_placeholder")}
+                    placeholder="Escribe tu correo electrónico..."
                     value={newsletterEmail}
                     onChange={(e) => setNewsletterEmail(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-800 bg-zinc-900 py-3 pl-11 pr-4 text-xs text-zinc-100 placeholder-zinc-500 focus:border-[#ff007f] focus:outline-none transition-all"
+                    className="w-full bg-transparent px-3 py-2.5 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="rounded-2xl bg-white hover:bg-zinc-200 text-zinc-900 font-extrabold text-xs uppercase tracking-wider px-6 py-3 shadow-md cursor-pointer transition-all hover:scale-105 active:scale-95 border-0"
+                  className="w-full sm:w-auto rounded-xl sm:rounded-full bg-gradient-to-r from-rose-600 via-rose-500 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-extrabold text-xs uppercase tracking-[0.18em] px-8 py-3.5 shadow-lg shadow-rose-600/25 cursor-pointer transition-all hover:scale-105 active:scale-95 shrink-0 border-0 h-12"
                 >
-                  {t("newsletter_btn")}
+                  UNIRME VIP
                 </Button>
               </form>
+
+              {/* Mensaje de Confianza */}
+              <p className="mt-4 text-[10px] text-zinc-500 font-mono tracking-wider">
+                🔒 Respetamos tu privacidad. Cancela tu suscripción en cualquier momento.
+              </p>
             </div>
           </div>
 
-          {/* 4 Columns Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-zinc-800/60">
-            {/* Col 1: Brand Info */}
-            <div className="space-y-4 text-center md:text-left">
-              <div className="inline-flex justify-center md:justify-start">
-                <IsaferLogo variant="footer" size="lg" />
-              </div>
-              <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
-                {t("footer_tagline")} Diseñado en Brooklyn, NY para empoderar la elegancia y seguridad femenina.
+          {/* 4 Columns Grid Organizado */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-14 border-b border-zinc-800/60">
+            {/* Col 1: Brand Identity */}
+            <div className="space-y-4 text-center md:text-left flex flex-col items-center md:items-start">
+              <IsaferLogo variant="footer" size="lg" />
+              <p className="text-xs text-zinc-400 leading-relaxed max-w-xs font-normal">
+                Moda femenina moldeadora, sensual y elegante. Diseñado en Brooklyn, NY para resaltar la seguridad y belleza natural de la mujer.
               </p>
-              <div className="pt-2 flex items-center justify-center md:justify-start gap-3">
+              <div className="pt-2 flex items-center gap-3">
                 <a
                   href="https://www.instagram.com/shopisafer"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-[#ff007f] hover:border-[#ff007f]/50 hover:bg-[#ff007f]/5 transition-all shadow-sm"
+                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-rose-400 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all shadow-sm group"
                   aria-label="Instagram @shopisafer"
                 >
-                  <Instagram className="size-4" />
+                  <Instagram className="size-4 group-hover:scale-110 transition-transform" />
                 </a>
                 <a
                   href="https://www.tiktok.com/@shop_isafer1"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-zinc-800 transition-all shadow-sm"
+                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-cyan-400 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition-all shadow-sm group"
                   aria-label="TikTok @shop_isafer1"
                 >
-                  <span className="text-xs font-bold font-mono">🎵</span>
+                  <TikTokIcon className="size-4 group-hover:scale-110 transition-transform" />
                 </a>
                 <a
                   href={`https://wa.me/${OWNER_PHONE}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-emerald-500 hover:border-emerald-800/50 hover:bg-emerald-500/5 transition-all shadow-sm"
-                  aria-label="WhatsApp"
+                  className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all shadow-sm group"
+                  aria-label="WhatsApp Directo"
                 >
-                  <MessageCircle className="size-4" />
+                  <WhatsAppIcon className="size-4 group-hover:scale-110 transition-transform" />
                 </a>
               </div>
             </div>
 
-            {/* Col 2: Shop Links */}
+            {/* Col 2: Colecciones */}
             <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-sans text-sm font-black uppercase tracking-widest text-zinc-100">
-                {t("footer_links_title") || "Colecciones"}
+              <h4 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-rose-400 flex items-center justify-center md:justify-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> Colecciones
               </h4>
-              <ul className="space-y-2.5 text-xs text-zinc-400 font-medium">
+              <ul className="space-y-3 text-xs text-zinc-400 font-medium">
                 <li>
-                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }} className="hover:text-[#ff007f] transition-colors">
+                  <a
+                    href="#coleccion"
+                    onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }}
+                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                  >
                     Fajas & Licras Moldeadoras
                   </a>
                 </li>
                 <li>
-                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }} className="hover:text-[#ff007f] transition-colors">
+                  <a
+                    href="#coleccion"
+                    onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }}
+                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                  >
                     Vestidos Glam & Noche
                   </a>
                 </li>
                 <li>
-                  <a href="#historia" onClick={(e) => { e.preventDefault(); scrollToSection("historia"); }} className="hover:text-[#ff007f] transition-colors">
-                    Sobre Nosotros
-                  </a>
-                </li>
-                <li>
-                  <a href="#coleccion" onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }} className="hover:text-[#ff007f] transition-colors">
+                  <a
+                    href="#coleccion"
+                    onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }}
+                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                  >
                     Conjuntos & Tops Luxe
                   </a>
                 </li>
-              </ul>
-            </div>
-
-            {/* Col 3: Customer Support */}
-            <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-sans text-sm font-black uppercase tracking-widest text-zinc-100">
-                {t("footer_help_title") || "Atención al Cliente"}
-              </h4>
-              <ul className="space-y-2.5 text-xs text-zinc-400 font-medium flex flex-col items-center md:items-start">
-                <li className="flex items-center gap-2">
-                  <Truck className="size-3.5 text-rose-450" /> Envíos Express (USA 24-48h)
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle2 className="size-3.5 text-emerald-500" /> Devoluciones 30 Días
-                </li>
-                <li className="flex items-center gap-2">
-                  <a href="#visitanos" onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }} className="hover:text-[#ff007f] transition-colors flex items-center gap-2">
-                    <Clock className="size-3.5 text-amber-500" /> Visita Nuestra Tienda Física
-                  </a>
-                </li>
                 <li>
-                  <a href={`https://wa.me/${OWNER_PHONE}`} target="_blank" rel="noreferrer" className="text-[#ff007f] underline hover:text-[#ff4d94] transition-colors font-bold">
-                    Contacto Directo WhatsApp
+                  <a
+                    href="#historia"
+                    onClick={(e) => { e.preventDefault(); setAboutUsModalOpen(true); }}
+                    className="hover:text-rose-400 hover:translate-x-1 inline-block transition-all"
+                  >
+                    Nuestra Historia & Atelier
                   </a>
                 </li>
               </ul>
             </div>
 
-            {/* Col 4: Safe Payments */}
+            {/* Col 3: Servicio al Cliente */}
             <div className="space-y-4 text-center md:text-left">
-              <h4 className="font-sans text-sm font-black uppercase tracking-widest text-zinc-100">
-                {t("footer_payments_title") || "Pagos 100% Seguros"}
+              <h4 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-rose-400 flex items-center justify-center md:justify-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> Servicio & Garantía
               </h4>
-              <p className="text-xs text-zinc-400 leading-relaxed font-medium">
-                Pagos encriptados SSL de 256 bits procesados en tiempo real de forma segura.
+              <ul className="space-y-3 text-xs text-zinc-400 font-medium flex flex-col items-center md:items-start">
+                <li className="flex items-center gap-2.5">
+                  <Truck className="size-4 text-rose-400 shrink-0" />
+                  <span>Envíos Express (EE. UU. 24–48h)</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                  <span>Garantía de Cambio de Talla</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <a
+                    href="#visitanos"
+                    onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }}
+                    className="hover:text-rose-400 flex items-center gap-2.5 transition-colors"
+                  >
+                    <Clock className="size-4 text-amber-400 shrink-0" />
+                    <span>Visita Nuestra Tienda Física</span>
+                  </a>
+                </li>
+                <li className="flex items-center gap-2.5 pt-1">
+                  <a
+                    href={`https://wa.me/${OWNER_PHONE}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-400 underline font-bold hover:text-rose-300 transition-colors flex items-center gap-1.5"
+                  >
+                    <WhatsAppIcon className="size-4 text-emerald-400" />
+                    Contacto Directo por WhatsApp
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: Pagos Seguros */}
+            <div className="space-y-4 text-center md:text-left">
+              <h4 className="font-mono text-xs font-bold uppercase tracking-[0.25em] text-rose-400 flex items-center justify-center md:justify-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block" /> Pagos 100% Seguros
+              </h4>
+              <p className="text-xs text-zinc-400 leading-relaxed font-normal">
+                Transacciones encriptadas SSL de 256 bits procesadas en tiempo real.
               </p>
-              <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 pt-2">
-                {["Visa", "MasterCard", "Amex", "Apple Pay", "WhatsApp Pay"].map((pay) => (
+              <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 pt-1">
+                {["Visa", "MasterCard", "Amex", "Apple Pay", "Google Pay", "Stripe"].map((pay) => (
                   <span
                     key={pay}
-                    className="px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] font-bold tracking-wider text-zinc-300 shadow-sm"
+                    className="px-3 py-1.5 rounded-lg bg-zinc-900/90 border border-zinc-800 text-[10px] font-bold tracking-wider text-zinc-300 shadow-xs hover:border-rose-500/30 transition-colors"
                   >
                     {pay}
                   </span>
                 ))}
               </div>
+              <p className="text-[10px] text-zinc-500 font-mono flex items-center justify-center md:justify-start gap-1 pt-1">
+                🔒 Certificado de Seguridad SSL Activo
+              </p>
             </div>
           </div>
 
-          {/* Subfooter */}
+          {/* Subfooter (Pie de página) */}
           <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-medium text-zinc-500">
             <div className="flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
-              <p>{t("footer_rights")} Brooklyn, New York, NY 11201.</p>
-              <span className="hidden sm:inline text-zinc-800">|</span>
+              <p>© 2026 Isafer Boutique. Todos los derechos reservados. Brooklyn, New York, NY 11201.</p>
+              <span className="hidden sm:inline text-zinc-800">•</span>
               <p>
-                {t("footer_credits")}{" "}
+                Diseño por{" "}
                 <a
                   href="https://mynextbymusa.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#ff007f] hover:text-[#ff4d94] font-black transition-colors underline decoration-dotted underline-offset-4"
+                  className="text-rose-400 hover:text-rose-300 font-black transition-colors underline decoration-dotted underline-offset-4"
                 >
                   MYNEXT
                 </a>
@@ -1672,7 +2014,7 @@ function Index() {
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setLegalType("privacy")}
-                className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 font-semibold"
+                className="hover:text-white transition-colors cursor-pointer bg-transparent border-0 p-0 font-medium"
               >
                 {t("footer_privacy")}
               </button>
@@ -1763,11 +2105,11 @@ function Index() {
                   <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
                     {[
                       { label: t("catalog_filter_all"), category: "Todos", icon: Sparkles },
-                      { label: t("catalog_filter_shapewear"), category: "Licras", icon: Flame },
-                      { label: t("catalog_filter_dresses"), category: "Vestidos", icon: Heart },
-                      { label: t("catalog_filter_sets"), category: "Tops & Sets", icon: Grid },
-                      { label: "Bodys & Corsets", category: "Bodys & Corsets", icon: Sparkles },
-                      { label: "Accesorios & Glam", category: "Accesorios & Glam", icon: Star },
+                      { label: t("catalog_filter_shapewear"), category: "Licras", icon: Sliders },
+                      { label: t("catalog_filter_dresses"), category: "Vestidos", icon: Crown },
+                      { label: t("catalog_filter_sets"), category: "Tops & Sets", icon: Layers },
+                      { label: "Bodys & Corsets Moldeadores", category: "Bodys & Corsets", icon: Sparkles },
+                      { label: "Accesorios Luxe & Glam", category: "Accesorios & Glam", icon: Gem },
                       { label: t("catalog_filter_protection"), category: "Gas Pimienta", icon: ShieldCheck },
                     ].map((item) => (
                       <a
@@ -1779,13 +2121,13 @@ function Index() {
                           setFullScreenMenuOpen(false);
                           scrollToSection("coleccion");
                         }}
-                        className="flex items-center justify-between py-2 text-xs font-semibold text-zinc-650 hover:text-rose-600 transition-colors"
+                        className="flex items-center justify-between py-2 text-xs font-bold text-zinc-700 hover:text-rose-600 transition-colors group"
                       >
-                        <span className="flex items-center gap-2">
-                          <item.icon className="size-3.5 text-rose-450" />
+                        <span className="flex items-center gap-2.5">
+                          <item.icon className="size-4 text-rose-500 group-hover:scale-110 transition-transform" />
                           {item.label}
                         </span>
-                        <ChevronRight className="size-3 text-zinc-400" />
+                        <ChevronRight className="size-3.5 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
                       </a>
                     ))}
                   </AccordionContent>
@@ -1793,37 +2135,14 @@ function Index() {
               </Accordion>
 
               {/* 3. Sobre Nosotros */}
-              <a
-                href="#historia"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setFullScreenMenuOpen(false);
-                  scrollToSection("historia");
-                }}
-                className="py-3.5 border-b border-rose-100/40 text-left text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group"
-              >
-                <span>Sobre Nosotros</span>
-                <ChevronRight className="size-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-
-              {/* 4. Mis Favoritos */}
               <button
                 onClick={() => {
                   setFullScreenMenuOpen(false);
-                  setTimeout(() => {
-                    setFavoritesDrawerOpen(true);
-                  }, 200);
+                  setCurrentView("about");
                 }}
                 className="w-full py-3.5 border-b border-rose-100/40 text-left text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 transition-colors flex items-center justify-between group cursor-pointer"
               >
-                <span className="flex items-center gap-2">
-                  Mis Favoritos 💕
-                  {Object.keys(favorites).length > 0 && (
-                    <span className="ml-1 px-2 py-0.5 rounded-full bg-rose-100 text-[10px] font-black text-rose-600">
-                      {Object.keys(favorites).length}
-                    </span>
-                  )}
-                </span>
+                <span>Sobre Nosotros</span>
                 <ChevronRight className="size-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
@@ -1895,25 +2214,37 @@ function Index() {
               </Link>
             )}
 
-            {/* Minimal Horizontal Social Icons */}
-            <div className="flex items-center justify-center gap-4 py-1">
+            {/* Icon-Only Social Buttons (Instagram, TikTok, WhatsApp) */}
+            <div className="flex items-center justify-center gap-3 py-2">
               <a
                 href="https://www.instagram.com/shopisafer"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full border border-rose-100 bg-white text-zinc-700 hover:text-rose-600 hover:border-rose-200 transition-all hover:scale-105 active:scale-95 text-xs font-extrabold shadow-sm"
+                className="size-10 rounded-full border border-rose-200/80 bg-white flex items-center justify-center text-rose-500 hover:bg-rose-50 hover:border-rose-400 hover:text-rose-600 transition-all hover:scale-110 active:scale-95 shadow-sm"
+                aria-label="Instagram @shopisafer"
+                title="Instagram @shopisafer"
               >
-                <Instagram className="size-4 text-rose-500 animate-pulse" />
-                <span>@shopisafer</span>
+                <Instagram className="size-5" />
               </a>
               <a
                 href="https://www.tiktok.com/@shop_isafer1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-200 bg-white text-zinc-700 hover:text-zinc-950 hover:border-zinc-300 transition-all hover:scale-105 active:scale-95 text-xs font-extrabold shadow-sm"
+                className="size-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-900 hover:bg-zinc-100 hover:border-zinc-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
+                aria-label="TikTok @shop_isafer1"
+                title="TikTok @shop_isafer1"
               >
-                <span className="text-xs">🎵</span>
-                <span>@shop_isafer1</span>
+                <TikTokIcon className="size-5" />
+              </a>
+              <a
+                href={`https://wa.me/${OWNER_PHONE}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="size-10 rounded-full border border-emerald-200 bg-white flex items-center justify-center text-emerald-600 hover:bg-emerald-50 hover:border-emerald-400 transition-all hover:scale-110 active:scale-95 shadow-sm"
+                aria-label="WhatsApp Directo"
+                title="Contacto por WhatsApp"
+              >
+                <WhatsAppIcon className="size-5" />
               </a>
             </div>
 
@@ -2315,6 +2646,16 @@ function Index() {
           </div>
         </div>
       )}
+
+      {/* MODAL DE VISTA PREVIA Y SELECCIÓN DE TALLA (PULL&BEAR / BERSHKA STYLE) */}
+      <ProductDetailModal
+        product={selectedProductForModal}
+        isOpen={productModalOpen}
+        onClose={() => setProductModalOpen(false)}
+        onAddToCart={handleAddToCartFromModal}
+        favorites={favorites}
+        toggleFavorite={toggleFavorite}
+      />
 
       {/* MODAL / PESTAÑA SOBRE NOSOTROS & NUESTRA HISTORIA */}
       <AboutUsModal open={aboutUsModalOpen} onOpenChange={setAboutUsModalOpen} />

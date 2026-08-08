@@ -146,15 +146,6 @@ export function TrendingCarousel({
                   />
                 </button>
 
-                {/* Quick Add Overlay Button for Desktop */}
-                <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block">
-                  <Button
-                    className="w-full rounded-none h-10 text-xs font-bold uppercase tracking-wider bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 border-none cursor-pointer"
-                    onClick={() => addProduct(product.id)}
-                  >
-                    <Plus className="mr-1.5 size-3.5" /> {t("catalog_add_to_cart")}
-                  </Button>
-                </div>
               </div>
 
               {/* Product Details - Sharp and clean layout */}

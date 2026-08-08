@@ -91,6 +91,20 @@ export function useAuth() {
     }
   };
 
+  const signInWithApple = async () => {
+    try {
+      const { data, error } = await insforge.auth.signInWithOAuth({
+        provider: 'apple',
+        redirectTo: window.location.origin,
+      });
+      if (error) throw error;
+      return { success: true, data };
+    } catch (err: any) {
+      console.error('Error al iniciar sesión con Apple:', err);
+      return { success: false, error: err.message || 'Error con Apple Auth' };
+    }
+  };
+
   const signInWithPassword = async (email: string, password: string) => {
     let cleanEmail = email.trim().toLowerCase();
     let cleanPass = password.trim();
@@ -148,6 +162,7 @@ export function useAuth() {
     isAdmin,
     isCustomer,
     signInWithGoogle,
+    signInWithApple,
     signInWithPassword,
     signOut,
   };
