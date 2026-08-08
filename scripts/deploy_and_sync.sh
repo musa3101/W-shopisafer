@@ -14,18 +14,13 @@ echo -e "${YELLOW}📦 Compilando aplicación localmente...${NC}"
 npm run build
 echo -e "${GREEN}✓ Aplicación compilada correctamente.${NC}"
 
-# 2. Despliegue a Cloudflare Workers & Cloudflare Pages
-echo -e "${YELLOW}☁️ Desplegando en Cloudflare Workers...${NC}"
-npx wrangler deploy
-echo -e "${GREEN}✓ Despliegue en Cloudflare Workers completado.${NC}"
-
+# 2. Despliegue a Cloudflare Pages (isaferboutique)
 echo -e "${YELLOW}⚡ Desplegando en Cloudflare Pages (isaferboutique.pages.dev)...${NC}"
 npx wrangler pages deploy dist/client --project-name=isaferboutique
 echo -e "${GREEN}✓ Despliegue en Cloudflare Pages completado con éxito.${NC}"
 
-# 3. Verificación de las URLs públicas
+# 3. Verificación de la URL pública
 URL_PAGES="https://isaferboutique.pages.dev"
-URL_WORKERS="https://isafer.mynextbymusa.workers.dev"
 echo -e "${YELLOW}🧪 Verificando que la web responda en producción... (${URL_PAGES})${NC}"
 sleep 3
 RESPONSE_PAGES=$(curl -s -o /dev/null -w "%{http_code}" "$URL_PAGES")
