@@ -1,63 +1,42 @@
 # 🗺️ Roadmap de Desarrollo — Isafer Boutique 💖
 
 ## ✅ Tareas Completadas
-- [x] Verificación de TypeScript con CLI `npx tsc --noEmit` (0 errores).
-- [x] Compilación exitosa del bundle de producción SSR (`npm run build`).
-- [x] **Notificaciones Push PWA nativas en móviles**:
-  - [x] Creada la tabla `push_subscriptions` en Postgres de InsForge.
-  - [x] Desarrollado el Service Worker de fondo `sw.js` para recibir e interceptar alertas.
-  - [x] Registrado el Service Worker automáticamente en el layout de administración `/admin`.
-  - [x] Desarrollado el switch interactivo en **Ajustes** para solicitar permisos de notificación y suscribir el navegador.
-  - [x] Modificado el webhook de Stripe para buscar dispositivos suscritos y disparar el push cifrado nativo al completarse un pago, con limpieza de tokens obsoletos (410).
-- [x] **Recordatorios automatizados por email para pedidos pendientes**:
-  - [x] Añadida la columna `reminder_sent` a la tabla `orders` en Postgres.
-  - [x] Desarrollada la Edge Function `send-pending-reminders.ts` que filtra pedidos pendientes y envía correos HTML recordatorios.
-  - [x] Programado el Cron (Schedule) diario a las 9 AM en la plataforma InsForge para ejecutar la función de recordatorios de forma automática.
-- [x] **Monitoreo continuo de base de datos con Keep-Alive**:
-  - [x] Creada la tabla `database_health_logs` en Postgres.
-  - [x] Modificado el Cron Keep-Alive de 10 min en `src/server.ts` para realizar un select a la tabla `products`, medir la latencia e insertarlo como log.
-  - [x] Diseñada una tira de pings tipo commits de GitHub e indicadores de latencia media y Uptime (%) históricos en el panel de **Ajustes**.
-- [x] **Centralización y número de pruebas**:
-  - [x] Creado `src/lib/constants.ts` con el número de pruebas de España `346673109486` y la clave pública VAPID.
-  - [x] Vinculado dinámicamente en index, about y en la administración de Camila.
-  - [x] Configurada la variable `OWNER_PHONE` en variables de entorno locales y secretos en la nube de InsForge.
-- [x] **Panel de Administración Protegido `/admin`**:
-  - [x] Creadas rutas independientes para login, resumen, pedidos, catálogo y ajustes.
-  - [x] Cambiado diseño oscuro a una UI suiza minimalista blanca y gris, limpia y profesional.
-  - [x] Modificados los accesos en la web para navegar directamente a la ruta `/admin`.
-- [x] **Integración de Gestión Real**:
-  - [x] Cargados y vinculados pedidos e inventario real a través de `OrderManager` y `StockManager`.
-  - [x] Funcionalidades de modificación de precios, stock, y cambio de estado de pedidos activas.
-  - [x] Creada sección de Ajustes con diagnóstico de latencia de base de datos e interruptor de sonido.
-- [x] **Rediseño del Menú Móvil Público**:
-  - [x] Creada barra de cabecera rígida superior con fondo blanco puro y logotipo ampliado 15%.
-  - [x] Cambiado fondo general de panel a un tono crema nude muy suave (`bg-[#fdf9f7]`).
-  - [x] Encapsulada la parte inferior del menú (VIP, redes oficiales, selector idioma) en un bloque diferenciado con fondo ligeramente más oscuro (`bg-[#f5ebe7]`) y borde superior.
-- [x] **Optimización del Hero Móvil**:
-  - [x] Reducidos los degradados del fondo oscuros en móvil para potenciar la visualización de fotos.
-  - [x] Achicada la tipografía de títulos y compactados los espacios verticales y paddings del botón CTA.
-- [x] **Rediseño de Bolsa / Carrito de Compras**:
-  - [x] Adoptado un Slide-over Drawer claro de color crema suave/blanco elegante (`bg-[#fffcfd]`) y bordes suaves de color rosa.
-  - [x] Cabecera limpia con el título "Tu Bolsa" y el contador de ítems entre paréntesis, evitando solapamiento visual con la 'X' de cierre.
-  - [x] Pie de carrito fijo con subtotal visible, botón de Checkout destacado en fucsia premium (`#ff007f`) y botón alternativo de WhatsApp.
-- [x] **Rediseño del Footer (Pie de Página)**:
-  - [x] Fondo cambiado a un negro mate boutique de lujo (`#111111`) y borde superior sutil.
-  - [x] Títulos en blanco de alto contraste (`text-zinc-100`) y textos secundarios en gris.
-  - [x] Enlace de autoría **"Creado por MYNEXT"** destacado elegantemente en fucsia vibrante (`#ff007f`).
+
+- [x] **Verificación Estricta de TypeScript**: `npx tsc --noEmit` ejecutado con **0 errores**.
+- [x] **Compilación y SSR**: Build exitoso de producción (`npm run build`).
+- [x] **Stripe Price ID 100% Opcional**:
+  - Camila ya no necesita copiar manualmente el ID de precio de Stripe para cada prenda.
+  - La pasarela asigna un cobro automático por defecto en caso de no especificarse.
+  - Modificados `ProductCreator.tsx`, `StockManager.tsx` e `index.tsx`.
+- [x] **Auditorías Técnicas Automatizadas**:
+  - Script `scripts/audit_dual_perspective.js`: 15/15 prendas verificadas en base de datos.
+  - Script `scripts/audit_web.js`: Respuestas HTTP 200 en todas las páginas e imágenes del catálogo.
+  - Script `scripts/audit_final_ts.ts`: 18/18 pruebas E2E superadas (100%).
+- [x] **Auditoría Visual Completa con Chrome CDP**:
+  - Script `scripts/audit_full_visual.js` ejecutado navegando por 22 componentes y generando informe en `docs/VISUAL_AUDIT_REPORT.md`.
+- [x] **PWA & Manifiestos**:
+  - Creado `public/manifest.json` para clientes y `public/admin-manifest.json` para el panel de Camila.
+  - Registrado Service Worker `sw.js` para notificaciones Push PWA en el panel de administración.
+- [x] **Notificaciones Push PWA Nativas**:
+  - Tabla `push_subscriptions` en Postgres de InsForge.
+  - Integración en Webhook de Stripe para alertas al completarse un pago.
+- [x] **Recordatorios de Pedidos Pendientes**:
+  - Edge Function `send-pending-reminders.ts` y Schedule diario en InsForge.
+- [x] **Rediseño de Menú Móvil, Carrito Drawer y Footer**:
+  - Menú limpio en tono crema nude, Carrito Drawer blanco elegante con fucsia boutique y footer negro mate con icono SVG de TikTok y WhatsApp.
+
+---
 
 ## 🔄 Tareas en Progreso
-- [ ] Validación en producción de la entrega de alertas Push PWA nativas y WhatsApp de CallMeBot.
-- [ ] Monitoreo continuo del uptime y respuesta de la base de datos PostgreSQL de InsForge en el plan de hosting actual.
 
-## ✅ Completado (Sesión 8 Ago 2026)
-- [x] **Stripe Price ID 100% opcional** — Camila ya no necesita pegar manualmente el ID de Stripe para cada prenda. El checkout usa un precio por defecto automático si no se configura.
-- [x] **Auditoría técnica automatizada** — Scripts `audit_dual_perspective.js` y `audit_web.js` ejecutados: 15/15 productos OK, 0 imágenes rotas, todas las páginas HTTP 200.
-- [x] **Auditoría visual completa con Chrome CDP** — Nuevo script `audit_full_visual.js` que navega la web de clientes y el dashboard admin, toma capturas y genera reporte Markdown. 18/22 tests OK.
-- [x] **Quick View Modal implementado** (conversación anterior).
-- [x] **Iconos SVG del footer** — Reemplazados emojis por SVGs profesionales de TikTok y WhatsApp.
+- [ ] Monitoreo en producción de la entrega de alertas Push PWA nativas en móviles.
+- [ ] Monitoreo continuo del uptime y respuesta de la base de datos PostgreSQL de InsForge.
+
+---
 
 ## 📌 Próximas Mejoras Prioritarias
-- [ ] Migrar las imágenes JPG antiguas del catálogo (`IMG_48xx.jpg`) a formato WebP para optimización.
+
+- [ ] Migrar las imágenes JPG antiguas del catálogo (`IMG_48xx.jpg`) a formato WebP para acelerar los tiempos de carga en móviles.
 - [ ] Configurar correos automáticos complementarios para la recuperación de carritos abandonados tras 2 horas de inactividad de la clienta.
-- [ ] Instalar TestSprite CLI para testing automatizado E2E contra la URL de producción.
-- [ ] Configurar `VITE_DEFAULT_STRIPE_PRICE_ID` en `.env.local` con un Price ID real de Stripe para el fallback automático de pago.
+- [ ] Instalar TestSprite CLI localmente para ejecución de tests E2E automatizados desde la terminal.
+- [ ] Configurar `VITE_DEFAULT_STRIPE_PRICE_ID` con la clave definitiva de Stripe en producción.
