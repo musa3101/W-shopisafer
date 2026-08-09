@@ -24,21 +24,15 @@ export function InitialLoader() {
           justify-content: center;
           height: 120px;
           width: auto;
-          margin: 2rem;
+          margin: 1rem;
 
           font-family: "Playfair Display", "Times New Roman", serif;
-          font-size: 1.8em;
+          font-size: clamp(1rem, 5vw, 2.25rem);
           font-weight: 300;
           user-select: none;
           color: #fda4af; /* rose-300 */
-          letter-spacing: 0.25em;
-          scale: 1.2;
-        }
-
-        @media (min-width: 640px) {
-          .isafer-loader-wrapper {
-            scale: 1.6;
-          }
+          letter-spacing: 0.2em;
+          white-space: nowrap;
         }
 
 

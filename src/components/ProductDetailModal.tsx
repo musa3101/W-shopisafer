@@ -72,11 +72,11 @@ export function ProductDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[95%] sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-rose-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl transition-all duration-300">
+      <DialogContent className="max-w-[95%] sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-rose-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl transition-all duration-300 max-h-[90dvh] flex flex-col">
         <DialogTitle className="sr-only">{product.name}</DialogTitle>
         <DialogDescription className="sr-only">{product.description}</DialogDescription>
 
-        <div className="relative grid grid-cols-1 md:grid-cols-12 max-h-[90vh] overflow-y-auto md:overflow-hidden">
+        <div className="relative grid grid-cols-1 md:grid-cols-12 flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
           {/* Botón de Cierre Flotante Personalizado */}
           <button
             onClick={onClose}
@@ -87,7 +87,7 @@ export function ProductDetailModal({
           </button>
 
           {/* COLUMNA IZQUIERDA: Galería / Imagen del Producto (Bershka / Pull&Bear Style) */}
-          <div className="md:col-span-6 relative aspect-[4/5] md:aspect-auto w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden group">
+          <div className="md:col-span-6 relative aspect-[16/9] sm:aspect-[4/5] md:aspect-auto max-h-56 sm:max-h-none w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden group">
             {product.image ? (
               <img
                 src={product.image}

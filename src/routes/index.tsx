@@ -52,6 +52,7 @@ import { AdminDashboardModal } from "@/components/AdminDashboardModal";
 import { AboutUsModal } from "@/components/AboutUsModal";
 import { AboutPage } from "@/components/AboutPage";
 import { ProductDetailModal, ProductItem } from "@/components/ProductDetailModal";
+import { QuickAddOverlay } from "@/components/QuickAddOverlay";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CtaButton } from "@/components/CtaButton";
 import { IsaferLogo } from "@/components/IsaferLogo";
@@ -347,6 +348,7 @@ function Index() {
   const [cart, setCart] = useState<Cart>({});
   const [selectedProductForModal, setSelectedProductForModal] = useState<ProductItem | null>(null);
   const [productModalOpen, setProductModalOpen] = useState(false);
+  const [quickAddOpenId, setQuickAddOpenId] = useState<string | number | null>(null);
   const [isCartInitialized, setIsCartInitialized] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("Todos");
@@ -409,9 +411,6 @@ function Index() {
           }
 
           let imgUrl = bp.images && bp.images.length > 0 ? bp.images[0] : undefined;
-          if (imgUrl && imgUrl.includes("insforge.app") && (imgUrl.includes("catalog%2FIMG_") || imgUrl.includes("catalog/IMG_"))) {
-            imgUrl = undefined; // Fallback to local sprite productsImage asset
-          }
 
           return {
             id: bp.id || idx,
@@ -822,14 +821,24 @@ function Index() {
     });
 
     setProductModalOpen(false);
+    setQuickAddOpenId(null);
     setCartOpen(true);
     if (item) {
       toast.success(`¡${item.name} (${size}) añadido a tu bolsa! ✨`, { duration: 3000 });
     }
   };
 
+  const handleQuickAddSizeSelect = (productId: string | number, size: string) => {
+    handleAddToCartFromModal(productId, size, 1);
+    setQuickAddOpenId(null);
+  };
+
   const addProduct = (id: string | number) => {
-    openProductModal(id);
+    if (window.innerWidth < 640) {
+      setQuickAddOpenId((prev) => (prev === id ? null : id));
+    } else {
+      openProductModal(id);
+    }
   };
 
   const updateProduct = (cartKey: string, change: number) =>
@@ -1093,7 +1102,7 @@ function Index() {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
+              className="hidden sm:inline-flex rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
               onClick={() => setSearchOpen(true)}
               aria-label="Buscar productos"
             >
@@ -1607,6 +1616,13 @@ function Index() {
                         />
                       </button>
 
+                      {/* Quick Add Overlay Inline (Estilo Pull&Bear) */}
+                      <QuickAddOverlay
+                        product={product}
+                        isOpen={quickAddOpenId === product.id}
+                        onClose={() => setQuickAddOpenId(null)}
+                        onSelectSize={(size) => handleQuickAddSizeSelect(product.id, size)}
+                      />
                     </div>
 
                     <div className="p-2 pt-3 flex flex-col flex-1 justify-between">
@@ -1627,7 +1643,7 @@ function Index() {
                           ${product.price.toFixed(2)} <span className="text-[10px] font-normal text-zinc-400 hidden sm:inline">USD</span>
                         </span>
                         
-                        {/* Botón de Añadir para Móviles */}
+                        {/* Botón de Añadir para Móviles (Pull&Bear Inline Quick-Add) */}
                         <Button
                           id={idx === 0 ? "add-to-cart-first-product-mobile" : undefined}
                           data-testid="add-to-cart-button-mobile"
@@ -1636,7 +1652,7 @@ function Index() {
                           className="rounded-full h-9 px-3.5 text-xs font-bold bg-zinc-950 hover:bg-zinc-900 text-white border border-zinc-800 transition-transform active:scale-95 flex sm:hidden items-center gap-1 cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openProductModal(product);
+                            setQuickAddOpenId((prev) => (prev === product.id ? null : product.id));
                           }}
                           aria-label={t("catalog_add_to_cart")}
                         >

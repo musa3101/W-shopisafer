@@ -2,28 +2,21 @@
 
 ## ✅ Tareas Completadas
 
-- [x] **Auditoría E2E & Playwright MCP**: Suite completa instalada y configurada con 19 pruebas de integración.
-- [x] **Auditoría Integral de 3 Fases (Frontend, Backend InsForge & Pruebas Adversariales)**:
-  - Executado `scripts/audit_3phases_complete.js` superando **19/19 (100% de éxito)**.
-- [x] **Resolución Total de los 7 Errores QA**:
-  - Imágenes 404 reemplazadas por fallbacks de moda optimizados.
-  - Clic directo en tarjetas de productos abre el modal de detalles (`ProductDetailModal`).
-  - Cierre del carrito al hacer clic en "Explorar Colección".
-  - Scroll del botón CTA del Hero estabilizado.
-  - Acceso seguro al dashboard con credenciales `admin` / `admin` o `admin@rosseboutique.com`.
-  - Protección sincrónica de rutas `/admin` mediante guardias `beforeLoad`.
-  - Rechazo de pedidos con montos o cantidades negativas.
-  - Atributos ALT de accesibilidad completados.
-- [x] **Traducción 100% Completa (i18n)**: Español e Inglés funcionando sin claves faltantes ni distorsión visual.
+- [x] **Quick-Add Inline Estilo Pull&Bear (Móvil)**: Selector de tallas in-situ sobre la tarjeta del producto al pulsar "Añadir", sin abrir modales ni interrumpir la navegación.
+- [x] **Modal Responsivo Optimizado (Desktop/Tablet)**: `ProductDetailModal` ajustado con `max-h-[90dvh]` y scroll interno suave.
+- [x] **Corrección Visual del Logo en Footer**: Fondo `#f8f7f2` unificado y zoom de corte (`scale-[1.45]`) para eliminar los bordes blancos de la imagen JPEG.
+- [x] **Fix de Tipografía Responsiva en Loader**: Texto "ISÀFER BOUTIQUE" adaptativo con `clamp()` para evitar recortes en pantallas pequeñas.
+- [x] **Auditoría E2E & Playwright MCP**: Suite completa de pruebas ejecutada con 100% de éxito.
+- [x] **Traducción 100% Completa (i18n)**: Español e Inglés funcionando sin claves faltantes.
 - [x] **Layout 100% Responsive**: 0px de scrollbar horizontal en Móvil, Tablet y Escritorio.
-- [x] **Verificación Estricta de TypeScript**: `npx tsc --noEmit` ejecutado con **0 errores**.
-- [x] **Compilación y SSR**: Build exitoso de producción (`npm run build`).
+- [x] **Verificación Estricta de TypeScript**: `npm run build` ejecutado con **0 errores**.
+- [x] **Despliegue a Cloudflare Pages**: Desplegado en `https://isaferboutique.pages.dev` (HTTP 200 OK).
 
 ---
 
 ## 🔄 Tareas en Progreso
 
-- [ ] Monitoreo en producción del tiempo de respuesta del despliegue en Cloudflare Workers.
+- [ ] Monitoreo en producción del tiempo de respuesta del despliegue en Cloudflare Workers / Pages.
 - [ ] Monitoreo continuo de la base de datos PostgreSQL de InsForge.
 
 ---
