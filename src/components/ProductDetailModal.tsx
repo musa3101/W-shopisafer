@@ -236,7 +236,7 @@ export function ProductDetailModal({
             <div className="grid grid-cols-3 gap-2 py-3 border-y border-rose-100/60 dark:border-zinc-800/80 text-[10px] text-zinc-500">
               <div className="flex flex-col items-center text-center gap-1">
                 <Truck className="size-4 text-rose-500" />
-                <span className="font-semibold leading-tight">Envío Exprés Gratis &gt;$99</span>
+                <span className="font-semibold leading-tight">Envío EE.UU. Gratis &gt;$99</span>
               </div>
               <div className="flex flex-col items-center text-center gap-1">
                 <ShieldCheck className="size-4 text-amber-500" />

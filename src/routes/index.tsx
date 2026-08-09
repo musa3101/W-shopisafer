@@ -53,6 +53,7 @@ import { AboutUsModal } from "@/components/AboutUsModal";
 import { AboutPage } from "@/components/AboutPage";
 import { ProductDetailModal, ProductItem } from "@/components/ProductDetailModal";
 import { QuickAddOverlay } from "@/components/QuickAddOverlay";
+import { CheckoutShippingModal, ShippingDetails } from "@/components/CheckoutShippingModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CtaButton } from "@/components/CtaButton";
 import { IsaferLogo } from "@/components/IsaferLogo";
@@ -100,7 +101,7 @@ export const Route = createFileRoute("/")({
 function AnimatedOfferBanner() {
   const [index, setIndex] = useState(0);
   const OFFERS = [
-    "✦ ENVÍO EXPRESS GRATIS EN PEDIDOS SUPERIORES A $99 ✦",
+    "✦ ENVÍO EXPRESS GRATIS EN PEDIDOS SUPERIORES A $99 (TODO EE. UU.) ✦",
     "✦ 10% DE DESCUENTO EN TU PRIMERA COMPRA CON CÓDIGO ISAFER10 ✦",
     "✦ NUEVA COLECCIÓN ISAFER LUXE DISPONIBLE ✦",
     "✦ VISÍTANOS EN NUESTRO SHOWROOM EN BROOKLYN, NY ✦",
@@ -293,8 +294,8 @@ export interface CartLineItem {
 
 type Cart = Record<string, CartLineItem>;
 
-function getOptimizedImageUrl(url?: string): string | undefined {
-  if (!url) return url;
+function getOptimizedImageUrl(url?: string): string {
+  if (!url) return productsImage;
   if (url.includes("images.unsplash.com")) {
     try {
       const urlObj = new URL(url);
@@ -361,7 +362,7 @@ function Index() {
   const [favoritesDrawerOpen, setFavoritesDrawerOpen] = useState(false);
   const [showCookiesBanner, setShowCookiesBanner] = useState(false);
   const [showGeoBanner, setShowGeoBanner] = useState(false);
-  const [geoCountry, setGeoCountry] = useState("España");
+  const [geoCountry, setGeoCountry] = useState("EE. UU.");
   const [targetLang, setTargetLang] = useState<"es" | "en">("es");
   const [isCatalogExpanded, setIsCatalogExpanded] = useState(false);
   const [fullScreenMenuOpen, setFullScreenMenuOpen] = useState(false);
@@ -372,6 +373,7 @@ function Index() {
   const [aboutUsModalOpen, setAboutUsModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"shop" | "about">("shop");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [shippingModalOpen, setShippingModalOpen] = useState(false);
 
   // Carrusel dinámico de Hero
   const heroImages = useMemo(() => [
@@ -601,9 +603,9 @@ function Index() {
       const navLang = navigator.language || (navigator as any).userLanguage || "";
       const prefersSpanish = navLang.toLowerCase().startsWith("es");
 
-      // Caso 1: Web en Inglés, pero navegador prefiere Español (es de España/Latam)
+      // Caso 1: Web en Inglés, pero navegador prefiere Español
       if (language === "en" && prefersSpanish) {
-        setGeoCountry("España");
+        setGeoCountry("EE. UU.");
         setTargetLang("es");
         const timer = setTimeout(() => {
           setShowGeoBanner(true);
@@ -611,9 +613,9 @@ function Index() {
         return () => clearTimeout(timer);
       }
 
-      // Caso 2: Web en Español, pero navegador prefiere Inglés (es de USA/Global)
+      // Caso 2: Web en Español, pero navegador prefiere Inglés
       if (language === "es" && !prefersSpanish) {
-        setGeoCountry("USA");
+        setGeoCountry("EE. UU.");
         setTargetLang("en");
         const timer = setTimeout(() => {
           setShowGeoBanner(true);
@@ -945,26 +947,17 @@ function Index() {
       .catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
   };
 
-  const handleWhatsAppCheckout = () => {
+  const handleOpenShippingModal = () => {
     const activeCartItems = Object.values(cart);
     if (activeCartItems.length === 0) {
       toast.error("Tu bolsa está vacía");
       return;
     }
-    const text = activeCartItems
-      .map((item) => {
-        const p = productsList.find((prod) => String(prod.id) === String(item.productId));
-        if (!p) return null;
-        return `- ${item.quantity}x ${p.name} (Talla: ${item.size}) ($${(p.price * item.quantity).toFixed(2)})`;
-      })
-      .filter(Boolean)
-      .join('\n');
-
-    const msg = `Hola Isafer Boutique, quiero pedir lo siguiente:\n\n${text}\n\nTotal estimado: $${subtotal.toFixed(2)} USD`;
-    window.open(`https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+    setCartOpen(false);
+    setShippingModalOpen(true);
   };
 
-  const handleStripeCheckout = async () => {
+  const executeStripeCheckout = async (details: ShippingDetails) => {
     setIsCheckingOut(true);
     const activeCartItems = Object.values(cart);
 
@@ -974,10 +967,8 @@ function Index() {
       return;
     }
 
-    // Stripe Price ID global por defecto si la prenda no tiene uno asignado manualmente
     const DEFAULT_STRIPE_PRICE_ID = import.meta.env.VITE_DEFAULT_STRIPE_PRICE_ID || "price_1Q_boutique_default";
-
-    toast.loading("Creando pedido y preparando pago seguro...");
+    toast.loading("Registrando datos de envío y preparando Stripe...");
 
     try {
       const orderItemsMapped = activeCartItems.map((item) => {
@@ -991,11 +982,15 @@ function Index() {
         };
       });
 
-      // 1. Crear el pedido en estado 'pending' en la base de datos de InsForge
+      const fullShippingAddress = `${details.address}, ${details.city} ${details.postalCode} ${details.countryState}`.trim();
+
+      // 1. Crear el pedido con todos los datos de envío en estado 'pending' en InsForge
       const orderRes = await createOrder({
-        customer_name: user?.email ? user.email.split("@")[0] : "Cliente Web (Stripe)",
-        customer_email: user?.email || "cliente@isaferboutique.com",
-        total_amount: subtotal,
+        customer_name: details.fullName,
+        customer_email: details.email,
+        customer_phone: details.phone,
+        shipping_address: fullShippingAddress + (details.notes ? ` (Notas: ${details.notes})` : ""),
+        total_amount: finalTotal,
         items: orderItemsMapped,
         stripe_session_id: 'pending_session',
       });
@@ -1008,7 +1003,7 @@ function Index() {
 
       const createdOrderId = orderRes.data.id;
 
-      // 2. Crear la sesión de Stripe Checkout pasando el order_id en metadata
+      // 2. Crear la sesión de Stripe Checkout pasando el order_id y metadatos completos
       const lineItems = activeCartItems.map((item) => {
         const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
         return {
@@ -1022,9 +1017,12 @@ function Index() {
         lineItems,
         successUrl: `${window.location.origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/?payment=cancel`,
-        customerEmail: user?.email || undefined,
+        customerEmail: details.email,
         metadata: {
           order_id: createdOrderId,
+          customer_name: details.fullName,
+          customer_phone: details.phone,
+          shipping_address: fullShippingAddress,
         },
       });
 
@@ -1040,7 +1038,7 @@ function Index() {
         await updateOrderStripeSession(createdOrderId, data.checkoutSession.id);
 
         toast.dismiss();
-        toast.success("¡Redirigiendo a Stripe!");
+        toast.success("¡Redirigiendo a Stripe para pago seguro!");
         window.location.assign(data.checkoutSession.url);
       } else {
         toast.dismiss();
@@ -1052,7 +1050,54 @@ function Index() {
       toast.error("Error de conexión al procesar el pago");
     } finally {
       setIsCheckingOut(false);
+      setShippingModalOpen(false);
     }
+  };
+
+  const executeWhatsAppCheckout = async (details: ShippingDetails) => {
+    const activeCartItems = Object.values(cart);
+    if (activeCartItems.length === 0) {
+      toast.error("Tu bolsa está vacía");
+      return;
+    }
+
+    const fullShippingAddress = `${details.address}, ${details.city} ${details.postalCode} ${details.countryState}`.trim();
+    const orderItemsMapped = activeCartItems.map((item) => {
+      const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+      return {
+        product_id: String(p.id),
+        name: `${p.name} (${item.size})`,
+        price: p.price,
+        quantity: item.quantity,
+        size: item.size,
+      };
+    });
+
+    // Guardar pedido en PostgreSQL
+    createOrder({
+      customer_name: details.fullName,
+      customer_email: details.email,
+      customer_phone: details.phone,
+      shipping_address: fullShippingAddress + (details.notes ? ` (Notas: ${details.notes})` : ""),
+      total_amount: finalTotal,
+      items: orderItemsMapped,
+    }).catch((err) => console.error("Error al guardar pedido de WhatsApp:", err));
+
+    const text = activeCartItems
+      .map((item) => {
+        const p = productsList.find((prod) => String(prod.id) === String(item.productId));
+        if (!p) return null;
+        return `- ${item.quantity}x ${p.name} (Talla: ${item.size}) ($${(p.price * item.quantity).toFixed(2)})`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    const msg = `Hola Isafer Boutique 💖, quiero realizar el siguiente pedido:\n\n👤 *Cliente:* ${details.fullName}\n✉️ *Email:* ${details.email}\n📱 *Teléfono:* ${details.phone}\n📍 *Dirección de Envío:* ${fullShippingAddress}\n${details.notes ? `📝 *Notas:* ${details.notes}\n` : ''}\n🛍️ *Prendas:*\n${text}\n\n*Total:* $${finalTotal.toFixed(2)} USD`;
+
+    window.open(`https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+    setShippingModalOpen(false);
+    setCartOpen(false);
+    toast.success("¡Pedido enviado por WhatsApp!");
   };
 
   const filteredProducts = useMemo(() => {
@@ -1119,13 +1164,12 @@ function Index() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full text-zinc-700 hover:text-amber-500 hover:bg-amber-100/30 transition-transform active:scale-95 cursor-pointer relative"
+                  className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
                   onClick={() => navigate({ to: "/admin" })}
                   title="Panel de Administración"
                   aria-label="Panel de Administración"
                 >
-                  <ShieldCheck className="size-5 text-amber-500 animate-pulse" />
-                  <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-amber-500" />
+                  <UserCheck className="size-5 text-rose-500" />
                 </Button>
               ) : (
                 <Button
@@ -1201,6 +1245,30 @@ function Index() {
                 </SheetHeader>
 
                 <div className="mt-6 flex-1 space-y-4 overflow-y-auto pr-1">
+                  {!user && itemCount > 0 && (
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-amber-500/10 border border-rose-200/80 shadow-2xs flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-rose-600">
+                          <Sparkles className="size-3" /> Beneficio VIP Isafer
+                        </div>
+                        <p className="text-xs font-bold text-zinc-900 mt-0.5 leading-tight">
+                          Inicia sesión para <span className="text-rose-600 font-extrabold">10% OFF</span> y guardar tu bolsa
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-extrabold text-[10px] uppercase tracking-wider px-3 py-1.5 shrink-0 hover:scale-105 active:scale-95 transition-all shadow-xs cursor-pointer border border-rose-400/30"
+                        onClick={() => {
+                          setCartOpen(false);
+                          navigate({ to: "/login" });
+                        }}
+                      >
+                        Entrar
+                      </Button>
+                    </div>
+                  )}
+
                   {itemCount === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500 py-12">
                       <ShoppingBag className="size-16 mb-4 text-rose-300 stroke-[1.2]" />
@@ -1327,7 +1395,7 @@ function Index() {
 
                     <Button
                       className="w-full h-14 rounded-2xl bg-[#ff007f] text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all cursor-pointer flex items-center justify-center gap-2"
-                      onClick={handleStripeCheckout}
+                      onClick={handleOpenShippingModal}
                       disabled={isCheckingOut}
                     >
                       <CreditCard className="size-4" />
@@ -1337,7 +1405,7 @@ function Index() {
                     <Button
                       variant="outline"
                       className="w-full h-14 rounded-2xl border-emerald-250 bg-emerald-50 text-emerald-700 font-extrabold text-xs uppercase tracking-[0.2em] shadow-sm hover:bg-emerald-100 hover:text-emerald-800 transition-all cursor-pointer flex items-center justify-center gap-2"
-                      onClick={handleWhatsAppCheckout}
+                      onClick={handleOpenShippingModal}
                     >
                       <WhatsAppIcon className="size-4 text-emerald-600" />
                       Pedir por WhatsApp
@@ -2744,6 +2812,18 @@ function Index() {
           onOpenFavorites={() => setFavoritesDrawerOpen(true)}
         />
       )}
+
+      {/* MODAL DE CAPTURA DE DATOS DE ENVÍO Y IDENTIFICACIÓN */}
+      <CheckoutShippingModal
+        open={shippingModalOpen}
+        onOpenChange={setShippingModalOpen}
+        userEmail={user?.email}
+        userName={user?.name}
+        totalAmount={finalTotal}
+        isCheckingOut={isCheckingOut}
+        onConfirmStripe={executeStripeCheckout}
+        onConfirmWhatsApp={executeWhatsAppCheckout}
+      />
     </div>
   );
 }

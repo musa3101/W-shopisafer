@@ -144,7 +144,7 @@ export function AboutPage({ onBackToShop, camilaImage, favCount, onOpenFavorites
 
               <div className="pt-2 flex items-center gap-4 text-xs font-bold text-zinc-500">
                 <span>✦ Atención 1 a 1</span>
-                <span>✦ Envíos 🇺🇸 & Internacionales</span>
+                <span>✦ Envíos en todo EE. UU. 🇺🇸</span>
               </div>
             </div>
 

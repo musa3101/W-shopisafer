@@ -94,34 +94,38 @@ function AdminLayout() {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-zinc-50 font-sans text-zinc-900">
+    <div className="flex min-h-screen w-full bg-gradient-to-br from-rose-50/30 via-zinc-50 to-pink-50/20 font-sans text-zinc-900 selection:bg-rose-500/20">
       {/* Sidebar Desktop */}
-      <aside className="hidden w-64 flex-col border-r border-zinc-200 bg-white md:flex z-20">
-        <div className="flex h-16 items-center px-6 border-b border-zinc-100">
+      <aside className="hidden w-64 flex-col border-r border-rose-100/60 bg-white/90 backdrop-blur-xl md:flex z-20 shadow-[4px_0_24px_rgba(244,63,94,0.03)]">
+        <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-100/80">
           <IsaferLogo variant="header" size="sm" />
+          <span className="text-[10px] font-black tracking-widest text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full uppercase border border-rose-200/50">
+            PRO
+          </span>
         </div>
         
-        <div className="p-5 border-b border-zinc-100">
+        <div className="p-5 border-b border-zinc-100/80 bg-gradient-to-r from-rose-50/40 to-transparent">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-800 text-white font-extrabold shadow-md shadow-zinc-900/10 border border-zinc-700/50">
               C
             </div>
             <div>
               <p className="text-sm font-extrabold text-zinc-900 tracking-tight">Camila</p>
-              <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-                Conectada
+              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
+                <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
+                Panel Activo
               </p>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 space-y-1.5 p-4">
+          <p className="px-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Menú Principal</p>
           {NAV_ITEMS.map((item) => (
              <Link
                key={item.label}
                to={item.to}
-               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-zinc-500 hover:bg-zinc-100/50 hover:text-zinc-900 transition-colors [&.active]:bg-zinc-900 [&.active]:text-white shadow-sm [&.active]:shadow-md"
+               className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-extrabold text-zinc-500 hover:bg-rose-50/60 hover:text-rose-600 transition-all active:scale-95 [&.active]:bg-gradient-to-r [&.active]:from-zinc-900 [&.active]:to-zinc-800 [&.active]:text-white [&.active]:shadow-lg [&.active]:shadow-zinc-900/15"
                activeProps={{ className: "active" }}
              >
                <item.icon className="size-4.5" />
@@ -130,10 +134,18 @@ function AdminLayout() {
           ))}
         </nav>
         
-        <div className="p-4 border-t border-zinc-100">
+        <div className="p-4 border-t border-zinc-100/80 space-y-2">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200/80 bg-rose-50/50 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-rose-600 hover:bg-rose-100/70 transition-all active:scale-95 shadow-2xs"
+          >
+            Ver Tienda en Vivo ✨
+          </a>
           <button 
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-zinc-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold text-zinc-400 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
           >
             <LogOut className="size-4.5" />
             Cerrar Sesión
