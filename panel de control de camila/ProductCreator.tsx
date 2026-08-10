@@ -23,7 +23,8 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
   const [uploadingImage, setUploadingImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Género y Tallas
+  // Sección / Categoría de la Web y Tallas
+  const [category, setCategory] = useState<string>("Tops & Sets");
   const [gender, setGender] = useState<"women" | "men" | "unisex">("women");
   const [sizeSystem, setSizeSystem] = useState<"US" | "EU">("US");
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["S", "M", "L"]);
@@ -105,6 +106,7 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
         badge,
         stripe_price_id: stripePriceId,
         images: imageUrl ? [imageUrl] : undefined,
+        category,
         gender,
         sizes: selectedSizes,
         size_system: sizeSystem,
@@ -274,9 +276,39 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
             </div>
           </div>
 
-          {/* Fila 3: Selección de Género / Colección */}
+          {/* Fila 3A: Sección de la Tienda Web */}
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Categoría / Colección</label>
+            <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-rose-500" />
+              Sección de la Tienda Web (Dónde aparecerá en el catálogo público) *
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: "Tops & Sets", label: "Tops & Sets 👚" },
+                { id: "Vestidos", label: "Vestidos 👗" },
+                { id: "Licras", label: "Licras & Leggings 🏋️‍♀️" },
+                { id: "Bodys & Corsets", label: "Bodys & Corsets 👙" },
+                { id: "Accesorios & Glam", label: "Accesorios & Glam 💎" },
+              ].map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategory(c.id)}
+                  className={`py-2 px-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all border cursor-pointer ${
+                    category === c.id
+                      ? "bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/20 scale-105"
+                      : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white"
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Fila 3B: Selección de Público / Colección */}
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Público / Colección</label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { id: "women", label: "Mujer 💖" },

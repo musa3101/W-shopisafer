@@ -23,6 +23,7 @@ export interface BackendProduct {
   description: string;
   price: number;
   stock: number;
+  category?: string;
   category_id?: string;
   images: string[];
   is_featured: boolean;
@@ -198,6 +199,7 @@ export async function createProduct(product: Partial<BackendProduct>) {
       stripe_price_id: product.stripe_price_id || '',
     };
 
+    if (product.category) fullPayload.category = product.category;
     if (product.gender) fullPayload.gender = product.gender;
     if (product.sizes) fullPayload.sizes = product.sizes;
     if (product.size_system) fullPayload.size_system = product.size_system;

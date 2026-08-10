@@ -98,16 +98,18 @@ export const Route = createFileRoute("/")({
   loader: async () => {
     const backendProds = await fetchProducts().catch(() => [] as BackendProduct[]);
     const mapped: ProductItem[] = backendProds.map((bp, idx) => {
-      let category = "Tops & Sets";
-      const nameLower = bp.name.toLowerCase();
-      if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
-        category = "Vestidos";
-      } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
-        category = "Licras";
-      } else if (nameLower.includes("body")) {
-        category = "Bodys & Corsets";
-      } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
-        category = "Accesorios & Glam";
+      let category = bp.category || "Tops & Sets";
+      if (!bp.category) {
+        const nameLower = bp.name.toLowerCase();
+        if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
+          category = "Vestidos";
+        } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
+          category = "Licras";
+        } else if (nameLower.includes("body")) {
+          category = "Bodys & Corsets";
+        } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
+          category = "Accesorios & Glam";
+        }
       }
       return {
         id: bp.id || idx,
