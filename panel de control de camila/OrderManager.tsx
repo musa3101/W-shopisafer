@@ -86,7 +86,7 @@ export function OrderManager({ orders, onOrderUpdated }: OrderManagerProps) {
 
     const matchesSearch = name.includes(query) || email.includes(query) || id.includes(query);
 
-    if (activeTab === "all") return matchesSearch && o.status !== "pending";
+    if (activeTab === "all") return matchesSearch;
     if (activeTab === "pending") return matchesSearch && o.status === "pending";
     if (activeTab === "processing") return matchesSearch && o.status === "processing";
     if (activeTab === "shipped_delivered") return matchesSearch && (o.status === "shipped" || o.status === "delivered");

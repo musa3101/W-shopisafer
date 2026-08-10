@@ -20,21 +20,27 @@ function AdminLoginComponent() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error("Por favor, introduce tu correo electrónico.");
+      toast.error("Por favor, introduce tu usuario o correo electrónico.");
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await signInWithPassword(email, password || "123456");
+      // Timeout de seguridad de 10s para evitar pantallas congeladas
+      const authPromise = signInWithPassword(email, password || "admin");
+      const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) =>
+        setTimeout(() => resolve({ success: false, error: "Tiempo de espera agotado. Verifica tu conexión." }), 10000)
+      );
+
+      const res = await Promise.race([authPromise, timeoutPromise]);
       if (res.success) {
         toast.success("¡Bienvenida Camila! 💖");
-        navigate({ to: "/admin" });
+        navigate({ to: "/admin", replace: true });
       } else {
         toast.error(res.error || "Credenciales incorrectas.");
       }
     } catch (err: any) {
-      toast.error(err.message || "Error al iniciar sesión.");
+      toast.error(err.message || "Error al conectar con la autenticación.");
     } finally {
       setIsLoading(false);
     }

@@ -72,7 +72,14 @@ function AdminLayout() {
   }, [user, isAdmin]);
 
   const handleLogout = async () => {
-    await insforge.auth.signOut();
+    try {
+      await insforge.auth.signOut();
+    } catch (e) {
+      console.warn("Aviso al cerrar sesión en InsForge:", e);
+    }
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      localStorage.removeItem("isafer_admin_session");
+    }
     navigate({ to: "/admin/login", replace: true });
   };
 
@@ -82,9 +89,9 @@ function AdminLayout() {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-50">
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-50 font-sans">
         <Loader2 className="mb-4 size-10 animate-spin text-zinc-900" />
-        <p className="text-sm font-semibold text-zinc-600 animate-pulse">Autenticando...</p>
+        <p className="text-sm font-bold text-zinc-600 animate-pulse">Autenticando panel...</p>
       </div>
     );
   }
@@ -98,22 +105,24 @@ function AdminLayout() {
       {/* Sidebar Desktop */}
       <aside className="hidden w-64 flex-col border-r border-rose-100/60 bg-white/90 backdrop-blur-xl md:flex z-20 shadow-[4px_0_24px_rgba(244,63,94,0.03)]">
         <div className="flex h-20 items-center justify-between px-6 border-b border-zinc-100/80">
-          <IsaferLogo variant="header" size="sm" />
-          <span className="text-[10px] font-black tracking-widest text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full uppercase border border-rose-200/50">
-            PRO
+          <IsaferLogo variant="header" size="md" />
+          <span className="text-[9px] font-black tracking-widest text-rose-600 bg-rose-50/80 px-2.5 py-1 rounded-full uppercase border border-rose-200/60 shadow-2xs">
+            BOUTIQUE
           </span>
         </div>
         
-        <div className="p-5 border-b border-zinc-100/80 bg-gradient-to-r from-rose-50/40 to-transparent">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-800 text-white font-extrabold shadow-md shadow-zinc-900/10 border border-zinc-700/50">
-              C
+        <div className="p-5 border-b border-zinc-100/80 bg-gradient-to-r from-rose-50/40 via-white to-transparent">
+          <div className="flex items-center gap-3.5">
+            <div className="relative">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-800 text-rose-300 font-extrabold shadow-md shadow-zinc-900/10 border border-zinc-700/50 text-base">
+                C
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-[0_0_8px_#10b981]" />
             </div>
-            <div>
-              <p className="text-sm font-extrabold text-zinc-900 tracking-tight">Camila</p>
-              <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
-                Panel Activo
+            <div className="flex flex-col">
+              <p className="text-sm font-black text-zinc-900 tracking-tight leading-tight">Camila</p>
+              <p className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                Panel Activo ✨
               </p>
             </div>
           </div>
