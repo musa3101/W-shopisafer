@@ -1562,11 +1562,6 @@ function Index() {
                     <div className="relative aspect-[4/5] sm:aspect-[3/4] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
                       <ProductCrop product={product} />
 
-                      {/* Tag Badge */}
-                      <span className="absolute left-3 top-3 rounded-full bg-zinc-950/80 backdrop-blur-md px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-300 border border-amber-400/30">
-                        {product.tag}
-                      </span>
-
                       {/* Wishlist Heart - Estilo Pull&Bear */}
                       <button
                         onClick={(e) => {

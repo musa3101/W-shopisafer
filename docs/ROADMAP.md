@@ -2,6 +2,7 @@
 
 ## ✅ Tareas Completadas
 
+- [x] **Imágenes de Productos 100% Limpias en Colecciones Destacadas**: Eliminación total de badges o etiquetas flotantes ("NUEVO DROP", "TENDENCIA", "FAVORITO DUEÑA", etc.) sobre las fotos de prendas en el catálogo.
 - [x] **Silueta de Pin de Ubicación en Rosa Chic**: Marca de agua del pin de Google Maps en la sección *Visítanos en Brooklyn* en tono rosado tenue elegante.
 - [x] **Rediseño Compacto de Tarjetas de Contacto en Móvil**: Sustitución de los 3 cuadros gigantes apilados ("Llámanos", "Síguenos", "Tendencias") por filas horizontales estilizadas y ultraligeras.
 - [x] **Optimización de Header Móvil en "Nuestra Historia"**: Flecha `←` sola en móvil e integración del logotipo oficial transparente.
