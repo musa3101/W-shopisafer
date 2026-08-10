@@ -19,17 +19,18 @@ export function AboutPage({ onBackToShop, camilaImage, favCount, onOpenFavorites
     <div className="fixed inset-0 z-40 overflow-y-auto bg-rose-50 dark:bg-rose-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans animate-in fade-in duration-300">
       
       {/* 1. Sticky Navigation Header */}
-      <header className="sticky top-0 z-50 bg-rose-100/90 dark:bg-rose-950/90 border-b border-rose-200 dark:border-rose-900 backdrop-blur-md px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between shadow-sm">
+      <header className="sticky top-0 z-50 bg-rose-100/90 dark:bg-rose-950/90 border-b border-rose-200/60 dark:border-rose-900 backdrop-blur-md px-4 sm:px-8 h-16 sm:h-20 flex items-center justify-between shadow-xs">
         <button
           onClick={onBackToShop}
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-wider text-rose-800 dark:text-rose-200 hover:text-rose-600 transition-colors cursor-pointer"
+          aria-label="Volver a la tienda"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver a la Tienda</span>
+          <ArrowLeft className="w-5 h-5" />
+          <span className="hidden sm:inline">Volver a la Tienda</span>
         </button>
 
-        <div className="font-display text-xl sm:text-2xl font-black tracking-wider text-rose-950 dark:text-white uppercase">
-          Isafer Boutique
+        <div className="flex items-center justify-center cursor-pointer py-1" onClick={onBackToShop}>
+          <IsaferLogo variant="header" size="md" />
         </div>
 
         <div className="w-24 flex justify-end">

@@ -2,17 +2,14 @@
 
 ## ✅ Tareas Completadas
 
-- [x] **Selector de Sección / Categoría Web en Admin (`ProductCreator`)**: Selector interactivo para asignar directamente la sección (`Tops & Sets`, `Vestidos`, `Licras & Leggings`, `Bodys & Corsets`, `Accesorios & Glam`) al crear una prenda desde el panel de Camila.
-- [x] **Sincronización Total Admin ↔ PostgreSQL ↔ Web**: Eliminación del almacenamiento dual en `localStorage`. Todas las prendas creadas o modificadas por Camila van directo a PostgreSQL y se leen en vivo en la Web.
-- [x] **TanStack Loader de Catálogo**: Eliminación del catálogo fantasma hardcoded en `index.tsx`. Carga precargada directa de prendas desde PostgreSQL.
-- [x] **Autenticación Admin JWT Real**: Configuración de `admin@isaferboutique.com` con permiso `is_project_admin = true` en InsForge. Credenciales `admin` / `admin` sin fallbacks falsos.
-- [x] **Diagnóstico PostgreSQL en Vivo (`/admin/ajustes`)**: Ping ultraligero directo a InsForge con estado CONECTADO y latencia real.
-- [x] **Suite de Pruebas E2E (Playwright + TestSuite Cross-Sync)**: 26 de 26 pruebas pasadas con 100% de éxito.
-- [x] **Formulario Completo de Datos de Envío (`CheckoutShippingModal`)**: Modal responsivo para capturar Nombre, Apellidos, Email, Teléfono WhatsApp, Dirección completa y Notas de entrega.
-- [x] **Ficha de Cliente & Envío en Panel de Camila (`/admin/pedidos`)**: Visualización en PostgreSQL con Nombre, Email, Teléfono con botón WhatsApp y dirección formateada.
-- [x] **Incentivo VIP de Inicio de Sesión en la Cesta**: Banner destacado en la bolsa para invitados (`!user`) con beneficio de **10% OFF** automático (`VIP10`).
-- [x] **Rediseño Bento Grid del Panel Admin (`/admin`)**: Dashboard moderno con Bento Grids, accesos rápidos, métricas en tiempo real.
-- [x] **Despliegue a Cloudflare Pages**: Sincronización continua y verificación de HTTP 200 OK.
+- [x] **Rediseño Compacto de Tarjetas de Contacto en Móvil**: Sustitución de los 3 cuadros gigantes apilados ("Llámanos", "Síguenos", "Tendencias") por filas horizontales estilizadas y ultraligeras.
+- [x] **Optimización de Header Móvil en "Nuestra Historia"**: Flecha `←` sola en móvil e integración del logotipo oficial transparente.
+- [x] **Relocalización del Perfil de Usuario en Header Móvil**: Perfil en menú hamburguesa y logotipo central agrandado.
+- [x] **Estilizado Chic del Botón de la Cesta**: Rediseño en rosa chicle vibrante con badge blanco.
+- [x] **Botón flotante "Ver Bolsa" condicional**: Limpieza absoluta de la portada / Hero; botón flotante activo únicamente al hacer scroll.
+- [x] **Efecto Header Traslúcido con Scroll**: Transición a glassmorphism al desplazarse hacia abajo en móvil.
+- [x] **Selector de Sección / Categoría Web en Admin (`ProductCreator`)**: Selector interactivo para asignar sección a prendas en PostgreSQL.
+- [x] **Suite de Pruebas E2E**: 26 de 26 pruebas pasadas con 100% de éxito.
 
 ---
 

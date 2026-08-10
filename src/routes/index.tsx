@@ -34,6 +34,7 @@ import {
   Shield,
   FileText,
   Cookie,
+  Sparkles,
 } from "lucide-react";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -296,6 +297,19 @@ function Index() {
   const [currentView, setCurrentView] = useState<"shop" | "about">("shop");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [shippingModalOpen, setShippingModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolledPastHero, setScrolledPastHero] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 20);
+      setScrolledPastHero(scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Carrusel dinámico de Hero
   const heroImages = useMemo(() => [
@@ -992,8 +1006,12 @@ function Index() {
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900 dark:selection:text-amber-100">
 
       {/* 2. HEADER NAVBAR LUXE */}
-      <header className="sticky top-0 z-40 border-b border-rose-100/80 bg-[#fff8fa]/90 text-zinc-800 backdrop-blur-2xl transition-all shadow-xs">
-        <div className="relative mx-auto flex h-18 sm:h-22 max-w-7xl items-center justify-between px-5 sm:px-8">
+      <header className={`sticky top-0 z-40 border-b text-zinc-800 backdrop-blur-2xl transition-all duration-300 ${
+        isScrolled
+          ? "bg-[#fff8fa]/75 dark:bg-zinc-950/75 border-rose-200/50 dark:border-rose-900/50 shadow-sm"
+          : "bg-[#fff8fa]/95 dark:bg-zinc-950/95 border-rose-100/80 dark:border-rose-900/80 shadow-xs"
+      }`}>
+        <div className="relative mx-auto flex h-16 sm:h-22 max-w-7xl items-center justify-between px-4 sm:px-8">
           {/* Left Menu Trigger for Fullscreen Menu */}
           <div className="flex items-center gap-2">
             <Button
@@ -1007,7 +1025,7 @@ function Index() {
             </Button>
           </div>
 
-          {/* Center Brand Logo (Sin fondo blanco, más grande y elegante) */}
+          {/* Center Brand Logo (Sin fondo blanco, más grande y elegante en móvil) */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center">
             <a
               href="#inicio"
@@ -1018,12 +1036,12 @@ function Index() {
               className="cursor-pointer py-1"
               aria-label="Isafer Boutique Inicio"
             >
-              <IsaferLogo variant="header" size="md" />
+              <IsaferLogo variant="header" size="md" className="scale-110 sm:scale-100 transition-transform" />
             </a>
           </div>
 
           {/* Right Action Icons: Search, Profile, Favorites & Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Botón de Búsqueda */}
             <Button
               variant="ghost"
@@ -1035,47 +1053,49 @@ function Index() {
               <Search className="size-5" />
             </Button>
 
-            {/* Botón de Cuenta / Perfil (Nueva Ruta Login) */}
-            {loading ? (
-              <div className="size-9 sm:size-10 flex items-center justify-center">
-                <span className="size-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : user ? (
-              isAdmin ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
-                  onClick={() => navigate({ to: "/admin" })}
-                  title="Panel de Administración"
-                  aria-label="Panel de Administración"
-                >
-                  <UserCheck className="size-5 text-rose-500" />
-                </Button>
+            {/* Botón de Cuenta / Perfil (Visible en escritorio; en móvil está integrado en el Menú Hamburguesa) */}
+            <div className="hidden sm:inline-flex">
+              {loading ? (
+                <div className="size-9 sm:size-10 flex items-center justify-center">
+                  <span className="size-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : user ? (
+                isAdmin ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
+                    onClick={() => navigate({ to: "/admin" })}
+                    title="Panel de Administración"
+                    aria-label="Panel de Administración"
+                  >
+                    <UserCheck className="size-5 text-rose-500" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
+                    onClick={() => setCustomerModalOpen(true)}
+                    title="Mi Cuenta"
+                    aria-label="Mi Cuenta"
+                  >
+                    <UserCheck className="size-5 text-rose-500" />
+                  </Button>
+                )
               ) : (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
-                  onClick={() => setCustomerModalOpen(true)}
-                  title="Mi Cuenta"
-                  aria-label="Mi Cuenta"
+                <Link
+                  id="login-header-link"
+                  data-testid="login-link"
+                  to="/login"
+                  className="inline-flex items-center justify-center rounded-full size-9 sm:size-10 text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
+                  title="Iniciar sesión / Mi Cuenta"
+                  aria-label="Iniciar sesión"
                 >
-                  <UserCheck className="size-5 text-rose-500" />
-                </Button>
-              )
-            ) : (
-              <Link
-                id="login-header-link"
-                data-testid="login-link"
-                to="/login"
-                className="inline-flex items-center justify-center rounded-full size-9 sm:size-10 text-zinc-700 hover:text-rose-500 hover:bg-rose-100/30 transition-transform active:scale-95 cursor-pointer"
-                title="Iniciar sesión / Mi Cuenta"
-                aria-label="Iniciar sesión"
-              >
-                <User className="size-5" />
-              </Link>
-            )}
+                  <User className="size-5" />
+                </Link>
+              )}
+            </div>
 
             {/* Botón de Favoritos (Corazón al lado de la Cesta) */}
             <Button
@@ -1100,13 +1120,13 @@ function Index() {
                 <Button
                   variant="default"
                   size="sm"
-                  className="relative rounded-full px-4 h-10 bg-primary text-primary-foreground hover:bg-primary/95 font-semibold text-xs gap-2 shadow-lg shadow-rose-200/50 transition-transform active:scale-95 border border-primary/20"
+                  className="relative rounded-full px-3.5 sm:px-4 h-9 sm:h-10 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs gap-1.5 sm:gap-2 shadow-md shadow-pink-500/20 transition-transform active:scale-95 border-0 cursor-pointer"
                   aria-label={`Carrito, ${itemCount} artículos`}
                 >
                   <ShoppingBag className="size-4" />
                   <span className="hidden sm:inline">Bolsa</span>
                   {itemCount > 0 && (
-                    <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-zinc-950 text-[11px] font-bold text-white">
+                    <span className="ml-0.5 flex size-4.5 items-center justify-center rounded-full bg-white text-[10px] font-black text-pink-600 shadow-xs">
                       {itemCount}
                     </span>
                   )}
@@ -1766,25 +1786,37 @@ function Index() {
                  </div>
               </div>
 
-              {/* Contact / Social Grid */}
-              <div className="md:col-span-6 lg:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {/* Contact / Social Grid (Diseño compacto horizontal en móvil, tarjetas en escritorio) */}
+              <div className="md:col-span-6 lg:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
                  {/* Phone */}
-                 <a href="tel:+19293531953" className="group flex flex-col justify-center items-center text-center rounded-2xl border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 backdrop-blur-xl">
-                   <Phone className="size-5 sm:size-6 text-zinc-400 group-hover:text-rose-500 transition-colors mb-2" />
-                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 mb-0.5">Llámanos</span>
-                   <span className="font-mono font-bold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors">+1 (929) 353-1953</span>
+                 <a href="tel:+19293531953" className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-zinc-900/60 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-xl">
+                   <div className="size-8 sm:size-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 sm:mb-2">
+                     <Phone className="size-4 sm:size-5 text-zinc-600 dark:text-zinc-300 group-hover:text-rose-500 transition-colors" />
+                   </div>
+                   <div className="min-w-0 flex-1 sm:flex-initial">
+                     <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 sm:mb-0.5">Llámanos</span>
+                     <span className="font-mono font-bold text-xs sm:text-base text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors truncate">+1 (929) 353-1953</span>
+                   </div>
                  </a>
                  {/* Instagram */}
-                 <a href="https://www.instagram.com/shopisafer" target="_blank" rel="noreferrer" className="group flex flex-col justify-center items-center text-center rounded-2xl border border-rose-200/50 dark:border-rose-900/30 bg-rose-50/70 dark:bg-rose-950/20 p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 backdrop-blur-xl">
-                   <Instagram className="size-5 sm:size-6 text-rose-400 group-hover:text-rose-500 transition-colors mb-2" />
-                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-rose-500/70 mb-0.5">Síguenos</span>
-                   <span className="font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400">@shopisafer</span>
+                 <a href="https://www.instagram.com/shopisafer" target="_blank" rel="noreferrer" className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-xl">
+                   <div className="size-8 sm:size-10 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center shrink-0 sm:mb-2">
+                     <Instagram className="size-4 sm:size-5 text-rose-500 group-hover:text-rose-600 transition-colors" />
+                   </div>
+                   <div className="min-w-0 flex-1 sm:flex-initial">
+                     <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-rose-400 sm:mb-0.5">Síguenos</span>
+                     <span className="font-bold text-xs sm:text-base text-rose-600 dark:text-rose-300 truncate">@shopisafer</span>
+                   </div>
                  </a>
                  {/* TikTok */}
-                 <a href="https://www.tiktok.com/@shop_isafer1" target="_blank" rel="noreferrer" className="group flex flex-col justify-center items-center text-center rounded-2xl border border-zinc-200/50 dark:border-white/5 bg-zinc-900 p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 shadow-zinc-900/20">
-                   <TikTokIcon className="size-5 sm:size-6 text-cyan-400 group-hover:text-white transition-colors mb-2" />
-                   <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-400 mb-0.5">Tendencias</span>
-                   <span className="font-bold text-sm sm:text-base text-white">@shop_isafer1</span>
+                 <a href="https://www.tiktok.com/@shop_isafer1" target="_blank" rel="noreferrer" className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-950 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+                   <div className="size-8 sm:size-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0 sm:mb-2">
+                     <TikTokIcon className="size-4 sm:size-5 text-cyan-400 group-hover:text-white transition-colors" />
+                   </div>
+                   <div className="min-w-0 flex-1 sm:flex-initial">
+                     <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 sm:mb-0.5">Tendencias</span>
+                     <span className="font-bold text-xs sm:text-base text-white truncate">@shop_isafer1</span>
+                   </div>
                  </a>
               </div>
             </div>
@@ -2060,14 +2092,14 @@ function Index() {
         </div>
       </footer>
 
-      {/* Floating Cart Badge */}
-      {itemCount > 0 && (
+      {/* Floating Cart Badge (Limpio y oculto en el giro/hero; solo aparece al hacer scroll hacia abajo) */}
+      {itemCount > 0 && scrolledPastHero && (
         <Button
-          size="lg"
-          className="fixed bottom-22 right-5 z-30 rounded-full bg-amber-400 text-zinc-950 font-bold text-xs uppercase tracking-wider shadow-2xl hover:bg-amber-300 px-6 h-12 flex items-center gap-2 animate-bounce cursor-pointer"
+          size="sm"
+          className="fixed bottom-6 right-5 z-30 rounded-full bg-amber-400 text-zinc-950 font-black text-xs uppercase tracking-wider shadow-xl hover:bg-amber-300 px-4 h-10 flex items-center gap-2 cursor-pointer transition-all hover:scale-105 active:scale-95 border border-amber-300/60"
           onClick={() => setCartOpen(true)}
         >
-          <ShoppingBag className="size-5" />
+          <ShoppingBag className="size-4" />
           <span>Ver Bolsa ({itemCount})</span>
         </Button>
       )}

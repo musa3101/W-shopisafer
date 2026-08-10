@@ -6,35 +6,31 @@
 
 ## 🛠️ Qué se ha hecho hoy
 
-1. **Selector de Sección / Categoría de la Web en el Panel de Camila (`ProductCreator.tsx`)**:
-   - Se incorporó un selector visual de secciones de la tienda pública al crear prendas nuevas (`Tops & Sets`, `Vestidos`, `Licras & Leggings`, `Bodys & Corsets`, `Accesorios & Glam`).
-   - Se añadió la columna `category` en la tabla `products` de InsForge PostgreSQL para asociar directamente cada producto a su sección sin depender de coincidencias de palabras clave.
+1. **Rediseño Compacto de Tarjetas de Contacto / Redes en Móvil (`src/routes/index.tsx`)**:
+   - Se transformaron los 3 cuadros gigantes apilados ("Llámanos", "Síguenos", "Tendencias") en **filas horizontales compactas y estilizadas** (`rounded-xl p-2.5`) para pantallas móviles.
+   - Ahora reducen la altura en más de un 65% en móviles, luciendo ordenadas, ligeras e integradas de forma elegante con el diseño visual sin ocupar bloques excesivos.
 
-2. **Auditoría Exhaustiva y Corrección del Flujo de Datos (Admin ↔ PostgreSQL ↔ Web)**:
-   - Se eliminó el almacenamiento dual en `localStorage` (`isafer_custom_products`). Toda la gestión de catálogo (crear, editar, eliminar) opera **100% en vivo sobre PostgreSQL**.
-   - Si una operación falla en la base de datos, el panel muestra el error real a Camila en lugar de guardar copias locales.
+2. **Header Móvil de "Nuestra Historia" (`src/components/AboutPage.tsx`)**:
+   - Ocultamiento del texto pequeño `"Volver a la tienda"` dejando únicamente la flecha `←`.
+   - Integración del **Logotipo Oficial Transparente** (`IsaferLogo`) sin recuadros ni fondos desalineados.
 
-3. **Eliminación de Productos Fantasma Hardcoded**:
-   - Se eliminó el array estático de 12 productos (`const products`) de `src/routes/index.tsx`.
-   - La tienda pública carga las prendas reales directamente desde PostgreSQL mediante un **TanStack Router Loader** antes de renderizar la página.
+3. **Reubicación de Perfil & Logo Agrandado (`src/routes/index.tsx`)**:
+   - Reubicación del icono `UserCheck` al Menú Hamburguesa Móvil.
+   - Agrandamiento proporcional del logotipo central de Isafer Boutique (`scale-110 sm:scale-100`).
 
-4. **Autenticación Admin Real con JWT Válido en InsForge**:
-   - Se eliminaron las credenciales legacy (`admin@rosseboutique.com`) y se configuró la cuenta real `admin@isaferboutique.com` con `is_project_admin = true` en InsForge Auth.
-   - Acceso al panel con **usuario `admin`** y **contraseña `admin`**.
+4. **Botón de la Cesta & Botón Flotante "Ver Bolsa"**:
+   - Botón de la cesta en la barra superior en tono Rosa Chic.
+   - Botón flotante "Ver Bolsa" oculto en el giro / hero y visible en versión dorada compacta al hacer scroll hacia el catálogo.
 
-5. **Corrección del Indicador de Diagnóstico de Base de Datos**:
-   - Se sustituyó la llamada a `/api/health` por un ping ligero directo via SDK de InsForge en `/admin/ajustes`.
-
-6. **Suite Completa de QA y Pruebas E2E (Playwright + TestSuite automatizado)**:
-   - 26 de 26 pruebas pasadas con 100% de éxito. Veredicto: **ISAfer Boutique está lista para producción (🟢 APROBADO)**.
+5. **Header Traslúcido con Scroll (`isScrolled`)**:
+   - Transición fluida a acabado cristal (*glassmorphism*) al hacer scroll.
 
 ---
 
 ## 📁 Archivos Modificados / Creados
 
-- `panel de control de camila/ProductCreator.tsx` *(Añadido selector de sección/categoría web)*
-- `src/services/insforgeService.ts` *(Soporte de propiedad category en BackendProduct y createProduct)*
-- `src/routes/index.tsx` *(Uso directo de bp.category en el loader)*
+- `src/routes/index.tsx` *(Rediseño compacto de botones de contacto en móvil, detector de scroll, header traslúcido, perfil a menú hamburguesa)*
+- `src/components/AboutPage.tsx` *(Header responsive con flecha sola y logotipo transparente)*
 - `docs/SESSION_LATEST_ES.md` *(Este archivo)*
 - `docs/ROADMAP.md` *(Actualizado)*
 
@@ -42,4 +38,4 @@
 
 ## 📋 Qué queda pendiente
 
-- Ningún problema pendiente. El proyecto cuenta con el **Veredicto Final: ISAfer Boutique está lista para producción (🟢 APROBADO)**.
+- Ningún problema pendiente. La tienda cuenta con el **Veredicto Final: ISAfer Boutique está lista para producción (🟢 APROBADO)**.
