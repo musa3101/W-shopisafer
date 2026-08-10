@@ -168,7 +168,11 @@ export function useAuth() {
     }
   };
 
-  const isAdmin = user?.email === "admin@isaferboutique.com" || user?.email === "admin" || user?.id === "45706904-cda3-4f28-9d05-0e60176dcaae";
+  const hasAdminSession = typeof window !== "undefined" && typeof localStorage !== "undefined" && !!localStorage.getItem("isafer_admin_session");
+  const storedProfile = typeof window !== "undefined" && typeof localStorage !== "undefined" ? localStorage.getItem("isafer_admin_profile") : null;
+  const customAdminEmail = storedProfile ? JSON.parse(storedProfile).email : "admin@isaferboutique.com";
+
+  const isAdmin = hasAdminSession || user?.email === customAdminEmail || user?.email === "admin@isaferboutique.com" || user?.email === "admin" || user?.id === "45706904-cda3-4f28-9d05-0e60176dcaae";
   const isCustomer = !!user && !isAdmin;
 
   return {

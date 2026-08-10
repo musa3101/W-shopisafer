@@ -130,27 +130,42 @@ export const Route = createFileRoute("/")({
 });
 
 function AnimatedOfferBanner() {
+  const [bannerConfig, setBannerConfig] = useState(() => couponsService.getWelcomeBanner());
   const [index, setIndex] = useState(0);
-  const OFFERS = [
-    "✦ ENVÍO EXPRESS GRATIS EN PEDIDOS SUPERIORES A $99 (TODO EE. UU.) ✦",
-    "✦ 10% DE DESCUENTO EN TU PRIMERA COMPRA CON CÓDIGO ISAFER10 ✦",
-    "✦ NUEVA COLECCIÓN ISAFER LUXE DISPONIBLE ✦",
-    "✦ VISÍTANOS EN NUESTRO SHOWROOM EN BROOKLYN, NY ✦",
-  ];
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setBannerConfig(couponsService.getWelcomeBanner());
+    };
+    window.addEventListener(EVENT_NAME_BANNER, handleUpdate);
+    return () => window.removeEventListener(EVENT_NAME_BANNER, handleUpdate);
+  }, []);
+
+  const offers = useMemo(() => {
+    const list = [
+      "✦ ENVÍO EXPRESS GRATIS EN PEDIDOS SUPERIORES A $99 (TODO EE. UU.) ✦",
+    ];
+    if (bannerConfig.enabled && bannerConfig.bannerText) {
+      list.push(bannerConfig.bannerText);
+    }
+    list.push("✦ NUEVA COLECCIÓN ISAFER LUXE DISPONIBLE ✦");
+    list.push("✦ VISÍTANOS EN NUESTRO SHOWROOM EN BROOKLYN, NY ✦");
+    return list;
+  }, [bannerConfig]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % OFFERS.length);
+      setIndex((prev) => (prev + 1) % offers.length);
     }, 3500);
     return () => clearInterval(timer);
-  }, []);
+  }, [offers.length]);
 
   return (
     <div className="bg-rose-600 text-white w-full h-10 flex items-center justify-center overflow-hidden relative border-y border-rose-500/50 shadow-inner">
-      {OFFERS.map((offer, i) => (
+      {offers.map((offer, i) => (
         <span
           key={i}
-          className={`absolute text-[10px] sm:text-[11px] font-black tracking-[0.15em] sm:tracking-[0.25em] uppercase text-center w-full px-2 transition-all duration-700 ease-in-out ${
+          className={`absolute text-xs sm:text-sm font-black tracking-widest uppercase transition-all duration-700 ${
             i === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
@@ -550,13 +565,14 @@ function Index() {
       return;
     }
 
-    if (code === "VIP10" || code === "BARBIELUXE10" || code === "ISAFER10" || code === "VIP") {
+    const res = couponsService.validateCoupon(code);
+    if (res.valid) {
       setAppliedCoupon(code);
-      setDiscountPercent(10);
-      toast.success(`¡Cupón ${code} del 10% OFF aplicado con éxito! 💖`);
+      setDiscountPercent(res.discountPercent);
+      toast.success(`¡Cupón ${code} del ${res.discountPercent}% OFF aplicado con éxito! 💖`);
       setCouponCodeInput("");
     } else {
-      toast.error("Código de cupón no válido o expirado.");
+      toast.error(res.error || "Código de cupón no válido o expirado.");
     }
   };
 
@@ -1258,7 +1274,7 @@ function Index() {
                       <label className="text-[10px] font-extrabold text-zinc-600 uppercase tracking-widest flex items-center justify-between">
                         <span>¿Tienes un cupón VIP?</span>
                         {appliedCoupon && (
-                          <span className="text-emerald-600 font-mono font-black">{appliedCoupon} (-10%)</span>
+                          <span className="text-emerald-600 font-mono font-black">{appliedCoupon} (-{discountPercent}%)</span>
                         )}
                       </label>
                       <div className="flex gap-2">

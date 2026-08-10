@@ -5,6 +5,8 @@ import { IsaferLogo } from "@/components/IsaferLogo";
 import { Loader2, LayoutDashboard, ShoppingBag, Package, Settings, LogOut, Menu, X } from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
+import { useAdminAvatar } from "@/hooks/useAdminAvatar";
+
 export const Route = createFileRoute("/admin")({
   beforeLoad: ({ location }) => {
     if (location.pathname === "/admin/login") return;
@@ -42,6 +44,7 @@ const NAV_ITEMS = [
 
 function AdminLayout() {
   const { user, loading, isAdmin } = useAuth();
+  const { avatar } = useAdminAvatar();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -114,8 +117,8 @@ function AdminLayout() {
         <div className="p-5 border-b border-zinc-100/80 bg-gradient-to-r from-rose-50/40 via-white to-transparent">
           <div className="flex items-center gap-3.5">
             <div className="relative">
-              <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-800 text-rose-300 font-extrabold shadow-md shadow-zinc-900/10 border border-zinc-700/50 text-base">
-                C
+              <div className="size-11 rounded-2xl overflow-hidden shadow-md shadow-rose-900/10 border-2 border-rose-200/80 bg-rose-100">
+                <img src={avatar} alt="Camila" className="h-full w-full object-cover" />
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-[0_0_8px_#10b981]" />
             </div>
@@ -167,12 +170,17 @@ function AdminLayout() {
         {/* Mobile Header */}
         <header className="flex h-16 items-center justify-between border-b border-zinc-200 bg-white px-4 md:hidden z-30 sticky top-0 shadow-sm">
           <IsaferLogo variant="header" size="sm" />
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="rounded-md p-2 text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
-          >
-            {mobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="size-9 rounded-xl overflow-hidden border border-rose-200 shadow-xs bg-rose-50">
+              <img src={avatar} alt="Camila" className="h-full w-full object-cover" />
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="rounded-md p-2 text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+            </button>
+          </div>
         </header>
 
         {/* Mobile Menu Backdrop & Nav */}

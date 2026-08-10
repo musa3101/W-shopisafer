@@ -1,15 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { audioNotifier } from "@/lib/audioNotifier";
 import { 
   ArrowLeft, Volume2, VolumeX, Database, ShieldAlert, Sparkles, 
   Activity, Bell, BellOff, Loader2, User, Store, Tag, Percent, 
-  Lightbulb, ChevronDown, ChevronUp, Palette, CheckCircle2, Ticket
+  Lightbulb, ChevronDown, ChevronUp, Palette, CheckCircle2, Ticket,
+  Camera, Upload, RotateCcw
 } from "lucide-react";
 import { toast } from "sonner";
 import { insforge } from "@/lib/insforge";
 import { VAPID_PUBLIC_KEY } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAvatar } from "@/hooks/useAdminAvatar";
 
 export const Route = createFileRoute("/admin/ajustes")({
   component: AjustesPage,
@@ -19,6 +21,35 @@ export function AjustesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
+  // Estado Avatar de Admin
+  const { avatar, updateAvatar, resetAvatar, isCustom } = useAdminAvatar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, selecciona un archivo de imagen válido (JPG, PNG, WEBP).");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("La imagen es demasiado grande. Selecciona una de máximo 5 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        updateAvatar(result);
+        toast.success("¡Foto de perfil de Camila actualizada con éxito! 💖");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Estado Notificaciones
   const [soundEnabled, setSoundEnabled] = useState(audioNotifier.isEnabled());
   const [pushSupported, setPushSupported] = useState(false);
@@ -230,20 +261,75 @@ export function AjustesPage() {
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 bg-gradient-to-br from-rose-50/50 via-pink-50/20 to-white rounded-2xl border border-rose-100/60">
-            <div className="relative">
-              <div className="size-16 rounded-2xl bg-gradient-to-tr from-zinc-900 via-zinc-800 to-rose-950 text-white flex items-center justify-center font-extrabold text-xl shadow-lg border border-zinc-700">
-                C
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-5 bg-gradient-to-br from-rose-50/50 via-pink-50/20 to-white rounded-2xl border border-rose-100/60">
+            {/* Foto de Perfil Interactiva */}
+            <div 
+              className="relative group cursor-pointer shrink-0" 
+              onClick={() => fileInputRef.current?.click()}
+              title="Haz clic para cambiar o subir foto"
+            >
+              <div className="size-20 sm:size-24 rounded-2xl overflow-hidden bg-rose-100 border-2 border-rose-200/90 shadow-md group-hover:shadow-lg transition-all group-hover:scale-[1.02]">
+                <img src={avatar} alt="Camila — Perfil Oficial" className="w-full h-full object-cover" />
               </div>
-              <span className="absolute -bottom-1 -right-1 size-5 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px] font-black border-2 border-white shadow-xs">
-                ✨
-              </span>
+              <button
+                type="button"
+                className="absolute -bottom-1 -right-1 size-7 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-md border-2 border-white transition-transform group-hover:scale-110 cursor-pointer"
+                title="Cambiar foto de perfil"
+              >
+                <Camera className="size-3.5" />
+              </button>
             </div>
 
-            <div className="flex-1 space-y-1">
-              <p className="text-base font-extrabold text-zinc-900">Camila</p>
+            {/* Input Oculto de Selección de Archivos */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+
+            <div className="flex-1 space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-lg font-black text-zinc-900">Camila</p>
+                {isCustom ? (
+                  <span className="text-[9px] font-extrabold uppercase px-2.5 py-0.5 bg-rose-100 text-rose-700 rounded-full border border-rose-200 shadow-2xs">
+                    Foto Personalizada ✨
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-extrabold uppercase px-2.5 py-0.5 bg-zinc-100 text-zinc-600 rounded-full border border-zinc-200 shadow-2xs">
+                    Foto Oficial
+                  </span>
+                )}
+              </div>
               <p className="text-xs font-semibold text-zinc-500">Propietaria & Diseñadora · Isafer Boutique Brooklyn</p>
-              <p className="text-[11px] font-mono font-bold text-rose-600/90 pt-0.5">admin@isaferboutique.com</p>
+              <p className="text-[11px] font-mono font-bold text-rose-600/90">admin@isaferboutique.com</p>
+
+              {/* Botones de Acción */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+                >
+                  <Upload className="size-3.5 text-rose-400" />
+                  {isCustom ? "Actualizar Foto" : "Añadir o Actualizar Foto"}
+                </button>
+
+                {isCustom && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      resetAvatar();
+                      toast.info("Foto restablecida a la imagen oficial de Camila ✨");
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+                  >
+                    <RotateCcw className="size-3.5" />
+                    Restablecer Foto Inicial
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
