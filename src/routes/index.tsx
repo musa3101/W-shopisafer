@@ -1730,7 +1730,7 @@ function Index() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Address / Map */}
               <div className="md:col-span-12 lg:col-span-8 group relative overflow-hidden rounded-[2rem] border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-8 sm:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 backdrop-blur-xl">
-                 <div className="absolute -right-10 -bottom-10 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-700 transform group-hover:scale-110 pointer-events-none">
+                 <div className="absolute -right-10 -bottom-10 text-rose-500/15 group-hover:text-rose-500/25 transition-all duration-700 transform group-hover:scale-110 pointer-events-none">
                    <MapPin className="w-96 h-96" />
                  </div>
                  <div className="relative z-10 flex flex-col h-full justify-between">
