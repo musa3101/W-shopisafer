@@ -64,6 +64,7 @@ export function AjustesPage() {
   const [dbStatus, setDbStatus] = useState<string>("unknown");
   const [healthLogs, setHealthLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [showTechnicalDiagnostics, setShowTechnicalDiagnostics] = useState(false);
 
   // Estado Edición de Credenciales y Perfil
   const [showEditCredentials, setShowEditCredentials] = useState(false);
@@ -118,12 +119,12 @@ export function AjustesPage() {
     setIsSavingCredentials(true);
     try {
       try {
-        const updatePayload: any = {};
-        if (newPassword) updatePayload.password = newPassword;
-        if (adminEmail) updatePayload.email = adminEmail;
-        updatePayload.data = { name: adminName };
-
-        await insforge.auth.updateUser(updatePayload);
+        if (typeof (insforge.auth as any).setProfile === "function") {
+          await (insforge.auth as any).setProfile({ name: adminName });
+        }
+        if (newPassword && typeof (insforge.auth as any).resetPassword === "function") {
+          await (insforge.auth as any).resetPassword({ newPassword });
+        }
       } catch (errInsforge) {
         console.warn("Aviso en sincronización directa con InsForge:", errInsforge);
       }

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { couponsService, EVENT_NAME_BANNER } from "@/services/couponsService";
 import {
   Instagram,
   Phone,
@@ -46,7 +47,6 @@ import productsImage from "@/assets/rosse-products.jpg";
 import sobreNosotrosImg from "@/assets/sobrenostros.jpg";
 import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail, fetchCartById, saveCart, deleteCart, subscribeToNewsletter } from "@/services/insforgeService";
 import { fetchUserFavorites, addFavorite, removeFavorite, syncGuestFavorites } from "@/services/favoritesService";
-import { couponsService } from "@/services/couponsService";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { CustomerAccountModal } from "@/components/CustomerAccountModal";
