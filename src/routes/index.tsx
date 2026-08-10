@@ -95,6 +95,34 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: async () => {
+    const backendProds = await fetchProducts().catch(() => [] as BackendProduct[]);
+    const mapped: ProductItem[] = backendProds.map((bp, idx) => {
+      let category = "Tops & Sets";
+      const nameLower = bp.name.toLowerCase();
+      if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
+        category = "Vestidos";
+      } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
+        category = "Licras";
+      } else if (nameLower.includes("body")) {
+        category = "Bodys & Corsets";
+      } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
+        category = "Accesorios & Glam";
+      }
+      return {
+        id: bp.id || idx,
+        name: bp.name,
+        price: Number(bp.price),
+        category,
+        tag: bp.badge || "Destacado",
+        image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
+        description: bp.description || "",
+        stripe_price_id: bp.stripe_price_id,
+        sizes: bp.sizes && bp.sizes.length > 0 ? bp.sizes : undefined,
+      };
+    });
+    return { initialProducts: mapped };
+  },
   component: Index,
 });
 
@@ -174,116 +202,7 @@ function AnimatedOwnerImage() {
   );
 }
 
-const products: ProductItem[] = [
-  {
-    id: 0,
-    name: "Silk Knot Bandeau Set",
-    price: 38.0,
-    category: "Tops & Sets",
-    tag: "Nuevo Drop",
-    position: "left-0",
-    description: "Set de dos piezas ultrasuave con nudo decorativo y ajuste entallado.",
-  },
-  {
-    id: 1,
-    name: "Licra Moldeadora Premium",
-    price: 35.0,
-    category: "Licras",
-    tag: "Más Vendido",
-    position: "left-[-100%]",
-    description: "Licra de alta compresión inteligente que esculpe y realza la figura.",
-  },
-  {
-    id: 2,
-    name: "Vestido Malla Transparente",
-    price: 48.0,
-    category: "Vestidos",
-    tag: "Tendencia",
-    position: "left-[-200%]",
-    description: "Vestido de malla fina con transparencias estratégicas para la noche.",
-  },
-  {
-    id: 3,
-    name: "Draped Cutout Blue Mini",
-    price: 52.0,
-    category: "Vestidos",
-    tag: "Edición Limitada",
-    position: "left-[-300%]",
-    description: "Mini vestido drapeado con escote asimétrico y acabado satinado.",
-  },
-  {
-    id: 4,
-    name: "Licra Esculpida Push-Up Brooklyn",
-    price: 39.0,
-    category: "Licras",
-    tag: "Cintura Alta",
-    image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=800&q=80",
-    description: "Confección sin costuras con pretina ancha antideslizante para máximo control.",
-  },
-  {
-    id: 5,
-    name: "Body Corset Efecto Cuero Black",
-    price: 45.0,
-    category: "Bodys & Corsets",
-    tag: "Favoritodueña",
-    image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80",
-    description: "Body entallado con acabado efecto cuero mate y escote estructurado.",
-  },
-  {
-    id: 6,
-    name: "Conjunto Velvet Night 2 Piezas",
-    price: 55.0,
-    category: "Tops & Sets",
-    tag: "Exclusivo",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
-    description: "Top crop ajustado y falda tubo en terciopelo fino para eventos de noche.",
-  },
-  {
-    id: 7,
-    name: "Vestido Asimétrico Cut-Out Emerald",
-    price: 58.0,
-    category: "Vestidos",
-    tag: "Noche Chic",
-    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
-    description: "Diseño elegante con abertura lateral y escote cruzado en tono esmeralda.",
-  },
-  {
-    id: 8,
-    name: "Licra Moldeadora Biker Seamless",
-    price: 32.0,
-    category: "Licras",
-    tag: "Básico Must",
-    image: "https://images.unsplash.com/photo-1506629082925-2368c855a153?w=800&q=80",
-    description: "Biker corta con compresión inteligente en abdomen y muslos.",
-  },
-  {
-    id: 9,
-    name: "Body Malla Strass Brillantes",
-    price: 42.0,
-    category: "Bodys & Corsets",
-    tag: "Glam & Party",
-    image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80",
-    description: "Malla elastizada con incrustaciones de strass brillante que destacan bajo las luces.",
-  },
-  {
-    id: 10,
-    name: "Mini Falda Plisada Satin Rose",
-    price: 36.0,
-    category: "Tops & Sets",
-    tag: "Verano",
-    image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=800&q=80",
-    description: "Falda satinada ligera con vuelo fluido e interior tipo short invisible.",
-  },
-  {
-    id: 11,
-    name: "Cinturón Corset Moldeador Gold",
-    price: 28.0,
-    category: "Accesorios & Glam",
-    tag: "Detalle Chic",
-    image: "https://images.unsplash.com/photo-1611591475777-233cd73222d3?w=800&q=80",
-    description: "Cinturón elástico con hebilla metálica dorada para acentuar cualquier outfit.",
-  },
-];
+
 
 export interface CartLineItem {
   cartItemId: string;
@@ -311,7 +230,7 @@ function getOptimizedImageUrl(url?: string): string {
 }
 
 function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string; product?: ProductItem }) {
-  const p = product ?? (id !== undefined ? products.find(prod => String(prod.id) === String(id)) : undefined);
+  const p = product;
   const [imgSrc, setImgSrc] = useState<string>(() => {
     if (p?.image) return getOptimizedImageUrl(p.image);
     return getOptimizedImageUrl(productsImage);
@@ -345,7 +264,8 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
 function Index() {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useTranslation();
-  const [productsList, setProductsList] = useState<ProductItem[]>(products);
+  const { initialProducts } = Route.useLoaderData();
+  const [productsList, setProductsList] = useState<ProductItem[]>(initialProducts);
   const [cart, setCart] = useState<Cart>({});
   const [selectedProductForModal, setSelectedProductForModal] = useState<ProductItem | null>(null);
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -395,47 +315,6 @@ function Index() {
 
   const { user, loading, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
 
-  const loadProductsFromInsForge = async () => {
-    try {
-      const backendProds = await fetchProducts();
-      if (backendProds && backendProds.length > 0) {
-        const mapped: ProductItem[] = backendProds.map((bp, idx) => {
-          let category = "Tops & Sets";
-          const nameLower = bp.name.toLowerCase();
-          if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
-            category = "Vestidos";
-          } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
-            category = "Licras";
-          } else if (nameLower.includes("body")) {
-            category = "Bodys & Corsets";
-          } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
-            category = "Accesorios & Glam";
-          }
-
-          let imgUrl = bp.images && bp.images.length > 0 ? bp.images[0] : undefined;
-
-          return {
-            id: bp.id || idx,
-            name: bp.name,
-            price: Number(bp.price),
-            category,
-            tag: bp.badge || "Destacado",
-            image: imgUrl,
-            description: bp.description || "",
-            stripe_price_id: bp.stripe_price_id,
-            sizes: bp.sizes && bp.sizes.length > 0 ? bp.sizes : undefined,
-          };
-        });
-        setProductsList(mapped);
-      }
-    } catch (err) {
-      console.error("Error cargando productos de InsForge:", err);
-    }
-  };
-
-  useEffect(() => {
-    loadProductsFromInsForge();
-  }, []);
 
   // Comprobar si hay un carrito para recuperar en la URL (?recover_cart=UUID) o en localStorage
   useEffect(() => {
@@ -2411,7 +2290,7 @@ function Index() {
       <AdminDashboardModal
         open={adminModalOpen}
         onOpenChange={setAdminModalOpen}
-        onProductsUpdated={loadProductsFromInsForge}
+        onProductsUpdated={() => navigate({ to: "/", replace: true })}
       />
 
       {/* Dialog de Búsqueda Minimalista */}

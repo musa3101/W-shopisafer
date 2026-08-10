@@ -172,17 +172,12 @@ function AjustesPage() {
     setCheckingLatency(true);
     const start = Date.now();
     try {
-      const res = await fetch("/api/health");
-      if (res.ok) {
-        const data = await res.json() as { status: string; insforge: string };
-        if (data.status === "ok" && data.insforge === "connected") {
-          setDbStatus("online");
-          setLatency(Date.now() - start);
-        } else {
-          setDbStatus("degraded");
-        }
+      const { error } = await insforge.database.from("products").select("id").limit(1);
+      if (!error) {
+        setDbStatus("online");
+        setLatency(Date.now() - start);
       } else {
-        setDbStatus("offline");
+        setDbStatus("degraded");
       }
     } catch (e) {
       setDbStatus("offline");

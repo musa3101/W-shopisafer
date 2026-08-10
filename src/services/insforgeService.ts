@@ -78,37 +78,22 @@ export interface OrderInput {
  * Obtiene el catálogo de productos desde la base de datos PostgreSQL en InsForge y almacenamiento local
  */
 export async function fetchProducts(): Promise<BackendProduct[]> {
-  let backendProducts: BackendProduct[] = [];
   try {
     const { data, error } = await insforge.database
       .from('products')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      backendProducts = data as BackendProduct[];
+    if (error) {
+      console.error('Error al cargar productos de InsForge:', error);
+      return [];
     }
+
+    return (data as BackendProduct[]) || [];
   } catch (err) {
-    console.warn('Aviso al conectar con productos de InsForge:', err);
+    console.error('Error de conexión al cargar productos:', err);
+    return [];
   }
-
-  // Cargar productos creados en almacenamiento de respaldo
-  let customProducts: BackendProduct[] = [];
-  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-    try {
-      const stored = localStorage.getItem('isafer_custom_products');
-      if (stored) {
-        customProducts = JSON.parse(stored);
-      }
-    } catch (e) {}
-  }
-
-  // Combinar sin duplicados por ID
-  const map = new Map<string, BackendProduct>();
-  customProducts.forEach((p) => map.set(String(p.id), p));
-  backendProducts.forEach((p) => map.set(String(p.id), p));
-
-  return Array.from(map.values());
 }
 
 /**
@@ -217,67 +202,31 @@ export async function createProduct(product: Partial<BackendProduct>) {
     if (product.sizes) fullPayload.sizes = product.sizes;
     if (product.size_system) fullPayload.size_system = product.size_system;
 
-    let dbSuccess = false;
-    let savedData: any = null;
-
     // Intento 1: Insertar con todos los campos en InsForge PostgreSQL
-    try {
-      const { data, error } = await insforge.database
-        .from('products')
-        .insert([fullPayload]);
+    const { data, error } = await insforge.database
+      .from('products')
+      .insert([fullPayload]);
 
-      if (!error) {
-        dbSuccess = true;
-        savedData = data;
-      } else {
-        // Intento 2: Probar sin campos opcionales por si la columna no existe aún en PostgreSQL
-        const standardPayload = { ...fullPayload };
-        delete standardPayload.gender;
-        delete standardPayload.sizes;
-        delete standardPayload.size_system;
-
-        const retryRes = await insforge.database
-          .from('products')
-          .insert([standardPayload]);
-
-        if (!retryRes.error) {
-          dbSuccess = true;
-          savedData = retryRes.data;
-        } else {
-          console.warn('Aviso de inserción en PostgreSQL:', retryRes.error.message);
-        }
-      }
-    } catch (dbErr) {
-      console.warn('No se pudo guardar en InsForge PostgreSQL, activando respaldo:', dbErr);
+    if (!error) {
+      return { success: true, data };
     }
 
-    // Respaldo de Almacenamiento Local (Garantiza que la prenda SIEMPRE se agregue a la web)
-    const newProductItem: BackendProduct = {
-      id,
-      name: fullPayload.name,
-      slug: fullPayload.slug,
-      description: fullPayload.description,
-      price: fullPayload.price,
-      stock: fullPayload.stock,
-      images: fullPayload.images,
-      is_featured: fullPayload.is_featured,
-      badge: fullPayload.badge,
-      stripe_price_id: fullPayload.stripe_price_id,
-      gender: product.gender || 'women',
-      sizes: product.sizes || ['S', 'M', 'L'],
-      size_system: product.size_system || 'US',
-    };
+    // Intento 2: Probar sin campos opcionales por si la columna no existe aún en PostgreSQL
+    const standardPayload = { ...fullPayload };
+    delete standardPayload.gender;
+    delete standardPayload.sizes;
+    delete standardPayload.size_system;
 
-    try {
-      const stored = localStorage.getItem('isafer_custom_products');
-      let customProducts: BackendProduct[] = stored ? JSON.parse(stored) : [];
-      customProducts = [newProductItem, ...customProducts.filter((p) => p.id !== id)];
-      localStorage.setItem('isafer_custom_products', JSON.stringify(customProducts));
-    } catch (e) {
-      console.error('Error al guardar respaldo de producto:', e);
+    const retryRes = await insforge.database
+      .from('products')
+      .insert([standardPayload]);
+
+    if (retryRes.error) {
+      console.error('Error al insertar producto en PostgreSQL:', retryRes.error.message);
+      return { success: false, error: retryRes.error.message || 'Error al guardar el producto en la base de datos' };
     }
 
-    return { success: true, data: savedData || newProductItem };
+    return { success: true, data: retryRes.data };
   } catch (err: any) {
     console.error('Error al crear producto:', err);
     return { success: false, error: err.message || 'Error al crear la prenda' };
@@ -289,26 +238,20 @@ export async function createProduct(product: Partial<BackendProduct>) {
  */
 export async function deleteProduct(id: string) {
   try {
-    try {
-      await insforge.database
-        .from('products')
-        .delete()
-        .eq('id', id);
-    } catch (e) {}
+    const { error } = await insforge.database
+      .from('products')
+      .delete()
+      .eq('id', id);
 
-    try {
-      const stored = localStorage.getItem('isafer_custom_products');
-      if (stored) {
-        let customProducts: BackendProduct[] = JSON.parse(stored);
-        customProducts = customProducts.filter((p) => String(p.id) !== String(id));
-        localStorage.setItem('isafer_custom_products', JSON.stringify(customProducts));
-      }
-    } catch (e) {}
+    if (error) {
+      console.error('Error al eliminar producto de PostgreSQL:', error);
+      return { success: false, error: error.message || 'Error al eliminar el producto' };
+    }
 
     return { success: true };
   } catch (err: any) {
     console.error('Error al eliminar producto:', err);
-    return { success: false, error: err.message };
+    return { success: false, error: err.message || 'Error de conexión al eliminar' };
   }
 }
 

@@ -32,7 +32,7 @@ export function useAuth() {
         if (data?.user && !error) {
           const profile = (data.user as any).profile || {};
           const meta = (data.user as any).metadata || {};
-          const isAdminUser = data.user.email === "admin@rosseboutique.com";
+          const isAdminUser = data.user.email === "admin@isaferboutique.com" || data.user.email === "admin";
           setUser({
             id: data.user.id,
             email: data.user.email,
@@ -66,7 +66,7 @@ export function useAuth() {
         if (data?.user && !error) {
           const profile = (data.user as any).profile || {};
           const meta = (data.user as any).metadata || {};
-          const isAdminUser = data.user.email === "admin@rosseboutique.com";
+          const isAdminUser = data.user.email === "admin@isaferboutique.com" || data.user.email === "admin";
           setUser({
             id: data.user.id,
             email: data.user.email,
@@ -122,8 +122,8 @@ export function useAuth() {
     let cleanPass = password.trim();
 
     // Mapear atajos de administrador a la cuenta real en PostgreSQL de InsForge
-    if (cleanEmail === "admin" || cleanEmail === "isafer@admin.com") {
-      cleanEmail = "admin@rosseboutique.com";
+    if (cleanEmail === "admin" || cleanEmail === "isafer@admin.com" || cleanEmail === "admin@rosseboutique.com") {
+      cleanEmail = "admin@isaferboutique.com";
     }
 
     try {
@@ -135,7 +135,7 @@ export function useAuth() {
       if (data?.user) {
         const profile = (data.user as any).profile || {};
         const meta = (data.user as any).metadata || {};
-        const isAdminUser = cleanEmail === "admin@rosseboutique.com";
+        const isAdminUser = cleanEmail === "admin@isaferboutique.com";
         
         const userObj = {
           id: data.user.id,
@@ -150,18 +150,6 @@ export function useAuth() {
       }
       return { success: true, data };
     } catch (err: any) {
-      if (cleanEmail === "admin@rosseboutique.com") {
-        const adminUser = {
-          id: "admin-camila-id",
-          email: "admin@rosseboutique.com",
-          name: "Dueña · Isafer Boutique",
-        };
-        setUser(adminUser);
-        if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-          localStorage.setItem("isafer_admin_session", JSON.stringify(adminUser));
-        }
-        return { success: true, data: { user: adminUser } };
-      }
       return { success: false, error: err.message || 'Credenciales incorrectas' };
     }
   };
@@ -180,7 +168,7 @@ export function useAuth() {
     }
   };
 
-  const isAdmin = user?.email?.includes("admin") || user?.id === "owner-admin-id";
+  const isAdmin = user?.email === "admin@isaferboutique.com" || user?.email === "admin" || user?.id === "45706904-cda3-4f28-9d05-0e60176dcaae";
   const isCustomer = !!user && !isAdmin;
 
   return {
