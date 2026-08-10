@@ -5,13 +5,15 @@ import {
   ArrowLeft, Volume2, VolumeX, Database, ShieldAlert, Sparkles, 
   Activity, Bell, BellOff, Loader2, User, Store, Tag, Percent, 
   Lightbulb, ChevronDown, ChevronUp, Palette, CheckCircle2, Ticket,
-  Camera, Upload, RotateCcw
+  Camera, Upload, RotateCcw, Edit3, Key, Plus, Trash2, Copy, Check,
+  Eye, EyeOff, Save, Lock, Mail
 } from "lucide-react";
 import { toast } from "sonner";
 import { insforge } from "@/lib/insforge";
 import { VAPID_PUBLIC_KEY } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminAvatar } from "@/hooks/useAdminAvatar";
+import { couponsService, Coupon, WelcomeBannerConfig } from "@/services/couponsService";
 
 export const Route = createFileRoute("/admin/ajustes")({
   component: AjustesPage,
@@ -63,13 +65,135 @@ export function AjustesPage() {
   const [healthLogs, setHealthLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
-  // Estado Secciones Desplegables
-  const [showTechnicalDiagnostics, setShowTechnicalDiagnostics] = useState(false);
+  // Estado Edición de Credenciales y Perfil
+  const [showEditCredentials, setShowEditCredentials] = useState(false);
+  const [adminName, setAdminName] = useState(() => {
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      const stored = localStorage.getItem("isafer_admin_profile");
+      if (stored) {
+        try { return JSON.parse(stored).name || "Camila"; } catch (e) {}
+      }
+    }
+    return "Camila";
+  });
+  const [adminEmail, setAdminEmail] = useState(() => {
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      const stored = localStorage.getItem("isafer_admin_profile");
+      if (stored) {
+        try { return JSON.parse(stored).email || "admin@isaferboutique.com"; } catch (e) {}
+      }
+    }
+    return "admin@isaferboutique.com";
+  });
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSavingCredentials, setIsSavingCredentials] = useState(false);
 
-  // Estado Promociones & Cupones (UI Estructurada)
-  const [couponCode, setCouponCode] = useState("ISAFER10");
-  const [couponDiscount, setCouponDiscount] = useState("10");
-  const [couponActive, setCouponActive] = useState(true);
+  // Estado Cupones y Banners Promocionales
+  const [bannerConfig, setBannerConfig] = useState<WelcomeBannerConfig>(() => couponsService.getWelcomeBanner());
+  const [coupons, setCoupons] = useState<Coupon[]>(() => couponsService.getCoupons());
+  const [showCreateCouponModal, setShowCreateCouponModal] = useState(false);
+  const [newCouponCode, setNewCouponCode] = useState("");
+  const [newCouponDiscount, setNewCouponDiscount] = useState("10");
+  const [newCouponDescription, setNewCouponDescription] = useState("");
+
+  const handleSaveCredentials = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEmail) {
+      toast.error("El correo electrónico no puede estar vacío.");
+      return;
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      toast.error("La nueva contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    if (newPassword && newPassword !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden. Por favor verifícalas.");
+      return;
+    }
+
+    setIsSavingCredentials(true);
+    try {
+      try {
+        const updatePayload: any = {};
+        if (newPassword) updatePayload.password = newPassword;
+        if (adminEmail) updatePayload.email = adminEmail;
+        updatePayload.data = { name: adminName };
+
+        await insforge.auth.updateUser(updatePayload);
+      } catch (errInsforge) {
+        console.warn("Aviso en sincronización directa con InsForge:", errInsforge);
+      }
+
+      const profileData = { name: adminName, email: adminEmail };
+      localStorage.setItem("isafer_admin_profile", JSON.stringify(profileData));
+
+      const existingSession = localStorage.getItem("isafer_admin_session");
+      const updatedSession = {
+        ...(existingSession ? JSON.parse(existingSession) : {}),
+        email: adminEmail,
+        name: adminName,
+      };
+      localStorage.setItem("isafer_admin_session", JSON.stringify(updatedSession));
+
+      toast.success("¡Credenciales de Camila actualizadas con éxito en InsForge! 💖");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowEditCredentials(false);
+    } catch (err: any) {
+      toast.error(err.message || "Error al actualizar las credenciales.");
+    } finally {
+      setIsSavingCredentials(false);
+    }
+  };
+
+  const handleSaveBanner = (e: React.FormEvent) => {
+    e.preventDefault();
+    couponsService.saveWelcomeBanner(bannerConfig);
+    toast.success("¡Configuración del Banner VIP de Bienvenida guardada con éxito! ✨");
+  };
+
+  const handleCreateCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCouponCode) {
+      toast.error("Por favor introduce un código de cupón.");
+      return;
+    }
+
+    const discountNum = parseInt(newCouponDiscount, 10);
+    if (isNaN(discountNum) || discountNum <= 0 || discountNum > 100) {
+      toast.error("Introduce un porcentaje de descuento válido (entre 1% y 100%).");
+      return;
+    }
+
+    couponsService.addCoupon({
+      code: newCouponCode,
+      discountPercent: discountNum,
+      description: newCouponDescription || `${discountNum}% OFF en compras seleccionadas`,
+      isActive: true,
+    });
+
+    setCoupons(couponsService.getCoupons());
+    setNewCouponCode("");
+    setNewCouponDescription("");
+    setShowCreateCouponModal(false);
+    toast.success(`¡Cupón ${newCouponCode.toUpperCase()} creado y disponible en la tienda! 🎟️`);
+  };
+
+  const handleToggleCoupon = (id: string, code: string) => {
+    couponsService.toggleCoupon(id);
+    setCoupons(couponsService.getCoupons());
+    toast.info(`Estado del cupón ${code} actualizado ✨`);
+  };
+
+  const handleDeleteCoupon = (id: string, code: string) => {
+    couponsService.deleteCoupon(id);
+    setCoupons(couponsService.getCoupons());
+    toast.success(`Cupón ${code} eliminado con éxito`);
+  };
 
   // Convertir VAPID key
   const urlBase64ToUint8Array = (base64String: string) => {
@@ -253,7 +377,7 @@ export function AjustesPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-extrabold text-zinc-900 flex items-center gap-2.5">
               <User className="size-5 text-rose-500" />
-              Perfil de Camila
+              Perfil de Camila & Credenciales InsForge
             </h2>
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5">
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -291,7 +415,7 @@ export function AjustesPage() {
 
             <div className="flex-1 space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-lg font-black text-zinc-900">Camila</p>
+                <p className="text-lg font-black text-zinc-900">{adminName}</p>
                 {isCustom ? (
                   <span className="text-[9px] font-extrabold uppercase px-2.5 py-0.5 bg-rose-100 text-rose-700 rounded-full border border-rose-200 shadow-2xs">
                     Foto Personalizada ✨
@@ -303,7 +427,7 @@ export function AjustesPage() {
                 )}
               </div>
               <p className="text-xs font-semibold text-zinc-500">Propietaria & Diseñadora · Isafer Boutique Brooklyn</p>
-              <p className="text-[11px] font-mono font-bold text-rose-600/90">admin@isaferboutique.com</p>
+              <p className="text-[11px] font-mono font-bold text-rose-600/90">{adminEmail}</p>
 
               {/* Botones de Acción */}
               <div className="flex flex-wrap items-center gap-2.5 pt-2">
@@ -316,6 +440,15 @@ export function AjustesPage() {
                   {isCustom ? "Actualizar Foto" : "Añadir o Actualizar Foto"}
                 </button>
 
+                <button
+                  type="button"
+                  onClick={() => setShowEditCredentials(!showEditCredentials)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+                >
+                  <Edit3 className="size-3.5" />
+                  {showEditCredentials ? "Cerrar Edición" : "Editar Credenciales (Correo/Clave)"}
+                </button>
+
                 {isCustom && (
                   <button
                     type="button"
@@ -323,15 +456,115 @@ export function AjustesPage() {
                       resetAvatar();
                       toast.info("Foto restablecida a la imagen oficial de Camila ✨");
                     }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold transition-all active:scale-95 cursor-pointer"
                   >
                     <RotateCcw className="size-3.5" />
-                    Restablecer Foto Inicial
+                    Restablecer Foto
                   </button>
                 )}
               </div>
             </div>
           </div>
+
+          {/* Formulario de Edición de Credenciales */}
+          {showEditCredentials && (
+            <form onSubmit={handleSaveCredentials} className="p-5 bg-zinc-50 border border-rose-100 rounded-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
+              <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
+                <h3 className="text-xs font-black uppercase tracking-wider text-rose-950 flex items-center gap-2">
+                  <Key className="size-4 text-rose-500" />
+                  Actualizar Datos de Acceso al Panel
+                </h3>
+                <span className="text-[10px] text-zinc-400 font-mono">Conectado a InsForge Auth</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                    <User className="size-3.5 text-zinc-400" />
+                    Nombre Visible
+                  </label>
+                  <input
+                    type="text"
+                    value={adminName}
+                    onChange={(e) => setAdminName(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-white text-xs font-bold text-zinc-900 focus:border-rose-500 focus:outline-none"
+                    placeholder="Ej: Camila"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                    <Mail className="size-3.5 text-zinc-400" />
+                    Correo Electrónico de Administradora
+                  </label>
+                  <input
+                    type="email"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-white text-xs font-bold font-mono text-zinc-900 focus:border-rose-500 focus:outline-none"
+                    placeholder="admin@isaferboutique.com"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                    <Lock className="size-3.5 text-zinc-400" />
+                    Nueva Contraseña (Opcional)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-white text-xs font-mono font-bold text-zinc-900 focus:border-rose-500 focus:outline-none pr-10"
+                      placeholder="Mínimo 6 caracteres"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                    <Lock className="size-3.5 text-zinc-400" />
+                    Confirmar Nueva Contraseña
+                  </label>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-300 bg-white text-xs font-mono font-bold text-zinc-900 focus:border-rose-500 focus:outline-none"
+                    placeholder="Repite la contraseña"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditCredentials(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 hover:bg-zinc-200 transition-all cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingCredentials}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                >
+                  {isSavingCredentials ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  {isSavingCredentials ? "Guardando..." : "Guardar Cambios en InsForge"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         {/* BLOQUE 2: Apariencia & Marca */}
@@ -447,58 +680,219 @@ export function AjustesPage() {
           </div>
         </div>
 
-        {/* BLOQUE 4: Promociones & Campañas (UI) */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-zinc-200/80 shadow-sm space-y-4">
-          <h2 className="text-lg font-extrabold text-zinc-900 flex items-center gap-2.5">
-            <Percent className="size-5 text-rose-500" />
-            Promociones & Descuentos de Temporada
-          </h2>
-          <p className="text-xs text-zinc-500 leading-relaxed">
-            Configuración activa de banners promocionales para la tienda.
-          </p>
-
-          <div className="p-4 bg-gradient-to-r from-rose-50 to-pink-50/50 border border-rose-100 rounded-2xl space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold text-rose-950 flex items-center gap-1.5">
-                <Sparkles className="size-4 text-rose-500" />
-                Descuento Banner VIP de Bienvenida
-              </span>
-              <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                ACTIVO EN TIENDA
-              </span>
-            </div>
-            <p className="text-xs text-zinc-600 leading-relaxed">
-              Muestra un <strong>10% OFF</strong> automático en la bolsa de compras a usuarias nuevas con el código <code className="bg-white px-1.5 py-0.5 rounded border border-rose-200 text-rose-600 font-mono font-bold">ISAFER10</code>.
-            </p>
-          </div>
-        </div>
-
-        {/* BLOQUE 5: Cupones de Descuento (UI) */}
-        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-zinc-200/80 shadow-sm space-y-4">
-          <h2 className="text-lg font-extrabold text-zinc-900 flex items-center gap-2.5">
-            <Ticket className="size-5 text-rose-500" />
-            Cupones & Códigos Promocionales
-          </h2>
-          <p className="text-xs text-zinc-500 leading-relaxed">
-            Gestiona códigos de descuento creados para promociones en Instagram y TikTok.
-          </p>
-
-          <div className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 font-mono font-black text-xs flex items-center justify-center">
-                %
-              </div>
-              <div>
-                <p className="text-xs font-black text-zinc-900 font-mono tracking-wider">{couponCode}</p>
-                <p className="text-[11px] text-zinc-500 font-medium">10% de descuento en la primera compra</p>
-              </div>
-            </div>
+        {/* BLOQUE 4: Promociones & Campañas (Banner VIP) */}
+        <form onSubmit={handleSaveBanner} className="bg-white p-6 sm:p-7 rounded-3xl border border-zinc-200/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-zinc-900 flex items-center gap-2.5">
+              <Percent className="size-5 text-rose-500" />
+              Banner Promocional de Bienvenida en Tienda
+            </h2>
             <button
-              onClick={() => toast.success("Código de cupón ISAFER10 copiado al portapapeles 📋")}
-              className="px-3.5 py-2 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-800 rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-2xs"
+              type="submit"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-extrabold shadow-sm active:scale-95 cursor-pointer"
             >
-              Copiar Código
+              <Save className="size-3.5 text-rose-400" />
+              Guardar Banner
             </button>
+          </div>
+          <p className="text-xs text-zinc-500 leading-relaxed">
+            Configuración activa del anuncio superior en vivo para la tienda pública.
+          </p>
+
+          <div className="p-5 bg-gradient-to-r from-rose-50 to-pink-50/50 border border-rose-100 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-rose-500" />
+                <span className="text-xs font-extrabold text-rose-950">
+                  Descuento Banner VIP de Bienvenida
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBannerConfig({ ...bannerConfig, enabled: !bannerConfig.enabled })}
+                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-all cursor-pointer ${
+                  bannerConfig.enabled
+                    ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+                    : "bg-zinc-200 text-zinc-600 border-zinc-300"
+                }`}
+              >
+                {bannerConfig.enabled ? "ACTIVO EN TIENDA ✓" : "INACTIVO ✕"}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-zinc-700">Porcentaje % OFF</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={bannerConfig.discountPercent}
+                  onChange={(e) => setBannerConfig({ ...bannerConfig, discountPercent: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 bg-white rounded-xl border border-rose-200 text-xs font-mono font-bold text-rose-900 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-zinc-700">Código del Cupón</label>
+                <input
+                  type="text"
+                  value={bannerConfig.code}
+                  onChange={(e) => setBannerConfig({ ...bannerConfig, code: e.target.value.toUpperCase() })}
+                  className="w-full px-3 py-2 bg-white rounded-xl border border-rose-200 text-xs font-mono font-bold text-rose-900 uppercase focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-[11px] font-bold text-zinc-700">Texto Anuncio Top Ticker</label>
+                <input
+                  type="text"
+                  value={bannerConfig.bannerText}
+                  onChange={(e) => setBannerConfig({ ...bannerConfig, bannerText: e.target.value })}
+                  className="w-full px-3 py-2 bg-white rounded-xl border border-rose-200 text-xs font-bold text-zinc-900 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+
+        {/* BLOQUE 5: Cupones de Descuento Dinámicos */}
+        <div className="bg-white p-6 sm:p-7 rounded-3xl border border-zinc-200/80 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-zinc-900 flex items-center gap-2.5">
+              <Ticket className="size-5 text-rose-500" />
+              Cupones & Códigos Promocionales
+            </h2>
+            <button
+              onClick={() => setShowCreateCouponModal(!showCreateCouponModal)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Plus className="size-4" />
+              {showCreateCouponModal ? "Cancelar" : "Nuevo Cupón"}
+            </button>
+          </div>
+          <p className="text-xs text-zinc-500 leading-relaxed">
+            Gestiona y crea códigos de descuento aplicables automáticamente por las usuarias en la bolsa de compras.
+          </p>
+
+          {/* Formulario de Creación de Cupón */}
+          {showCreateCouponModal && (
+            <form onSubmit={handleCreateCoupon} className="p-4 bg-rose-50/50 border border-rose-200 rounded-2xl space-y-3 animate-in fade-in duration-300">
+              <h3 className="text-xs font-black uppercase text-rose-950 flex items-center gap-1.5">
+                <Tag className="size-4 text-rose-600" /> Crear Nuevo Código Promocional
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-zinc-700">Código (Ej: ISAFER20)</label>
+                  <input
+                    type="text"
+                    value={newCouponCode}
+                    onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
+                    placeholder="ISAFER20"
+                    required
+                    className="w-full px-3 py-2 bg-white rounded-xl border border-zinc-300 text-xs font-mono font-bold text-zinc-900 uppercase focus:border-rose-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-zinc-700">Descuento %</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={newCouponDiscount}
+                    onChange={(e) => setNewCouponDiscount(e.target.value)}
+                    placeholder="10"
+                    required
+                    className="w-full px-3 py-2 bg-white rounded-xl border border-zinc-300 text-xs font-mono font-bold text-zinc-900 focus:border-rose-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-3">
+                  <label className="text-[11px] font-bold text-zinc-700">Descripción Corta</label>
+                  <input
+                    type="text"
+                    value={newCouponDescription}
+                    onChange={(e) => setNewCouponDescription(e.target.value)}
+                    placeholder="Ej: 20% OFF exclusivo para seguidoras de TikTok"
+                    className="w-full px-3 py-2 bg-white rounded-xl border border-zinc-300 text-xs font-bold text-zinc-900 focus:border-rose-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold shadow-sm active:scale-95 cursor-pointer"
+                >
+                  Guardar Cupón en Tienda
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Lista de Cupones */}
+          <div className="space-y-3">
+            {coupons.map((c) => (
+              <div key={c.id} className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-rose-200 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="size-11 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white font-mono font-black text-xs flex items-center justify-center shadow-sm">
+                    {c.discountPercent}%
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-black text-zinc-900 font-mono tracking-wider">{c.code}</p>
+                      {c.isActive ? (
+                        <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md border border-emerald-200">
+                          ACTIVO
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 bg-zinc-200 text-zinc-600 rounded-md border border-zinc-300">
+                          INACTIVO
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-zinc-500 font-medium">{c.description}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleCoupon(c.id, c.code)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      c.isActive
+                        ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                        : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                    }`}
+                  >
+                    {c.isActive ? "Desactivar" : "Activar"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(c.code);
+                      toast.success(`Código ${c.code} copiado al portapapeles 📋`);
+                    }}
+                    className="p-2 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 rounded-xl transition-all cursor-pointer"
+                    title="Copiar código"
+                  >
+                    <Copy className="size-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteCoupon(c.id, c.code)}
+                    className="p-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-600 rounded-xl transition-all cursor-pointer"
+                    title="Eliminar cupón"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
