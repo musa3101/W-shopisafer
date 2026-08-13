@@ -107,6 +107,49 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+export function mapBackendProductToItem(
+  bp: BackendProduct,
+  idx: number = 0,
+): ProductItem {
+  let category = bp.category || "Tops & Sets";
+  if (!bp.category) {
+    const nameLower = (bp.name || "").toLowerCase();
+    if (
+      nameLower.includes("vestido") ||
+      nameLower.includes("gown") ||
+      nameLower.includes("skirt")
+    ) {
+      category = "Vestidos";
+    } else if (
+      nameLower.includes("licra") ||
+      nameLower.includes("jumpsuit") ||
+      nameLower.includes("athletic") ||
+      nameLower.includes("biker")
+    ) {
+      category = "Licras";
+    } else if (nameLower.includes("body")) {
+      category = "Bodys & Corsets";
+    } else if (
+      nameLower.includes("bolso") ||
+      nameLower.includes("cinturón") ||
+      nameLower.includes("accesorios")
+    ) {
+      category = "Accesorios & Glam";
+    }
+  }
+  return {
+    id: bp.id || idx,
+    name: bp.name,
+    price: Number(bp.price),
+    category,
+    tag: bp.badge || "Destacado",
+    image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
+    description: bp.description || "",
+    stripe_price_id: bp.stripe_price_id,
+    sizes: bp.sizes && bp.sizes.length > 0 ? bp.sizes : undefined,
+  };
+}
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -131,45 +174,7 @@ export const Route = createFileRoute("/")({
     const backendProds = await fetchProducts().catch(
       () => [] as BackendProduct[],
     );
-    const mapped: ProductItem[] = backendProds.map((bp, idx) => {
-      let category = bp.category || "Tops & Sets";
-      if (!bp.category) {
-        const nameLower = bp.name.toLowerCase();
-        if (
-          nameLower.includes("vestido") ||
-          nameLower.includes("gown") ||
-          nameLower.includes("skirt")
-        ) {
-          category = "Vestidos";
-        } else if (
-          nameLower.includes("licra") ||
-          nameLower.includes("jumpsuit") ||
-          nameLower.includes("athletic") ||
-          nameLower.includes("biker")
-        ) {
-          category = "Licras";
-        } else if (nameLower.includes("body")) {
-          category = "Bodys & Corsets";
-        } else if (
-          nameLower.includes("bolso") ||
-          nameLower.includes("cinturón") ||
-          nameLower.includes("accesorios")
-        ) {
-          category = "Accesorios & Glam";
-        }
-      }
-      return {
-        id: bp.id || idx,
-        name: bp.name,
-        price: Number(bp.price),
-        category,
-        tag: bp.badge || "Destacado",
-        image: bp.images && bp.images.length > 0 ? bp.images[0] : undefined,
-        description: bp.description || "",
-        stripe_price_id: bp.stripe_price_id,
-        sizes: bp.sizes && bp.sizes.length > 0 ? bp.sizes : undefined,
-      };
-    });
+    const mapped: ProductItem[] = backendProds.map(mapBackendProductToItem);
     return { initialProducts: mapped };
   },
   component: Index,
@@ -397,6 +402,30 @@ function Index() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Sincronización en vivo de prendas desde InsForge PostgreSQL
+  useEffect(() => {
+    let isMounted = true;
+    const syncProductsFromBackend = async () => {
+      try {
+        const backendProds = await fetchProducts();
+        if (isMounted && backendProds && backendProds.length > 0) {
+          const mapped = backendProds.map(mapBackendProductToItem);
+          setProductsList(mapped);
+        }
+      } catch (err) {
+        console.warn("No se pudieron recargar productos en vivo:", err);
+      }
+    };
+
+    syncProductsFromBackend();
+    window.addEventListener("focus", syncProductsFromBackend);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("focus", syncProductsFromBackend);
+    };
   }, []);
 
   // Carrusel dinámico de Hero
