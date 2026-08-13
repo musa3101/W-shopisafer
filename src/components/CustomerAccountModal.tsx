@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { PackageCheck, ShoppingBag, UserCheck, LogOut, Clock, CheckCircle2 } from "lucide-react";
+import {
+  PackageCheck,
+  ShoppingBag,
+  UserCheck,
+  LogOut,
+  Clock,
+  CheckCircle2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { BackendOrder, fetchCustomerOrders } from "@/services/insforgeService";
@@ -53,9 +60,15 @@ export function CustomerAccountModal({
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-700 font-semibold text-sm border border-rose-200">
                 {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                  <img
+                    src={user.avatar_url}
+                    alt="Avatar"
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 ) : (
-                  user?.name?.[0]?.toUpperCase() || <UserCheck className="w-5 h-5" />
+                  user?.name?.[0]?.toUpperCase() || (
+                    <UserCheck className="w-5 h-5" />
+                  )
                 )}
               </div>
               <div>
@@ -82,7 +95,9 @@ export function CustomerAccountModal({
         <div className="mt-4 space-y-4">
           <div className="flex items-center gap-2 border-b border-border pb-2">
             <ShoppingBag className="w-4 h-4 text-rose-600" />
-            <h3 className="text-sm font-semibold text-foreground">Mis Pedidos y Compras</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              Mis Pedidos y Compras
+            </h3>
           </div>
 
           {loadingOrders ? (
@@ -92,9 +107,12 @@ export function CustomerAccountModal({
           ) : orders.length === 0 ? (
             <div className="text-center py-8 bg-muted/40 rounded-xl border border-dashed border-border">
               <PackageCheck className="w-8 h-8 mx-auto text-muted-foreground opacity-50 mb-2" />
-              <p className="text-sm font-medium text-foreground">Aún no tienes pedidos registrados</p>
+              <p className="text-sm font-medium text-foreground">
+                Aún no tienes pedidos registrados
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Tus pedidos realizados con este email aparecerán automáticamente aquí.
+                Tus pedidos realizados con este email aparecerán automáticamente
+                aquí.
               </p>
             </div>
           ) : (
@@ -105,14 +123,16 @@ export function CustomerAccountModal({
                   className="p-4 rounded-xl border border-border bg-card hover:border-rose-200 transition-all space-y-2 shadow-xs"
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-foreground">Pedido #{order.id.slice(0, 8)}</span>
+                    <span className="font-semibold text-foreground">
+                      Pedido #{order.id.slice(0, 8)}
+                    </span>
                     <span
                       className={`px-2 py-0.5 rounded-full font-medium text-[11px] capitalize flex items-center gap-1 ${
                         order.status === "delivered"
                           ? "bg-emerald-100 text-emerald-700"
                           : order.status === "shipped"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-amber-100 text-amber-800"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-amber-100 text-amber-800"
                       }`}
                     >
                       {order.status === "delivered" ? (
@@ -131,14 +151,18 @@ export function CustomerAccountModal({
                           <span>
                             {item.quantity}x {item.name}
                           </span>
-                          <span className="font-medium">{(item.price * item.quantity).toFixed(2)}€</span>
+                          <span className="font-medium">
+                            {(item.price * item.quantity).toFixed(2)}€
+                          </span>
                         </div>
                       ))}
                   </div>
 
                   <div className="pt-2 border-t border-border flex justify-between items-center text-xs font-semibold text-foreground">
                     <span>Total del pedido</span>
-                    <span className="text-rose-600">{Number(order.total_amount).toFixed(2)}€</span>
+                    <span className="text-rose-600">
+                      {Number(order.total_amount).toFixed(2)}€
+                    </span>
                   </div>
                 </div>
               ))}

@@ -6,4 +6,5 @@
 export const OWNER_PHONE = "346673109486";
 
 // Clave pública VAPID para la suscripción a notificaciones push nativas
-export const VAPID_PUBLIC_KEY = "BFDEWz4646ihRgwaUZKzI1pZBhgNrbbD-ZbDY3jhDu-3XxwX5fGob_0mTNquY4IFJAve3j71ol5khQYxqJVPxSA";
+export const VAPID_PUBLIC_KEY =
+  "BFDEWz4646ihRgwaUZKzI1pZBhgNrbbD-ZbDY3jhDu-3XxwX5fGob_0mTNquY4IFJAve3j71ol5khQYxqJVPxSA";

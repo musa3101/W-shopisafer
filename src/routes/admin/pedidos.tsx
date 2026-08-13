@@ -30,8 +30,12 @@ function PedidosPage() {
           <ArrowLeft className="size-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">Gestión de Pedidos</h1>
-          <p className="text-zinc-500 font-medium font-sans">Administra los pedidos de tus clientas en tiempo real.</p>
+          <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
+            Gestión de Pedidos
+          </h1>
+          <p className="text-zinc-500 font-medium font-sans">
+            Administra los pedidos de tus clientas en tiempo real.
+          </p>
         </div>
       </div>
 

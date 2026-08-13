@@ -76,10 +76,14 @@ export function CheckoutShippingModal({
   const validate = (): ShippingDetails | null => {
     const errs: Record<string, string> = {};
 
-    if (!fullName.trim()) errs.fullName = "Por favor introduce tu nombre completo";
-    if (!email.trim() || !email.includes("@")) errs.email = "Introduce un correo válido";
-    if (!phone.trim() || phone.trim().length < 6) errs.phone = "Introduce un teléfono válido para el envío";
-    if (!address.trim()) errs.address = "Introduce tu calle, número y piso/apto";
+    if (!fullName.trim())
+      errs.fullName = "Por favor introduce tu nombre completo";
+    if (!email.trim() || !email.includes("@"))
+      errs.email = "Introduce un correo válido";
+    if (!phone.trim() || phone.trim().length < 6)
+      errs.phone = "Introduce un teléfono válido para el envío";
+    if (!address.trim())
+      errs.address = "Introduce tu calle, número y piso/apto";
     if (!city.trim()) errs.city = "Introduce tu ciudad";
 
     setErrors(errs);
@@ -134,23 +138,29 @@ export function CheckoutShippingModal({
             Datos de Entrega y Contacto 📦
           </h2>
           <p className="text-xs text-rose-100 font-medium mt-1">
-            Completa tus datos para enviarte tu pedido con empaque exclusivo Isafer Luxe.
+            Completa tus datos para enviarte tu pedido con empaque exclusivo
+            Isafer Luxe.
           </p>
         </div>
 
         {/* Formulario con Scroll Interno Suave */}
-        <form onSubmit={handleStripeSubmit} className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar">
-          
+        <form
+          onSubmit={handleStripeSubmit}
+          className="p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar"
+        >
           {/* Bloque 1: Contacto Personal */}
           <div className="space-y-3">
             <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-              <User className="size-3.5 text-rose-500" /> 1. Datos Personales & Contacto
+              <User className="size-3.5 text-rose-500" /> 1. Datos Personales &
+              Contacto
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Nombre Completo */}
               <div>
-                <label className="text-[11px] font-bold text-zinc-700 block mb-1">Nombre y Apellidos *</label>
+                <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                  Nombre y Apellidos *
+                </label>
                 <div className="relative">
                   <User className="size-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -159,16 +169,24 @@ export function CheckoutShippingModal({
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className={`w-full pl-10 pr-3 py-2.5 rounded-xl border ${
-                      errors.fullName ? "border-red-500 bg-red-50/30" : "border-zinc-200 bg-zinc-50/50"
+                      errors.fullName
+                        ? "border-red-500 bg-red-50/30"
+                        : "border-zinc-200 bg-zinc-50/50"
                     } text-xs font-semibold text-zinc-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all`}
                   />
                 </div>
-                {errors.fullName && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.fullName}</p>}
+                {errors.fullName && (
+                  <p className="text-[10px] font-bold text-red-500 mt-1">
+                    {errors.fullName}
+                  </p>
+                )}
               </div>
 
               {/* Email */}
               <div>
-                <label className="text-[11px] font-bold text-zinc-700 block mb-1">Correo Electrónico *</label>
+                <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                  Correo Electrónico *
+                </label>
                 <div className="relative">
                   <Mail className="size-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -177,11 +195,17 @@ export function CheckoutShippingModal({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={`w-full pl-10 pr-3 py-2.5 rounded-xl border ${
-                      errors.email ? "border-red-500 bg-red-50/30" : "border-zinc-200 bg-zinc-50/50"
+                      errors.email
+                        ? "border-red-500 bg-red-50/30"
+                        : "border-zinc-200 bg-zinc-50/50"
                     } text-xs font-semibold text-zinc-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all`}
                   />
                 </div>
-                {errors.email && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-[10px] font-bold text-red-500 mt-1">
+                    {errors.email}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -198,54 +222,79 @@ export function CheckoutShippingModal({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className={`w-full pl-10 pr-3 py-2.5 rounded-xl border ${
-                    errors.phone ? "border-red-500 bg-red-50/30" : "border-zinc-200 bg-zinc-50/50"
+                    errors.phone
+                      ? "border-red-500 bg-red-50/30"
+                      : "border-zinc-200 bg-zinc-50/50"
                   } text-xs font-semibold text-zinc-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all`}
                 />
               </div>
-              {errors.phone && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-[10px] font-bold text-red-500 mt-1">
+                  {errors.phone}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Bloque 2: Dirección de Envío */}
           <div className="space-y-3 pt-2 border-t border-zinc-100">
             <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-              <MapPin className="size-3.5 text-rose-500" /> 2. Dirección de Envío
+              <MapPin className="size-3.5 text-rose-500" /> 2. Dirección de
+              Envío
             </h3>
 
             {/* Calle y Número */}
             <div>
-              <label className="text-[11px] font-bold text-zinc-700 block mb-1">Calle, Número, Piso / Apt *</label>
+              <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                Calle, Número, Piso / Apt *
+              </label>
               <input
                 type="text"
                 placeholder="Ej: 5th Avenue 123, Apt 4B"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className={`w-full px-3.5 py-2.5 rounded-xl border ${
-                  errors.address ? "border-red-500 bg-red-50/30" : "border-zinc-200 bg-zinc-50/50"
+                  errors.address
+                    ? "border-red-500 bg-red-50/30"
+                    : "border-zinc-200 bg-zinc-50/50"
                 } text-xs font-semibold text-zinc-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all`}
               />
-              {errors.address && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.address}</p>}
+              {errors.address && (
+                <p className="text-[10px] font-bold text-red-500 mt-1">
+                  {errors.address}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Ciudad */}
               <div>
-                <label className="text-[11px] font-bold text-zinc-700 block mb-1">Ciudad *</label>
+                <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                  Ciudad *
+                </label>
                 <input
                   type="text"
                   placeholder="Ej: Brooklyn / Madrid"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl border ${
-                    errors.city ? "border-red-500 bg-red-50/30" : "border-zinc-200 bg-zinc-50/50"
+                    errors.city
+                      ? "border-red-500 bg-red-50/30"
+                      : "border-zinc-200 bg-zinc-50/50"
                   } text-xs font-semibold text-zinc-900 focus:outline-none focus:border-rose-500 focus:bg-white transition-all`}
                 />
-                {errors.city && <p className="text-[10px] font-bold text-red-500 mt-1">{errors.city}</p>}
+                {errors.city && (
+                  <p className="text-[10px] font-bold text-red-500 mt-1">
+                    {errors.city}
+                  </p>
+                )}
               </div>
 
               {/* Código Postal */}
               <div>
-                <label className="text-[11px] font-bold text-zinc-700 block mb-1">Código Postal</label>
+                <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                  Código Postal
+                </label>
                 <input
                   type="text"
                   placeholder="Ej: 11201"
@@ -257,7 +306,9 @@ export function CheckoutShippingModal({
 
               {/* Estado / Provincia */}
               <div>
-                <label className="text-[11px] font-bold text-zinc-700 block mb-1">Estado / Provincia / País</label>
+                <label className="text-[11px] font-bold text-zinc-700 block mb-1">
+                  Estado / Provincia / País
+                </label>
                 <input
                   type="text"
                   placeholder="Ej: New York, USA"
@@ -291,7 +342,9 @@ export function CheckoutShippingModal({
               className="w-full h-13 rounded-2xl bg-[#ff007f] hover:bg-rose-600 text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-lg shadow-rose-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <CreditCard className="size-4.5" />
-              {isCheckingOut ? "Procesando..." : `Pagar $${totalAmount.toFixed(2)} USD con Stripe 💳`}
+              {isCheckingOut
+                ? "Procesando..."
+                : `Pagar $${totalAmount.toFixed(2)} USD con Stripe 💳`}
             </Button>
 
             <Button
@@ -308,7 +361,6 @@ export function CheckoutShippingModal({
               🔒 Tus datos se procesan con cifrado SSL de 256 bits
             </p>
           </div>
-
         </form>
       </DialogContent>
     </Dialog>

@@ -16,7 +16,7 @@ export interface Translations {
   nav_cart: string;
   nav_admin: string;
   nav_categories: string;
-  
+
   // Hero Section
   hero_badge: string;
   hero_title_1: string;
@@ -155,10 +155,10 @@ export interface Translations {
   footer_terms: string;
   footer_cookies: string;
   footer_credits: string;
-  
+
   // Legal Dialogs Content
   legal_close_btn: string;
-  
+
   legal_privacy_intro: string;
   legal_privacy_sec1_title: string;
   legal_privacy_sec1_text: string;
@@ -188,7 +188,8 @@ const translations: Record<Language, Translations> = {
   en: {
     // Navigation & Header
     nav_tagline: "Brooklyn Luxury Boutique",
-    nav_shipping_banner: "✨ Free Express Shipping on orders over $99 across USA | Isafer Luxe Collection ✨",
+    nav_shipping_banner:
+      "✨ Free Express Shipping on orders over $99 across USA | Isafer Luxe Collection ✨",
     nav_home: "Home",
     nav_catalog: "Catalog",
     nav_pepper_spray: "Self-Defense",
@@ -204,7 +205,8 @@ const translations: Record<Language, Translations> = {
     hero_badge: "NEW BARBIE LUXE COLLECTION 👑",
     hero_title_1: "Sexy, Elegant &",
     hero_title_2: "Sculpting Power",
-    hero_subtitle: "Enhance your natural curves with premium shapewear and glamorous dresses. Designed in Brooklyn, NY for the empowered woman.",
+    hero_subtitle:
+      "Enhance your natural curves with premium shapewear and glamorous dresses. Designed in Brooklyn, NY for the empowered woman.",
     hero_cta_primary: "Explore Collection",
     hero_cta_secondary: "View Self-Defense Spray",
     hero_stat_1_num: "100%",
@@ -217,19 +219,24 @@ const translations: Record<Language, Translations> = {
     // Pepper Spray / Protection Banner
     spray_badge: "ISAFER DEFENSE LINE 💖",
     spray_title: "Chic Protection. Maximum Safety.",
-    spray_subtitle: "Your safety should never compromise your elegance. Sleek, powerful, and stylish pepper sprays created to give you total confidence wherever you go.",
+    spray_subtitle:
+      "Your safety should never compromise your elegance. Sleek, powerful, and stylish pepper sprays created to give you total confidence wherever you go.",
     spray_feature_1_title: "Maximum Strength Gel",
-    spray_feature_1_desc: "Police-grade OC pepper gel with UV dye for instant intruder identification.",
+    spray_feature_1_desc:
+      "Police-grade OC pepper gel with UV dye for instant intruder identification.",
     spray_feature_2_title: "Ergonomic & Discreet",
-    spray_feature_2_desc: "Fits perfectly in your purse, handbag, or pocket with quick-release safety lock.",
+    spray_feature_2_desc:
+      "Fits perfectly in your purse, handbag, or pocket with quick-release safety lock.",
     spray_feature_3_title: "Luxe Metallic Finish",
-    spray_feature_3_desc: "Available in signature Barbie Hot Pink and Rose Gold metallic accents.",
+    spray_feature_3_desc:
+      "Available in signature Barbie Hot Pink and Rose Gold metallic accents.",
     spray_cta: "Get Yours Now - $24.99",
 
     // Catalog Section
     catalog_badge: "EXCLUSIVES 2026",
     catalog_title: "Featured Collection",
-    catalog_subtitle: "Curated pieces engineered to embrace your confidence and silhouette.",
+    catalog_subtitle:
+      "Curated pieces engineered to embrace your confidence and silhouette.",
     catalog_filter_all: "Explore All Drops",
     catalog_filter_shapewear: "Shapewear & Contouring",
     catalog_filter_dresses: "Glam & Evening Dresses",
@@ -244,18 +251,21 @@ const translations: Record<Language, Translations> = {
 
     // Benefits / Values
     value_1_title: "Express US Shipping Only",
-    value_1_desc: "Fast delivery across all US states directly from our Brooklyn hub.",
+    value_1_desc:
+      "Fast delivery across all US states directly from our Brooklyn hub.",
     value_2_title: "Discreet Packaging",
     value_2_desc: "Your order arrives in elegant, confidential packaging.",
     value_3_title: "Premium Materials",
-    value_3_desc: "Ultra-breathable contour fabrics with medical-grade support.",
+    value_3_desc:
+      "Ultra-breathable contour fabrics with medical-grade support.",
     value_4_title: "Easy 30-Day Returns",
     value_4_desc: "Satisfaction guaranteed on all unworn boutique apparel.",
 
     // Cart Drawer & Modals
     cart_title: "Your Shopping Bag",
     cart_empty: "Your bag is currently empty",
-    cart_empty_sub: "Discover our sculpt collection or chic defense sprays to get started.",
+    cart_empty_sub:
+      "Discover our sculpt collection or chic defense sprays to get started.",
     cart_subtotal: "Subtotal",
     cart_shipping: "Shipping",
     cart_shipping_free: "FREE (Orders over $99)",
@@ -288,7 +298,8 @@ const translations: Record<Language, Translations> = {
 
     // Favorites Modal & Drawer
     fav_modal_title: "Added to My Wishlist",
-    fav_modal_desc: "We saved your outfit to a temporary wishlist. Sign in or create an account to store your favorites permanently!",
+    fav_modal_desc:
+      "We saved your outfit to a temporary wishlist. Sign in or create an account to store your favorites permanently!",
     fav_modal_login_btn: "Sign In or Register",
     fav_modal_guest_btn: "Continue as Guest",
     fav_drawer_title: "My Favorites Wishlist",
@@ -296,7 +307,8 @@ const translations: Record<Language, Translations> = {
     fav_drawer_empty_sub: "Tap the heart icon on any outfit to save it here.",
 
     // Cookies & Geo Banners
-    cookies_text: "We use cookies to analyze traffic, personalize your shopping experience, and deliver relevant promotions. You can accept, decline, or manage your preferences.",
+    cookies_text:
+      "We use cookies to analyze traffic, personalize your shopping experience, and deliver relevant promotions. You can accept, decline, or manage your preferences.",
     cookies_policy_link: "Cookie Policy",
     cookies_settings_btn: "Cookie Settings",
     cookies_reject_btn: "Decline Cookies",
@@ -305,8 +317,10 @@ const translations: Record<Language, Translations> = {
     geo_title_en: "USA Domestic Shipping Only 🇺🇸",
     geo_change_loc_es: "Language Preferences",
     geo_change_loc_en: "Language Preferences",
-    geo_desc_es: "We ship exclusively within the USA. Would you like to switch to Spanish?",
-    geo_desc_en: "We ship exclusively within the USA. Would you like to switch to English?",
+    geo_desc_es:
+      "We ship exclusively within the USA. Would you like to switch to Spanish?",
+    geo_desc_en:
+      "We ship exclusively within the USA. Would you like to switch to English?",
     geo_no: "No",
     geo_yes_es: "Yes, Switch to Spanish 🇪🇸",
     geo_yes_en: "Yes, Switch to English 🇺🇸",
@@ -316,7 +330,8 @@ const translations: Record<Language, Translations> = {
     auth_subtitle: "Track your orders or log into the boutique admin portal.",
     auth_tab_client: "Customers (Google)",
     auth_tab_admin: "Boutique Owner",
-    auth_client_desc: "Quickly sign in with Google to check order history and shipping updates.",
+    auth_client_desc:
+      "Quickly sign in with Google to check order history and shipping updates.",
     auth_google_btn: "Sign in with Google",
     auth_admin_desc: "Boutique Owner Credentials:",
     auth_admin_user_label: "Admin Email or Username",
@@ -325,7 +340,8 @@ const translations: Record<Language, Translations> = {
 
     // Newsletter & Fullscreen Menu
     newsletter_title: "JOIN THE BARBIE LUXE CLUB 💖",
-    newsletter_subtitle: "Get 10% OFF on your first order & secret drop alerts.",
+    newsletter_subtitle:
+      "Get 10% OFF on your first order & secret drop alerts.",
     newsletter_placeholder: "Enter your email address...",
     newsletter_btn: "Join VIP Club",
     footer_payments_title: "100% Guaranteed Safe Checkout",
@@ -341,35 +357,48 @@ const translations: Record<Language, Translations> = {
 
     // Legal Dialogs Content
     legal_close_btn: "Close",
-    
-    legal_privacy_intro: "At Isafer Boutique, we value and respect your privacy. This policy describes how we collect, use, and protect your personal information.",
+
+    legal_privacy_intro:
+      "At Isafer Boutique, we value and respect your privacy. This policy describes how we collect, use, and protect your personal information.",
     legal_privacy_sec1_title: "1. Data Collection",
-    legal_privacy_sec1_text: "We collect information you provide when placing an order, registering, or subscribing, including your name, email, shipping address, and payment info.",
+    legal_privacy_sec1_text:
+      "We collect information you provide when placing an order, registering, or subscribing, including your name, email, shipping address, and payment info.",
     legal_privacy_sec2_title: "2. Security & Payments",
-    legal_privacy_sec2_text: "All payment transactions are securely processed through Stripe Checkout with 256-bit SSL encryption. We do not store credit card details on our servers.",
+    legal_privacy_sec2_text:
+      "All payment transactions are securely processed through Stripe Checkout with 256-bit SSL encryption. We do not store credit card details on our servers.",
     legal_privacy_sec3_title: "3. Information Sharing",
-    legal_privacy_sec3_text: "We never sell or rent your personal information to third parties. Your data is used exclusively to fulfill orders and improve our store experience.",
+    legal_privacy_sec3_text:
+      "We never sell or rent your personal information to third parties. Your data is used exclusively to fulfill orders and improve our store experience.",
 
-    legal_terms_intro: "Welcome to Isafer Boutique. By using our website and purchasing our products, you agree to comply with and be bound by the following terms of service.",
+    legal_terms_intro:
+      "Welcome to Isafer Boutique. By using our website and purchasing our products, you agree to comply with and be bound by the following terms of service.",
     legal_terms_sec1_title: "1. Order Processing",
-    legal_terms_sec1_text: "All orders are subject to availability and acceptance. We reserve the right to cancel or limit order quantities at our discretion.",
+    legal_terms_sec1_text:
+      "All orders are subject to availability and acceptance. We reserve the right to cancel or limit order quantities at our discretion.",
     legal_terms_sec2_title: "2. Shipping & Delivery",
-    legal_terms_sec2_text: "Shipping times are estimates. We ship exclusively within the United States. While we aim for prompt delivery, we are not responsible for delays caused by shipping carriers.",
+    legal_terms_sec2_text:
+      "Shipping times are estimates. We ship exclusively within the United States. While we aim for prompt delivery, we are not responsible for delays caused by shipping carriers.",
     legal_terms_sec3_title: "3. Returns & Exchanges",
-    legal_terms_sec3_text: "Due to the intimate nature of shapewear, returns are accepted only for unused, unopened items in original packaging within 14 days of delivery.",
+    legal_terms_sec3_text:
+      "Due to the intimate nature of shapewear, returns are accepted only for unused, unopened items in original packaging within 14 days of delivery.",
 
-    legal_cookies_intro: "Isafer Boutique uses cookies and tracking technologies to optimize your browsing and shopping experience on our online boutique.",
+    legal_cookies_intro:
+      "Isafer Boutique uses cookies and tracking technologies to optimize your browsing and shopping experience on our online boutique.",
     legal_cookies_sec1_title: "1. What are Cookies?",
-    legal_cookies_sec1_text: "Cookies are small text files stored on your device that help us remember your preferences, cart items, and analyze site traffic.",
+    legal_cookies_sec1_text:
+      "Cookies are small text files stored on your device that help us remember your preferences, cart items, and analyze site traffic.",
     legal_cookies_sec2_title: "2. How We Use Them",
-    legal_cookies_sec2_text: "We use essential cookies for basic store functionality (like maintaining your shopping cart), and analytical cookies to measure site performance.",
+    legal_cookies_sec2_text:
+      "We use essential cookies for basic store functionality (like maintaining your shopping cart), and analytical cookies to measure site performance.",
     legal_cookies_sec3_title: "3. Managing Your Choices",
-    legal_cookies_sec3_text: "You can choose to decline cookies using our cookies banner or disable them in your browser settings. However, some features of the shop may not function properly.",
+    legal_cookies_sec3_text:
+      "You can choose to decline cookies using our cookies banner or disable them in your browser settings. However, some features of the shop may not function properly.",
   },
   es: {
     // Navigation & Header
     nav_tagline: "Boutique de Lujo en Brooklyn",
-    nav_shipping_banner: "✨ Envío Express gratis en pedidos superiores a $99 en todo EE. UU. | Colección Isafer Luxe ✨",
+    nav_shipping_banner:
+      "✨ Envío Express gratis en pedidos superiores a $99 en todo EE. UU. | Colección Isafer Luxe ✨",
     nav_home: "Inicio",
     nav_catalog: "Catálogo",
     nav_pepper_spray: "Autodefensa",
@@ -385,7 +414,8 @@ const translations: Record<Language, Translations> = {
     hero_badge: "NUEVA COLECCIÓN BARBIE LUXE 👑",
     hero_title_1: "Sensual, Elegante y",
     hero_title_2: "Efecto Moldeador",
-    hero_subtitle: "Realza tus curvas naturales con fajas de moldeado superior y vestidos glamurosos. Diseñado en Brooklyn, NY.",
+    hero_subtitle:
+      "Realza tus curvas naturales con fajas de moldeado superior y vestidos glamurosos. Diseñado en Brooklyn, NY.",
     hero_cta_primary: "Explorar Colección",
     hero_cta_secondary: "Ver Spray de Seguridad",
     hero_stat_1_num: "100%",
@@ -398,19 +428,24 @@ const translations: Record<Language, Translations> = {
     // Pepper Spray / Protection Banner
     spray_badge: "LÍNEA DE DEFENSA ISAFER 💖",
     spray_title: "Protección Chic. Máxima Seguridad.",
-    spray_subtitle: "Tu seguridad no compromete tu elegancia. Aerosoles de pimienta potentes, sofisticados y portátiles para tu tranquilidad constante.",
+    spray_subtitle:
+      "Tu seguridad no compromete tu elegancia. Aerosoles de pimienta potentes, sofisticados y portátiles para tu tranquilidad constante.",
     spray_feature_1_title: "Gel de Máxima Potencia",
-    spray_feature_1_desc: "Fórmula de gas pimienta OC de grado policial con tinte UV para identificación inmediata.",
+    spray_feature_1_desc:
+      "Fórmula de gas pimienta OC de grado policial con tinte UV para identificación inmediata.",
     spray_feature_2_title: "Ergonómico y Discreto",
-    spray_feature_2_desc: "Tamaño perfecto para tu bolso o bolsillo con bloqueo de seguridad de disparo rápido.",
+    spray_feature_2_desc:
+      "Tamaño perfecto para tu bolso o bolsillo con bloqueo de seguridad de disparo rápido.",
     spray_feature_3_title: "Acabado Metálico Luxe",
-    spray_feature_3_desc: "Disponible en tono rosa Barbie exclusivo y acabados en oro rosa.",
+    spray_feature_3_desc:
+      "Disponible en tono rosa Barbie exclusivo y acabados en oro rosa.",
     spray_cta: "Consigue el tuyo - $24.99",
 
     // Catalog Section
     catalog_badge: "EXCLUSIVOS 2026",
     catalog_title: "Colección Destacada",
-    catalog_subtitle: "Prendas seleccionadas y diseñadas para empoderar tu silueta con elegancia.",
+    catalog_subtitle:
+      "Prendas seleccionadas y diseñadas para empoderar tu silueta con elegancia.",
     catalog_filter_all: "Ver Todo el Catálogo",
     catalog_filter_shapewear: "Fajas & Moldes Reductores",
     catalog_filter_dresses: "Vestidos de Gala & Noche",
@@ -425,18 +460,22 @@ const translations: Record<Language, Translations> = {
 
     // Benefits / Values
     value_1_title: "Envíos Exclusivos en EE. UU.",
-    value_1_desc: "Envíos directos a todos los estados de EE. UU. desde nuestra sede en Brooklyn.",
+    value_1_desc:
+      "Envíos directos a todos los estados de EE. UU. desde nuestra sede en Brooklyn.",
     value_2_title: "Empaque Discreto",
-    value_2_desc: "Recibe tu compra en cajas y empaques elegantes y confidenciales.",
+    value_2_desc:
+      "Recibe tu compra en cajas y empaques elegantes y confidenciales.",
     value_3_title: "Materiales Premium",
-    value_3_desc: "Telas moldeadoras transpirables de soporte médico y alta durabilidad.",
+    value_3_desc:
+      "Telas moldeadoras transpirables de soporte médico y alta durabilidad.",
     value_4_title: "Devoluciones de 30 Días",
     value_4_desc: "Garantía de satisfacción en prendas sin uso.",
 
     // Cart Drawer & Modals
     cart_title: "Tu Bolsa de Compras",
     cart_empty: "Tu bolsa está vacía",
-    cart_empty_sub: "Descubre nuestra colección moldeadora o los sprays de seguridad para empezar.",
+    cart_empty_sub:
+      "Descubre nuestra colección moldeadora o los sprays de seguridad para empezar.",
     cart_subtotal: "Subtotal",
     cart_shipping: "Envío",
     cart_shipping_free: "GRATIS (Pedidos > $99)",
@@ -469,15 +508,18 @@ const translations: Record<Language, Translations> = {
 
     // Favorites Modal & Drawer
     fav_modal_title: "Añadido a la lista de Mis Favoritos",
-    fav_modal_desc: "Hemos añadido tu prenda a una lista temporal. Inicia sesión en tu cuenta o regístrate para que podamos almacenar tus favoritos por más tiempo.",
+    fav_modal_desc:
+      "Hemos añadido tu prenda a una lista temporal. Inicia sesión en tu cuenta o regístrate para que podamos almacenar tus favoritos por más tiempo.",
     fav_modal_login_btn: "Acceder o crear cuenta nueva",
     fav_modal_guest_btn: "Continuar como invitado",
     fav_drawer_title: "Mi Lista de Favoritos",
     fav_drawer_empty: "Aún no tienes favoritos guardados",
-    fav_drawer_empty_sub: "Pulsa el icono de corazón en cualquier prenda para guardarla aquí.",
+    fav_drawer_empty_sub:
+      "Pulsa el icono de corazón en cualquier prenda para guardarla aquí.",
 
     // Cookies & Geo Banners
-    cookies_text: "Utilizamos cookies propias y de terceros para conocer los usos de nuestra tienda online y poder mejorarla, adaptar el contenido a tus gustos y personalizar nuestros anuncios, marketing y publicaciones en redes sociales. Puedes aceptarlas todas, rechazarlas o elegir tu configuración pulsando los botones correspondientes.",
+    cookies_text:
+      "Utilizamos cookies propias y de terceros para conocer los usos de nuestra tienda online y poder mejorarla, adaptar el contenido a tus gustos y personalizar nuestros anuncios, marketing y publicaciones en redes sociales. Puedes aceptarlas todas, rechazarlas o elegir tu configuración pulsando los botones correspondientes.",
     cookies_policy_link: "Política de Cookies",
     cookies_settings_btn: "Configuración de Cookies",
     cookies_reject_btn: "Rechazar Cookies",
@@ -486,18 +528,22 @@ const translations: Record<Language, Translations> = {
     geo_title_en: "USA Domestic Shipping Only 🇺🇸",
     geo_change_loc_es: "Preferencias de Idioma",
     geo_change_loc_en: "Language Preferences",
-    geo_desc_es: "Realizamos envíos exclusivamente dentro de EE. UU. ¿Deseas cambiar el idioma a Español?",
-    geo_desc_en: "We ship exclusively within the USA. Would you like to switch to English?",
+    geo_desc_es:
+      "Realizamos envíos exclusivamente dentro de EE. UU. ¿Deseas cambiar el idioma a Español?",
+    geo_desc_en:
+      "We ship exclusively within the USA. Would you like to switch to English?",
     geo_no: "No",
     geo_yes_es: "Sí, cambiar a Español 🇪🇸",
     geo_yes_en: "Yes, switch to English 🇺🇸",
 
     // Auth Dialog
     auth_title: "Mi Cuenta · Isafer Boutique",
-    auth_subtitle: "Accede a tu historial de pedidos o entra al panel de administración de la tienda.",
+    auth_subtitle:
+      "Accede a tu historial de pedidos o entra al panel de administración de la tienda.",
     auth_tab_client: "Clientas (Google)",
     auth_tab_admin: "Dueña / Admin",
-    auth_client_desc: "Inicia sesión rápidamente con tu cuenta de Google para consultar el estado de tus compras y pedidos realizados.",
+    auth_client_desc:
+      "Inicia sesión rápidamente con tu cuenta de Google para consultar el estado de tus compras y pedidos realizados.",
     auth_google_btn: "Iniciar sesión con Google",
     auth_admin_desc: "Credenciales de Acceso Dueña:",
     auth_admin_user_label: "Usuario o Email de Administración",
@@ -506,7 +552,8 @@ const translations: Record<Language, Translations> = {
 
     // Newsletter & Fullscreen Menu
     newsletter_title: "ÚNETE AL CLUB BARBIE LUXE 💖",
-    newsletter_subtitle: "Consigue 10% OFF en tu primer pedido y avisos VIP de lanzamientos secretos.",
+    newsletter_subtitle:
+      "Consigue 10% OFF en tu primer pedido y avisos VIP de lanzamientos secretos.",
     newsletter_placeholder: "Escribe tu correo electrónico...",
     newsletter_btn: "Unirme VIP",
     footer_payments_title: "Pagos 100% Seguros Garantizados",
@@ -522,30 +569,42 @@ const translations: Record<Language, Translations> = {
 
     // Legal Dialogs Content
     legal_close_btn: "Cerrar",
-    
-    legal_privacy_intro: "En Isafer Boutique, valoramos y respetamos tu privacidad. Esta política describe cómo recopilamos, utilizamos y protegemos tu información personal.",
+
+    legal_privacy_intro:
+      "En Isafer Boutique, valoramos y respetamos tu privacidad. Esta política describe cómo recopilamos, utilizamos y protegemos tu información personal.",
     legal_privacy_sec1_title: "1. Recopilación de Datos",
-    legal_privacy_sec1_text: "Recopilamos la información que nos proporcionas al realizar un pedido, registrarte o suscribirte, incluyendo tu nombre, correo electrónico, dirección de envío y datos de pago.",
+    legal_privacy_sec1_text:
+      "Recopilamos la información que nos proporcionas al realizar un pedido, registrarte o suscribirte, incluyendo tu nombre, correo electrónico, dirección de envío y datos de pago.",
     legal_privacy_sec2_title: "2. Seguridad y Pagos",
-    legal_privacy_sec2_text: "Todas las transacciones de pago se procesan de forma segura a través de Stripe Checkout con cifrado SSL de 256 bits. No almacenamos datos de tarjetas en nuestros servidores.",
+    legal_privacy_sec2_text:
+      "Todas las transacciones de pago se procesan de forma segura a través de Stripe Checkout con cifrado SSL de 256 bits. No almacenamos datos de tarjetas en nuestros servidores.",
     legal_privacy_sec3_title: "3. Compartir Información",
-    legal_privacy_sec3_text: "Nunca vendemos ni alquilamos tu información personal a terceros. Tus datos se utilizan exclusivamente para procesar pedidos y mejorar tu experiencia en nuestra tienda.",
+    legal_privacy_sec3_text:
+      "Nunca vendemos ni alquilamos tu información personal a terceros. Tus datos se utilizan exclusivamente para procesar pedidos y mejorar tu experiencia en nuestra tienda.",
 
-    legal_terms_intro: "Bienvenido a Isafer Boutique. Al utilizar nuestro sitio web y comprar nuestros productos, aceptas cumplir y estar sujeto a los siguientes términos de servicio.",
+    legal_terms_intro:
+      "Bienvenido a Isafer Boutique. Al utilizar nuestro sitio web y comprar nuestros productos, aceptas cumplir y estar sujeto a los siguientes términos de servicio.",
     legal_terms_sec1_title: "1. Procesamiento de Pedidos",
-    legal_terms_sec1_text: "Todos los pedidos están sujetos a disponibilidad y aceptación. Nos reservamos el derecho de cancelar o limitar las cantidades de los pedidos a nuestra discreción.",
+    legal_terms_sec1_text:
+      "Todos los pedidos están sujetos a disponibilidad y aceptación. Nos reservamos el derecho de cancelar o limitar las cantidades de los pedidos a nuestra discreción.",
     legal_terms_sec2_title: "2. Envíos y Entregas",
-    legal_terms_sec2_text: "Los plazos de envío son estimados. Realizamos envíos exclusivamente dentro de Estados Unidos. Aunque nuestro objetivo es realizar entregas rápidas, no nos hacemos responsables de los retrasos causados por las empresas de transporte.",
+    legal_terms_sec2_text:
+      "Los plazos de envío son estimados. Realizamos envíos exclusivamente dentro de Estados Unidos. Aunque nuestro objetivo es realizar entregas rápidas, no nos hacemos responsables de los retrasos causados por las empresas de transporte.",
     legal_terms_sec3_title: "3. Devoluciones y Cambios",
-    legal_terms_sec3_text: "Debido a la naturaleza íntima de las fajas, solo se aceptan devoluciones de artículos sin usar y sin abrir en su embalaje original dentro de los 14 días posteriores a la entrega.",
+    legal_terms_sec3_text:
+      "Debido a la naturaleza íntima de las fajas, solo se aceptan devoluciones de artículos sin usar y sin abrir en su embalaje original dentro de los 14 días posteriores a la entrega.",
 
-    legal_cookies_intro: "Isafer Boutique utiliza cookies y tecnologías de seguimiento para optimizar tu experiencia de navegación y compra en nuestra tienda online.",
+    legal_cookies_intro:
+      "Isafer Boutique utiliza cookies y tecnologías de seguimiento para optimizar tu experiencia de navegación y compra en nuestra tienda online.",
     legal_cookies_sec1_title: "1. ¿Qué son las Cookies?",
-    legal_cookies_sec1_text: "Las cookies son pequeños archivos de texto almacenados en tu dispositivo que nos ayudan a recordar tus preferencias, artículos de la bolsa y analizar el tráfico web.",
+    legal_cookies_sec1_text:
+      "Las cookies son pequeños archivos de texto almacenados en tu dispositivo que nos ayudan a recordar tus preferencias, artículos de la bolsa y analizar el tráfico web.",
     legal_cookies_sec2_title: "2. Cómo las Utilizamos",
-    legal_cookies_sec2_text: "Utilizamos cookies esenciales para el funcionamiento básico de la tienda (como mantener tu bolsa de compra) y cookies analíticas para medir el rendimiento de la web.",
+    legal_cookies_sec2_text:
+      "Utilizamos cookies esenciales para el funcionamiento básico de la tienda (como mantener tu bolsa de compra) y cookies analíticas para medir el rendimiento de la web.",
     legal_cookies_sec3_title: "3. Gestión de tus Preferencias",
-    legal_cookies_sec3_text: "Puedes optar por rechazar las cookies utilizando nuestro banner de cookies o desactivarlas en la configuración de tu navegador. Sin embargo, algunas funciones podrían no ir bien.",
+    legal_cookies_sec3_text:
+      "Puedes optar por rechazar las cookies utilizando nuestro banner de cookies o desactivarlas en la configuración de tu navegador. Sin embargo, algunas funciones podrían no ir bien.",
   },
 };
 
@@ -555,16 +614,19 @@ interface LanguageContextType {
   t: (key: keyof Translations) => string;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("isafer_lang") as Language;
       if (saved === "en" || saved === "es") return saved;
     }
-    // Default to 'en' (USA English) as explicitly requested by user
-    return "en";
+    return "es";
   });
 
   const setLanguage = (lang: Language) => {
@@ -582,7 +644,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [language]);
 
   const t = (key: keyof Translations): string => {
-    return translations[language]?.[key] || translations.en[key] || key;
+    return (
+      translations[language]?.[key] ||
+      translations.es[key] ||
+      translations.en[key] ||
+      key
+    );
   };
 
   return (
@@ -599,4 +666,3 @@ export const useTranslation = () => {
   }
   return context;
 };
-

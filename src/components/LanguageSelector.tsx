@@ -6,7 +6,7 @@ export const LanguageSelector: React.FC = () => {
   const { language, setLanguage, t } = useTranslation();
 
   return (
-    <div 
+    <div
       className="inline-flex items-center gap-1.5 p-1 rounded-full bg-white border border-rose-200/80 shadow-sm transition-all hover:border-rose-300"
       title={t("lang_switch_tooltip")}
     >

@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Heart, ShoppingBag, Plus, Minus, Truck, ShieldCheck, RefreshCw, Sparkles, X, Ruler } from "lucide-react";
+import {
+  Heart,
+  ShoppingBag,
+  Plus,
+  Minus,
+  Truck,
+  ShieldCheck,
+  RefreshCw,
+  Sparkles,
+  X,
+  Ruler,
+} from "lucide-react";
 import productsImage from "@/assets/rosse-products.jpg";
 
 export interface ProductItem {
@@ -21,7 +37,11 @@ interface ProductDetailModalProps {
   product: ProductItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart: (productId: string | number, size: string, quantity: number) => void;
+  onAddToCart: (
+    productId: string | number,
+    size: string,
+    quantity: number,
+  ) => void;
   favorites: Record<string | number, boolean>;
   toggleFavorite: (id: string | number) => void;
 }
@@ -42,11 +62,15 @@ export function ProductDetailModal({
   const availableSizes = React.useMemo(() => {
     if (!product) return ["XS", "S", "M", "L", "XL"];
     if (product.sizes && product.sizes.length > 0) return product.sizes;
-    
+
     const catLower = (product.category || "").toLowerCase();
     const nameLower = (product.name || "").toLowerCase();
 
-    if (catLower.includes("accesorios") || catLower.includes("bolso") || nameLower.includes("cinturón")) {
+    if (
+      catLower.includes("accesorios") ||
+      catLower.includes("bolso") ||
+      nameLower.includes("cinturón")
+    ) {
       return ["Talla Única"];
     }
     return ["XS", "S", "M", "L", "XL"];
@@ -74,7 +98,9 @@ export function ProductDetailModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[95%] sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden rounded-3xl border border-rose-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-2xl transition-all duration-300 max-h-[90dvh] flex flex-col">
         <DialogTitle className="sr-only">{product.name}</DialogTitle>
-        <DialogDescription className="sr-only">{product.description}</DialogDescription>
+        <DialogDescription className="sr-only">
+          {product.description}
+        </DialogDescription>
 
         <div className="relative grid grid-cols-1 md:grid-cols-12 flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
           {/* Botón de Cierre Flotante Personalizado */}
@@ -118,7 +144,9 @@ export function ProductDetailModal({
             >
               <Heart
                 className={`size-5 transition-all ${
-                  isFavorite ? "fill-rose-500 text-rose-500 scale-110 animate-pulse" : "text-zinc-700 dark:text-zinc-300"
+                  isFavorite
+                    ? "fill-rose-500 text-rose-500 scale-110 animate-pulse"
+                    : "text-zinc-700 dark:text-zinc-300"
                 }`}
               />
             </button>
@@ -145,7 +173,8 @@ export function ProductDetailModal({
               </div>
 
               <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
-                {product.description || "Prenda moldeadora de alta tecnología confeccionada con textil inteligente ultra suave y elástico. Diseñada para esculpir y realzar tu figura con comodidad total."}
+                {product.description ||
+                  "Prenda moldeadora de alta tecnología confeccionada con textil inteligente ultra suave y elástico. Diseñada para esculpir y realzar tu figura con comodidad total."}
               </p>
             </div>
 
@@ -189,13 +218,25 @@ export function ProductDetailModal({
               {/* Popover / Mensaje desplegable de Guía de Tallas */}
               {showSizeGuide && (
                 <div className="mt-2 p-3 rounded-xl bg-rose-50/70 dark:bg-rose-950/40 border border-rose-100 text-[11px] text-zinc-700 dark:text-zinc-300 animate-in fade-in-50 duration-200">
-                  <p className="font-bold text-rose-700 dark:text-rose-400 mb-1">Guía orientativa de tallas Isafer:</p>
+                  <p className="font-bold text-rose-700 dark:text-rose-400 mb-1">
+                    Guía orientativa de tallas Isafer:
+                  </p>
                   <ul className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
-                    <li><b>XS:</b> 32-34 (Busto 80-84cm)</li>
-                    <li><b>S:</b> 36 (Busto 85-89cm)</li>
-                    <li><b>M:</b> 38 (Busto 90-94cm)</li>
-                    <li><b>L:</b> 40-42 (Busto 95-100cm)</li>
-                    <li><b>XL:</b> 44+ (Busto 101-106cm)</li>
+                    <li>
+                      <b>XS:</b> 32-34 (Busto 80-84cm)
+                    </li>
+                    <li>
+                      <b>S:</b> 36 (Busto 85-89cm)
+                    </li>
+                    <li>
+                      <b>M:</b> 38 (Busto 90-94cm)
+                    </li>
+                    <li>
+                      <b>L:</b> 40-42 (Busto 95-100cm)
+                    </li>
+                    <li>
+                      <b>XL:</b> 44+ (Busto 101-106cm)
+                    </li>
                   </ul>
                 </div>
               )}
@@ -236,15 +277,21 @@ export function ProductDetailModal({
             <div className="grid grid-cols-3 gap-2 py-3 border-y border-rose-100/60 dark:border-zinc-800/80 text-[10px] text-zinc-500">
               <div className="flex flex-col items-center text-center gap-1">
                 <Truck className="size-4 text-rose-500" />
-                <span className="font-semibold leading-tight">Envío EE.UU. Gratis &gt;$99</span>
+                <span className="font-semibold leading-tight">
+                  Envío EE.UU. Gratis &gt;$99
+                </span>
               </div>
               <div className="flex flex-col items-center text-center gap-1">
                 <ShieldCheck className="size-4 text-amber-500" />
-                <span className="font-semibold leading-tight">100% Calidad Garantizada</span>
+                <span className="font-semibold leading-tight">
+                  100% Calidad Garantizada
+                </span>
               </div>
               <div className="flex flex-col items-center text-center gap-1">
                 <RefreshCw className="size-4 text-rose-500" />
-                <span className="font-semibold leading-tight">Cambios de Talla Fáciles</span>
+                <span className="font-semibold leading-tight">
+                  Cambios de Talla Fáciles
+                </span>
               </div>
             </div>
 

@@ -22,20 +22,20 @@ Call log:
 
 ```ts
   1  | import { test as base, expect, type Page } from '@playwright/test';
-  2  | 
+  2  |
   3  | /**
   4  |  * Fixture base reutilizable para Isafer Boutique E2E
   5  |  *
   6  |  * Proporciona helpers comunes y espera a que el InitialLoader termine
   7  |  * antes de cada test, para que todos los tests empiecen con la app lista.
   8  |  */
-  9  | 
+  9  |
   10 | /** Helper: esperar a que el InitialLoader desaparezca */
   11 | async function waitForAppReady(page: Page) {
   12 |   // El loader tiene un timeout de 2.8s. Esperamos hasta 5s.
   13 |   // Primero intentamos detectar si el loader está presente
   14 |   const loaderOverlay = page.locator('.fixed.inset-0.z-\\[9999\\]');
-  15 |   
+  15 |
   16 |   try {
   17 |     // Si el loader está visible, esperamos a que desaparezca
   18 |     const isVisible = await loaderOverlay.isVisible({ timeout: 1000 }).catch(() => false);
@@ -46,7 +46,7 @@ Call log:
   23 |     // Si no aparece el loader, la app ya está lista
   24 |   }
   25 | }
-  26 | 
+  26 |
   27 | /** Helper: scroll suave a una sección */
   28 | async function scrollToSection(page: Page, sectionId: string) {
   29 |   await page.evaluate((id) => {
@@ -56,7 +56,7 @@ Call log:
   33 |   // Esperar a que termine el scroll
   34 |   await page.waitForTimeout(800);
   35 | }
-  36 | 
+  36 |
   37 | /** Helper: cerrar cualquier modal/dialog abierto */
   38 | async function closeAnyDialog(page: Page) {
   39 |   const dialog = page.locator('[role="dialog"]');
@@ -66,7 +66,7 @@ Call log:
   43 |     await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
   44 |   }
   45 | }
-  46 | 
+  46 |
   47 | // Extend the base test with custom fixtures
   48 | export const test = base.extend<{
   49 |   homePage: Page;
@@ -79,7 +79,7 @@ Call log:
   55 |     await use(page);
   56 |   },
   57 | });
-  58 | 
+  58 |
   59 | export { expect, waitForAppReady, scrollToSection, closeAnyDialog };
-  60 | 
+  60 |
 ```

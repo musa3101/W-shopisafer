@@ -1,7 +1,20 @@
 import { useState, useRef } from "react";
-import { PlusCircle, Image as ImageIcon, Sparkles, Upload, Check, Trash2, Tag, Layers, RefreshCw } from "lucide-react";
+import {
+  PlusCircle,
+  Image as ImageIcon,
+  Sparkles,
+  Upload,
+  Check,
+  Trash2,
+  Tag,
+  Layers,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
-import { createProduct, uploadProductImage } from "../src/services/insforgeService";
+import {
+  createProduct,
+  uploadProductImage,
+} from "../src/services/insforgeService";
 import { convertToWebP } from "../src/lib/imageUtils";
 
 interface ProductCreatorProps {
@@ -9,10 +22,26 @@ interface ProductCreatorProps {
   onCancel: () => void;
 }
 
-const US_SIZES = ["XS", "S", "M", "L", "XL", "0", "2", "4", "6", "8", "10", "12"];
+const US_SIZES = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "0",
+  "2",
+  "4",
+  "6",
+  "8",
+  "10",
+  "12",
+];
 const EU_SIZES = ["34", "36", "38", "40", "42", "44", "S", "M", "L", "XL"];
 
-export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorProps) {
+export function ProductCreator({
+  onProductCreated,
+  onCancel,
+}: ProductCreatorProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -34,7 +63,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
   // File Upload Handlers
   const handleFileProcess = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP)");
+      toast.error(
+        "Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP)",
+      );
       return;
     }
 
@@ -42,7 +73,10 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
     try {
       // Optimizar y convertir imagen a WebP antes de la subida
       const webpFile = await convertToWebP(file).catch((err) => {
-        console.warn("Error al convertir a WebP, subiendo imagen original:", err);
+        console.warn(
+          "Error al convertir a WebP, subiendo imagen original:",
+          err,
+        );
         return file;
       });
 
@@ -85,7 +119,7 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
 
   const toggleSize = (sz: string) => {
     setSelectedSizes((prev) =>
-      prev.includes(sz) ? prev.filter((s) => s !== sz) : [...prev, sz]
+      prev.includes(sz) ? prev.filter((s) => s !== sz) : [...prev, sz],
     );
   };
 
@@ -130,8 +164,10 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
   const availableSizes = sizeSystem === "US" ? US_SIZES : EU_SIZES;
 
   return (
-    <form onSubmit={handleSubmit} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-8 space-y-8 shadow-2xl relative overflow-hidden">
-      
+    <form
+      onSubmit={handleSubmit}
+      className="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-8 space-y-8 shadow-2xl relative overflow-hidden"
+    >
       {/* Encabezado del Formulario */}
       <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
         <div className="flex items-center gap-3">
@@ -139,8 +175,12 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
             <PlusCircle className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-base font-black text-white uppercase tracking-widest leading-none">Añadir Nueva Prenda a la Web</h4>
-            <span className="text-xs text-zinc-400 mt-1 block">Publica nuevos modelos en el catálogo oficial de Isafer</span>
+            <h4 className="text-base font-black text-white uppercase tracking-widest leading-none">
+              Añadir Nueva Prenda a la Web
+            </h4>
+            <span className="text-xs text-zinc-400 mt-1 block">
+              Publica nuevos modelos en el catálogo oficial de Isafer
+            </span>
           </div>
         </div>
 
@@ -155,14 +195,13 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* Columna Izquierda: Dropzone de Arrastrar e Soltar Imagen */}
         <div className="space-y-3">
           <label className="text-[11px] font-black text-zinc-300 uppercase tracking-widest block flex items-center gap-2">
             <ImageIcon className="w-4 h-4 text-rose-500" />
             Foto Principal (Drag & Drop)
           </label>
-          
+
           {/* Dropzone Container */}
           <div
             onDragOver={handleDragOver}
@@ -173,8 +212,8 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
               isDragging
                 ? "border-rose-500 bg-rose-500/10 scale-[1.02]"
                 : imageUrl
-                ? "border-zinc-700 bg-zinc-950"
-                : "border-zinc-800 bg-zinc-950 hover:border-rose-500/50 hover:bg-zinc-900/60"
+                  ? "border-zinc-700 bg-zinc-950"
+                  : "border-zinc-800 bg-zinc-950 hover:border-rose-500/50 hover:bg-zinc-900/60"
             }`}
           >
             <input
@@ -188,7 +227,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
             {uploadingImage ? (
               <div className="text-center p-6 space-y-3">
                 <RefreshCw className="w-10 h-10 animate-spin text-rose-500 mx-auto" />
-                <p className="text-xs font-bold text-zinc-300">Procesando y Subiendo Imagen...</p>
+                <p className="text-xs font-bold text-zinc-300">
+                  Procesando y Subiendo Imagen...
+                </p>
               </div>
             ) : imageUrl ? (
               <>
@@ -199,7 +240,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4 text-center">
                   <Upload className="w-8 h-8 text-rose-400 mb-2" />
-                  <p className="text-xs font-bold text-white uppercase tracking-wider">Arrastra otra foto o haz clic para cambiar</p>
+                  <p className="text-xs font-bold text-white uppercase tracking-wider">
+                    Arrastra otra foto o haz clic para cambiar
+                  </p>
                 </div>
               </>
             ) : (
@@ -208,8 +251,12 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
                   <Upload className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-black text-white uppercase tracking-wider">Arrastra la imagen aquí</p>
-                  <p className="text-[11px] text-zinc-500 mt-1">o haz clic para explorar tus archivos</p>
+                  <p className="text-xs font-black text-white uppercase tracking-wider">
+                    Arrastra la imagen aquí
+                  </p>
+                  <p className="text-[11px] text-zinc-500 mt-1">
+                    o haz clic para explorar tus archivos
+                  </p>
                 </div>
                 <span className="inline-block px-3 py-1 rounded-full bg-zinc-900 text-[10px] font-mono text-zinc-400 border border-zinc-800">
                   PNG, JPG, WEBP
@@ -232,10 +279,11 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
 
         {/* Columnas Central y Derecha: Formulario Completo */}
         <div className="lg:col-span-2 space-y-5">
-          
           {/* Fila 1: Nombre de la prenda */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nombre de la Prenda *</label>
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+              Nombre de la Prenda *
+            </label>
             <input
               type="text"
               required
@@ -249,7 +297,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
           {/* Fila 2: Precio y Stock */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Precio de Venta ($ USD) *</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                Precio de Venta ($ USD) *
+              </label>
               <div className="flex items-center bg-zinc-950 border border-zinc-800 rounded-2xl px-3.5 py-2.5">
                 <span className="text-rose-500 font-bold mr-2 text-sm">$</span>
                 <input
@@ -265,7 +315,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Unidades Iniciales de Stock</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                Unidades Iniciales de Stock
+              </label>
               <input
                 type="number"
                 placeholder="15"
@@ -280,7 +332,8 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
           <div className="space-y-2">
             <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-rose-500" />
-              Sección de la Tienda Web (Dónde aparecerá en el catálogo público) *
+              Sección de la Tienda Web (Dónde aparecerá en el catálogo público)
+              *
             </label>
             <div className="flex flex-wrap gap-2">
               {[
@@ -308,7 +361,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
 
           {/* Fila 3B: Selección de Público / Colección */}
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Público / Colección</label>
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+              Público / Colección
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { id: "women", label: "Mujer 💖" },
@@ -345,7 +400,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
                   type="button"
                   onClick={() => setSizeSystem("US")}
                   className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                    sizeSystem === "US" ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-white"
+                    sizeSystem === "US"
+                      ? "bg-rose-500 text-white"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   Sistema EE.UU. (US)
@@ -354,7 +411,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
                   type="button"
                   onClick={() => setSizeSystem("EU")}
                   className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                    sizeSystem === "EU" ? "bg-rose-500 text-white" : "text-zinc-400 hover:text-white"
+                    sizeSystem === "EU"
+                      ? "bg-rose-500 text-white"
+                      : "text-zinc-400 hover:text-white"
                   }`}
                 >
                   Sistema España (EU)
@@ -386,7 +445,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
 
           {/* Fila 5: Descripción */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Descripción o Detalles</label>
+            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+              Descripción o Detalles
+            </label>
             <textarea
               placeholder="Detalles sobre confección, tejido, corte y estilismo..."
               value={description}
@@ -399,7 +460,9 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
           {/* Fila 6: Etiqueta y Stripe Price ID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Etiqueta Especial (Badge)</label>
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                Etiqueta Especial (Badge)
+              </label>
               <input
                 type="text"
                 placeholder="Ej: NUEVO DROP, TENDENCIA"
@@ -411,8 +474,12 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Stripe Price ID</label>
-                <span className="text-[9px] font-bold text-rose-400/80 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 uppercase tracking-wider">Opcional</span>
+                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                  Stripe Price ID
+                </label>
+                <span className="text-[9px] font-bold text-rose-400/80 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20 uppercase tracking-wider">
+                  Opcional
+                </span>
               </div>
               <input
                 type="text"
@@ -421,10 +488,12 @@ export function ProductCreator({ onProductCreated, onCancel }: ProductCreatorPro
                 onChange={(e) => setStripePriceId(e.target.value)}
                 className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-2xl text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-rose-500/50 transition-colors font-mono"
               />
-              <p className="text-[10px] text-zinc-500">Si lo dejas en blanco, la prenda se cobrará con la pasarela automática por defecto.</p>
+              <p className="text-[10px] text-zinc-500">
+                Si lo dejas en blanco, la prenda se cobrará con la pasarela
+                automática por defecto.
+              </p>
             </div>
           </div>
-
         </div>
       </div>
 

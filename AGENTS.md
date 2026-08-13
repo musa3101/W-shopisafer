@@ -1,6 +1,7 @@
 # AGENTS.md
 
 <!-- INSFORGE:START -->
+
 ## InsForge backend
 
 This project uses [InsForge](https://insforge.dev): an all-in-one, open-source Postgres-based backend (BaaS) that gives this app a database, authentication, file storage, edge functions, realtime, an AI model gateway, and payments through one platform.
@@ -24,9 +25,11 @@ Key patterns:
 ## Reglas de Sesión Adicionales
 
 ### Carpeta de Referencia y Capturas
+
 - **Uso:** El usuario colocará archivos de referencia, capturas de pantalla, grabaciones de pantalla, etc., en la carpeta `/Users/musa/Downloads/sopisafer/carpeta de referencia` durante la sesión.
 
 ### Fin de Sesión (Despliegue y Sincronización Obligatorios)
+
 - **Obligación de Despliegue a Cloudflare y Git:** Al finalizar la sesión (cuando el usuario mencione **@final**, **@end**, **terminar**, o similar) o al dar su aprobación ("OK"), el agente **debe obligatoriamente** ejecutar el script de cierre automatizado:
   ```bash
   ./scripts/deploy_and_sync.sh "Mensaje descriptivo del commit"
@@ -35,7 +38,9 @@ Key patterns:
 - **Documentación:** El agente actualizará y guardará `docs/SESSION_LATEST_ES.md` y `docs/ROADMAP.md` justo antes de ejecutar el script de despliegue para asegurar que la documentación también se incluya en el despliegue y en Git.
 
 ### Navegación y Pruebas Visuales con Google Chrome
+
 Si la herramienta de navegador estándar (`browser_subagent`) del IDE falla al inicializarse (por ejemplo, por errores 404 al descargar el driver Playwright):
+
 - **Método de Conexión:** Conéctate directamente a una instancia local de Google Chrome abierta con depuración remota activada en el puerto `9222` mediante CDP (Chrome DevTools Protocol).
 - **Iniciar Chrome con Depuración:** Si Chrome no está escuchando en el puerto 9222, puedes lanzarlo en segundo plano ejecutando:
   ```bash
@@ -44,4 +49,3 @@ Si la herramienta de navegador estándar (`browser_subagent`) del IDE falla al i
 - **Playwright Local:** Usa la biblioteca Playwright del proyecto local (`playwright` en `package.json`) y conéctate usando `chromium.connectOverCDP('http://127.0.0.1:9222')`.
 - **Automatización de Pruebas:** Puedes usar o extender el script `scripts/test_chrome_connection.js` para navegar de forma automatizada por la web y tomar capturas de pantalla de control.
 - **Carpeta de Capturas:** Guarda las capturas resultantes de las pruebas visuales en `/Users/musa/Downloads/sopisafer/carpeta de referencia/`.
-

@@ -32,7 +32,8 @@ const DEFAULT_COUPONS: Coupon[] = [
     id: "cop-1",
     code: "ISAFER10",
     discountPercent: 10,
-    description: "10% de descuento automático en la primera compra de bienvenida",
+    description:
+      "10% de descuento automático en la primera compra de bienvenida",
     isActive: true,
     createdAt: new Date().toISOString(),
   },
@@ -48,7 +49,8 @@ const DEFAULT_COUPONS: Coupon[] = [
     id: "cop-3",
     code: "BARBIELUXE15",
     discountPercent: 15,
-    description: "15% OFF exclusivo en prendas seleccionadas de la colección Barbie Luxe",
+    description:
+      "15% OFF exclusivo en prendas seleccionadas de la colección Barbie Luxe",
     isActive: true,
     createdAt: new Date().toISOString(),
   },
@@ -119,14 +121,16 @@ export const couponsService = {
             ...updates,
             code: updates.code ? updates.code.trim().toUpperCase() : c.code,
           }
-        : c
+        : c,
     );
     this.saveCoupons(updated);
   },
 
   toggleCoupon(id: string): void {
     const current = this.getCoupons();
-    const updated = current.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c));
+    const updated = current.map((c) =>
+      c.id === id ? { ...c, isActive: !c.isActive } : c,
+    );
     this.saveCoupons(updated);
   },
 
@@ -136,9 +140,19 @@ export const couponsService = {
     this.saveCoupons(updated);
   },
 
-  validateCoupon(code: string): { valid: boolean; discountPercent: number; coupon?: Coupon; error?: string } {
+  validateCoupon(code: string): {
+    valid: boolean;
+    discountPercent: number;
+    coupon?: Coupon;
+    error?: string;
+  } {
     const cleanCode = code.trim().toUpperCase();
-    if (!cleanCode) return { valid: false, discountPercent: 0, error: "Ingresa un código de cupón" };
+    if (!cleanCode)
+      return {
+        valid: false,
+        discountPercent: 0,
+        error: "Ingresa un código de cupón",
+      };
 
     const coupons = this.getCoupons();
     const found = coupons.find((c) => c.code === cleanCode);
@@ -149,13 +163,25 @@ export const couponsService = {
       if (banner.enabled && banner.code.toUpperCase() === cleanCode) {
         return { valid: true, discountPercent: banner.discountPercent };
       }
-      return { valid: false, discountPercent: 0, error: "El código introducido no es válido o no existe." };
+      return {
+        valid: false,
+        discountPercent: 0,
+        error: "El código introducido no es válido o no existe.",
+      };
     }
 
     if (!found.isActive) {
-      return { valid: false, discountPercent: 0, error: "Este código de cupón se encuentra inactivo." };
+      return {
+        valid: false,
+        discountPercent: 0,
+        error: "Este código de cupón se encuentra inactivo.",
+      };
     }
 
-    return { valid: true, discountPercent: found.discountPercent, coupon: found };
+    return {
+      valid: true,
+      discountPercent: found.discountPercent,
+      coupon: found,
+    };
   },
 };

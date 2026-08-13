@@ -1,4 +1,4 @@
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Page } from "@playwright/test";
 
 /**
  * Fixture base reutilizable para Isafer Boutique E2E
@@ -11,13 +11,15 @@ import { test as base, expect, type Page } from '@playwright/test';
 async function waitForAppReady(page: Page) {
   // El loader tiene un timeout de 2.8s. Esperamos hasta 5s.
   // Primero intentamos detectar si el loader está presente
-  const loaderOverlay = page.locator('.fixed.inset-0.z-\\[9999\\]');
-  
+  const loaderOverlay = page.locator(".fixed.inset-0.z-\\[9999\\]");
+
   try {
     // Si el loader está visible, esperamos a que desaparezca
-    const isVisible = await loaderOverlay.isVisible({ timeout: 1000 }).catch(() => false);
+    const isVisible = await loaderOverlay
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
     if (isVisible) {
-      await loaderOverlay.waitFor({ state: 'detached', timeout: 5000 });
+      await loaderOverlay.waitFor({ state: "detached", timeout: 5000 });
     }
   } catch {
     // Si no aparece el loader, la app ya está lista
@@ -28,7 +30,7 @@ async function waitForAppReady(page: Page) {
 async function scrollToSection(page: Page, sectionId: string) {
   await page.evaluate((id) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, sectionId);
   // Esperar a que termine el scroll
   await page.waitForTimeout(800);
@@ -39,8 +41,8 @@ async function closeAnyDialog(page: Page) {
   const dialog = page.locator('[role="dialog"]');
   if (await dialog.isVisible({ timeout: 500 }).catch(() => false)) {
     // Intentar presionar Escape para cerrar
-    await page.keyboard.press('Escape');
-    await dialog.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {});
+    await page.keyboard.press("Escape");
+    await dialog.waitFor({ state: "hidden", timeout: 2000 }).catch(() => {});
   }
 }
 
@@ -50,8 +52,9 @@ export const test = base.extend<{
 }>({
   homePage: async ({ page }, use) => {
     // Navegar a la home y esperar que la app esté lista
-    await page.goto('/');
+    await page.goto("/");
     await waitForAppReady(page);
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
   },
 });

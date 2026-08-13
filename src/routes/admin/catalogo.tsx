@@ -33,8 +33,12 @@ function CatalogoPage() {
             <ArrowLeft className="size-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">Catálogo de Productos</h1>
-            <p className="text-zinc-500 font-medium">Controla el inventario, precios y stock en tiempo real.</p>
+            <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
+              Catálogo de Productos
+            </h1>
+            <p className="text-zinc-500 font-medium">
+              Controla el inventario, precios y stock en tiempo real.
+            </p>
           </div>
         </div>
 
@@ -58,7 +62,10 @@ function CatalogoPage() {
 
       <div className="bg-white rounded-xl shadow-sm border border-zinc-200 p-6">
         {view === "list" ? (
-          <StockManager products={products} onProductsUpdated={handleProductsUpdated} />
+          <StockManager
+            products={products}
+            onProductsUpdated={handleProductsUpdated}
+          />
         ) : (
           <ProductCreator
             onProductCreated={() => {

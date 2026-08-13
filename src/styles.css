@@ -51,7 +51,8 @@
   --color-ring-offset-background: var(--background);
   --color-whatsapp: var(--whatsapp);
   --color-whatsapp-foreground: var(--whatsapp-foreground);
-  --shadow-neon: 0 12px 36px color-mix(in oklab, var(--primary) 35%, transparent);
+  --shadow-neon: 0 12px 36px
+    color-mix(in oklab, var(--primary) 35%, transparent);
   --shadow-gold-glow: 0 8px 30px rgba(217, 119, 6, 0.25);
   --shadow-luxury: 0 20px 50px rgba(0, 0, 0, 0.08);
 }
@@ -69,7 +70,7 @@
   --secondary: oklch(0.96 0.025 350);
   --secondary-foreground: oklch(0.25 0.04 350);
   --muted: oklch(0.965 0.015 350);
-  --muted-foreground: oklch(0.50 0.05 350);
+  --muted-foreground: oklch(0.5 0.05 350);
   --accent: oklch(0.92 0.05 350);
   --accent-foreground: oklch(0.25 0.04 350);
   --destructive: oklch(0.577 0.245 27.325);
@@ -307,4 +308,3 @@
   height: 1.25rem;
   flex-shrink: 0;
 }
-

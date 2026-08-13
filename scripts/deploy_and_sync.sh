@@ -43,15 +43,13 @@ git commit -m "$COMMIT_MSG" || echo -e "${YELLOW}No hay cambios locales nuevos p
 git push origin dev
 echo -e "${GREEN}✓ Cambios subidos a GitHub en la rama dev.${NC}"
 
-# 5. Limpieza de carpeta de referencia
-REF_DIR="/Users/musa/Downloads/sopisafer/carpeta de referencia"
-echo -e "${YELLOW}🧹 Limpiando carpeta de referencia...${NC}"
-if [ -d "$REF_DIR" ]; then
-  # Eliminar todos los archivos y carpetas internas
-  find "$REF_DIR" -mindepth 1 -delete
-  echo -e "${GREEN}✓ Carpeta de referencia limpia.${NC}"
-else
-  echo -e "${YELLOW}La carpeta de referencia no existe, omitiendo.${NC}"
-fi
+# 5. Limpieza de carpetas de referencia
+echo -e "${YELLOW}🧹 Limpiando carpetas de referencia...${NC}"
+for REF_DIR in "/Users/musa/Downloads/sopisafer/carpeta de referencia" "/Users/musa/Downloads/PROJ recientes/sopisafer/carpeta de referencia"; do
+  if [ -d "$REF_DIR" ]; then
+    find "$REF_DIR" -mindepth 1 -delete 2>/dev/null || true
+    echo -e "${GREEN}✓ Carpeta de referencia ($REF_DIR) limpia.${NC}"
+  fi
+done
 
 echo -e "${GREEN}🎉 ¡Proceso de cierre de sesión completado con éxito al 100%!${NC}"

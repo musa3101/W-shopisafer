@@ -9,7 +9,6 @@ import {
   Minus,
   Plus,
   ShoppingBag,
-
   Trash2,
   User,
   ShieldCheck,
@@ -45,18 +44,45 @@ import heroImage from "@/assets/rosse-hero.jpg";
 import camilaOwnerHero from "@/assets/camila-owner-hero.jpg";
 import productsImage from "@/assets/rosse-products.jpg";
 import sobreNosotrosImg from "@/assets/sobrenostros.jpg";
-import { createOrder, fetchProducts, BackendProduct, updateOrderStripeSession, sendOrderConfirmationEmail, fetchCartById, saveCart, deleteCart, subscribeToNewsletter } from "@/services/insforgeService";
-import { fetchUserFavorites, addFavorite, removeFavorite, syncGuestFavorites } from "@/services/favoritesService";
+import {
+  createOrder,
+  fetchProducts,
+  BackendProduct,
+  updateOrderStripeSession,
+  sendOrderConfirmationEmail,
+  fetchCartById,
+  saveCart,
+  deleteCart,
+  subscribeToNewsletter,
+} from "@/services/insforgeService";
+import {
+  fetchUserFavorites,
+  addFavorite,
+  removeFavorite,
+  syncGuestFavorites,
+} from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { CustomerAccountModal } from "@/components/CustomerAccountModal";
 import { AdminDashboardModal } from "@/components/AdminDashboardModal";
 import { AboutUsModal } from "@/components/AboutUsModal";
 import { AboutPage } from "@/components/AboutPage";
-import { ProductDetailModal, ProductItem } from "@/components/ProductDetailModal";
+import {
+  ProductDetailModal,
+  ProductItem,
+} from "@/components/ProductDetailModal";
 import { QuickAddOverlay } from "@/components/QuickAddOverlay";
-import { CheckoutShippingModal, ShippingDetails } from "@/components/CheckoutShippingModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  CheckoutShippingModal,
+  ShippingDetails,
+} from "@/components/CheckoutShippingModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { CtaButton } from "@/components/CtaButton";
 import { IsaferLogo } from "@/components/IsaferLogo";
 import { Button } from "@/components/ui/button";
@@ -90,26 +116,45 @@ export const Route = createFileRoute("/")({
         content:
           "Descubre la colección más exclusiva de ropa femenina, licras moldeadoras premium y vestidos sensuales en Isafer Boutique, Brooklyn, Nueva York.",
       },
-      { property: "og:title", content: "Isafer Boutique | Tu Outfit Ideal en Brooklyn" },
+      {
+        property: "og:title",
+        content: "Isafer Boutique | Tu Outfit Ideal en Brooklyn",
+      },
       {
         property: "og:description",
-        content: "Moda femenina sensual y exclusiva. Realza tu figura con Isafer Boutique.",
+        content:
+          "Moda femenina sensual y exclusiva. Realza tu figura con Isafer Boutique.",
       },
     ],
   }),
   loader: async () => {
-    const backendProds = await fetchProducts().catch(() => [] as BackendProduct[]);
+    const backendProds = await fetchProducts().catch(
+      () => [] as BackendProduct[],
+    );
     const mapped: ProductItem[] = backendProds.map((bp, idx) => {
       let category = bp.category || "Tops & Sets";
       if (!bp.category) {
         const nameLower = bp.name.toLowerCase();
-        if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
+        if (
+          nameLower.includes("vestido") ||
+          nameLower.includes("gown") ||
+          nameLower.includes("skirt")
+        ) {
           category = "Vestidos";
-        } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
+        } else if (
+          nameLower.includes("licra") ||
+          nameLower.includes("jumpsuit") ||
+          nameLower.includes("athletic") ||
+          nameLower.includes("biker")
+        ) {
           category = "Licras";
         } else if (nameLower.includes("body")) {
           category = "Bodys & Corsets";
-        } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
+        } else if (
+          nameLower.includes("bolso") ||
+          nameLower.includes("cinturón") ||
+          nameLower.includes("accesorios")
+        ) {
           category = "Accesorios & Glam";
         }
       }
@@ -131,7 +176,9 @@ export const Route = createFileRoute("/")({
 });
 
 function AnimatedOfferBanner() {
-  const [bannerConfig, setBannerConfig] = useState(() => couponsService.getWelcomeBanner());
+  const [bannerConfig, setBannerConfig] = useState(() =>
+    couponsService.getWelcomeBanner(),
+  );
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -167,7 +214,9 @@ function AnimatedOfferBanner() {
         <span
           key={i}
           className={`absolute text-xs sm:text-sm font-black tracking-widest uppercase transition-all duration-700 ${
-            i === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            i === index
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
           }`}
         >
           {offer}
@@ -186,7 +235,7 @@ function AnimatedOwnerImage() {
       ([entry]) => {
         if (entry.isIntersecting) setIsVisible(true);
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
     if (imgRef.current) observer.observe(imgRef.current);
     return () => observer.disconnect();
@@ -196,12 +245,14 @@ function AnimatedOwnerImage() {
     <div
       ref={imgRef}
       className={`relative w-48 h-48 sm:w-72 sm:h-72 lg:w-96 lg:h-96 shrink-0 transition-all duration-1000 ease-out transform ${
-        isVisible ? "opacity-100 translate-x-0 scale-100" : "opacity-0 translate-x-12 scale-95"
+        isVisible
+          ? "opacity-100 translate-x-0 scale-100"
+          : "opacity-0 translate-x-12 scale-95"
       }`}
     >
       {/* Glow Backdrop */}
       <div className="absolute inset-0 bg-white/40 rounded-[2.5rem] sm:rounded-[3rem] animate-pulse filter blur-xl" />
-      
+
       {/* Image Frame */}
       <div className="relative w-full h-full p-2 bg-white/80 backdrop-blur-md rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl shadow-rose-950/20 group hover:-translate-y-2 transition-all duration-500">
         <div className="w-full h-full overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] border border-pink-100 relative">
@@ -211,17 +262,17 @@ function AnimatedOwnerImage() {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
         </div>
-        
+
         {/* Floating Tag */}
         <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white px-5 py-3 rounded-full shadow-xl border border-pink-100 z-20 flex items-center gap-2 transform -rotate-6 group-hover:rotate-0 transition-all duration-300">
-          <span className="font-display text-rose-950 font-black text-sm sm:text-lg">Camila ✨</span>
+          <span className="font-display text-rose-950 font-black text-sm sm:text-lg">
+            Camila ✨
+          </span>
         </div>
       </div>
     </div>
   );
 }
-
-
 
 export interface CartLineItem {
   cartItemId: string;
@@ -248,7 +299,15 @@ function getOptimizedImageUrl(url?: string): string {
   return url;
 }
 
-function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string; product?: ProductItem }) {
+function ProductCrop({
+  id,
+  alt,
+  product,
+}: {
+  id?: string | number;
+  alt?: string;
+  product?: ProductItem;
+}) {
   const p = product;
   const [imgSrc, setImgSrc] = useState<string>(() => {
     if (p?.image) return getOptimizedImageUrl(p.image);
@@ -263,7 +322,8 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
   if (!p) return null;
 
   const isSprite = !p.image;
-  const fallbackUnsplash = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
+  const fallbackUnsplash =
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
 
   return (
     <img
@@ -274,7 +334,9 @@ function ProductCrop({ id, alt, product }: { id?: string | number; alt?: string;
         setImgSrc(fallbackUnsplash);
       }}
       className={`absolute top-0 h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${
-        isSprite ? `w-[400%] max-w-none ${p.position || "left-0"}` : "left-0 w-full"
+        isSprite
+          ? `w-[400%] max-w-none ${p.position || "left-0"}`
+          : "left-0 w-full"
       }`}
     />
   );
@@ -284,20 +346,28 @@ function Index() {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useTranslation();
   const { initialProducts } = Route.useLoaderData();
-  const [productsList, setProductsList] = useState<ProductItem[]>(initialProducts);
+  const [productsList, setProductsList] =
+    useState<ProductItem[]>(initialProducts);
   const [cart, setCart] = useState<Cart>({});
-  const [selectedProductForModal, setSelectedProductForModal] = useState<ProductItem | null>(null);
+  const [selectedProductForModal, setSelectedProductForModal] =
+    useState<ProductItem | null>(null);
   const [productModalOpen, setProductModalOpen] = useState(false);
-  const [quickAddOpenId, setQuickAddOpenId] = useState<string | number | null>(null);
+  const [quickAddOpenId, setQuickAddOpenId] = useState<string | number | null>(
+    null,
+  );
   const [isCartInitialized, setIsCartInitialized] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("Todos");
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
-  const [favorites, setFavorites] = useState<Record<string | number, boolean>>({});
+  const [favorites, setFavorites] = useState<Record<string | number, boolean>>(
+    {},
+  );
   const [favDialogOpen, setFavDialogOpen] = useState(false);
-  const [pendingFavProduct, setPendingFavProduct] = useState<string | null>(null);
+  const [pendingFavProduct, setPendingFavProduct] = useState<string | null>(
+    null,
+  );
   const [favoritesDrawerOpen, setFavoritesDrawerOpen] = useState(false);
   const [showCookiesBanner, setShowCookiesBanner] = useState(false);
   const [showGeoBanner, setShowGeoBanner] = useState(false);
@@ -308,7 +378,9 @@ function Index() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuSearchQuery, setMenuSearchQuery] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
-  const [legalType, setLegalType] = useState<"privacy" | "terms" | "cookies" | null>(null);
+  const [legalType, setLegalType] = useState<
+    "privacy" | "terms" | "cookies" | null
+  >(null);
   const [aboutUsModalOpen, setAboutUsModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"shop" | "about">("shop");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -328,12 +400,15 @@ function Index() {
   }, []);
 
   // Carrusel dinámico de Hero
-  const heroImages = useMemo(() => [
-    camilaOwnerHero,
-    heroImage,
-    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600",
-    "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1600"
-  ], []);
+  const heroImages = useMemo(
+    () => [
+      camilaOwnerHero,
+      heroImage,
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600",
+      "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1600",
+    ],
+    [],
+  );
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   useEffect(() => {
@@ -345,8 +420,15 @@ function Index() {
     return () => clearTimeout(timer);
   }, [currentHeroIndex, heroImages.length]);
 
-  const { user, loading, isAdmin, isCustomer, signInWithGoogle, signInWithPassword, signOut } = useAuth();
-
+  const {
+    user,
+    loading,
+    isAdmin,
+    isCustomer,
+    signInWithGoogle,
+    signInWithPassword,
+    signOut,
+  } = useAuth();
 
   // Comprobar si hay un carrito para recuperar en la URL (?recover_cart=UUID) o en localStorage
   useEffect(() => {
@@ -358,7 +440,11 @@ function Index() {
       fetchCartById(recoverCartId)
         .then((dbCart) => {
           toast.dismiss();
-          if (dbCart && Array.isArray(dbCart.items) && dbCart.items.length > 0) {
+          if (
+            dbCart &&
+            Array.isArray(dbCart.items) &&
+            dbCart.items.length > 0
+          ) {
             const restoredCart: Cart = {};
             dbCart.items.forEach((item: any) => {
               if (item.id !== undefined && item.quantity !== undefined) {
@@ -376,9 +462,14 @@ function Index() {
             setCart(restoredCart);
             localStorage.setItem("isafer_cart_id", dbCart.id);
             setCartOpen(true);
-            toast.success("¡Hemos recuperado tu bolsa de compras con éxito! 🛍️💖", { duration: 6000 });
+            toast.success(
+              "¡Hemos recuperado tu bolsa de compras con éxito! 🛍️💖",
+              { duration: 6000 },
+            );
           } else {
-            toast.error("El enlace de recuperación ha expirado o el carrito ya no está disponible.");
+            toast.error(
+              "El enlace de recuperación ha expirado o el carrito ya no está disponible.",
+            );
           }
         })
         .catch((err) => {
@@ -387,14 +478,22 @@ function Index() {
         })
         .finally(() => {
           setIsCartInitialized(true);
-          window.history.replaceState({}, document.title, window.location.pathname);
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
         });
     } else {
       const localCartId = localStorage.getItem("isafer_cart_id");
       if (localCartId) {
         fetchCartById(localCartId)
           .then((dbCart) => {
-            if (dbCart && Array.isArray(dbCart.items) && dbCart.items.length > 0) {
+            if (
+              dbCart &&
+              Array.isArray(dbCart.items) &&
+              dbCart.items.length > 0
+            ) {
               const restoredCart: Cart = {};
               dbCart.items.forEach((item: any) => {
                 if (item.id !== undefined && item.quantity !== undefined) {
@@ -411,7 +510,9 @@ function Index() {
               setCart(restoredCart);
             }
           })
-          .catch((err) => console.warn("No se pudo sincronizar el carrito al inicio:", err))
+          .catch((err) =>
+            console.warn("No se pudo sincronizar el carrito al inicio:", err),
+          )
           .finally(() => {
             setIsCartInitialized(true);
           });
@@ -433,7 +534,12 @@ function Index() {
       if (localCartId) {
         deleteCart(localCartId)
           .then(() => localStorage.removeItem("isafer_cart_id"))
-          .catch((err) => console.warn("Error al borrar el carrito vacío en el backend:", err));
+          .catch((err) =>
+            console.warn(
+              "Error al borrar el carrito vacío en el backend:",
+              err,
+            ),
+          );
       }
       return;
     }
@@ -455,7 +561,9 @@ function Index() {
       id: cartId,
       customer_email: customerEmail,
       items: itemsMapped,
-    }).catch((err) => console.error("Error al sincronizar el carrito en InsForge:", err));
+    }).catch((err) =>
+      console.error("Error al sincronizar el carrito en InsForge:", err),
+    );
   }, [cart, user, isCartInitialized]);
 
   useEffect(() => {
@@ -468,11 +576,14 @@ function Index() {
       if (localCartId) {
         deleteCart(localCartId)
           .then(() => localStorage.removeItem("isafer_cart_id"))
-          .catch((err) => console.error("Error al borrar carrito tras pago exitoso:", err));
+          .catch((err) =>
+            console.error("Error al borrar carrito tras pago exitoso:", err),
+          );
       }
       toast.success("🎉 ¡Pago Exitoso! Tu orden se está procesando.", {
         duration: 8000,
-        description: "Muchas gracias por tu compra. Te enviaremos un correo para coordinar tu envío.",
+        description:
+          "Muchas gracias por tu compra. Te enviaremos un correo para coordinar tu envío.",
       });
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (payment === "cancel") {
@@ -511,7 +622,8 @@ function Index() {
   useEffect(() => {
     const geoConsent = localStorage.getItem("isafer_geo_consent");
     if (!geoConsent) {
-      const navLang = navigator.language || (navigator as any).userLanguage || "";
+      const navLang =
+        navigator.language || (navigator as any).userLanguage || "";
       const prefersSpanish = navLang.toLowerCase().startsWith("es");
 
       // Caso 1: Web en Inglés, pero navegador prefiere Español
@@ -538,21 +650,20 @@ function Index() {
 
   const itemCount = useMemo(
     () => Object.values(cart).reduce((sum, item) => sum + item.quantity, 0),
-    [cart]
+    [cart],
   );
 
-  const favCount = useMemo(
-    () => Object.keys(favorites).length,
-    [favorites]
-  );
+  const favCount = useMemo(() => Object.keys(favorites).length, [favorites]);
 
   const subtotal = useMemo(
     () =>
       Object.values(cart).reduce((sum, item) => {
-        const product = productsList.find((p) => String(p.id) === String(item.productId));
+        const product = productsList.find(
+          (p) => String(p.id) === String(item.productId),
+        );
         return sum + (product ? product.price * item.quantity : 0);
       }, 0),
-    [cart, productsList]
+    [cart, productsList],
   );
 
   const [couponCodeInput, setCouponCodeInput] = useState("");
@@ -570,7 +681,9 @@ function Index() {
     if (res.valid) {
       setAppliedCoupon(code);
       setDiscountPercent(res.discountPercent);
-      toast.success(`¡Cupón ${code} del ${res.discountPercent}% OFF aplicado con éxito! 💖`);
+      toast.success(
+        `¡Cupón ${code} del ${res.discountPercent}% OFF aplicado con éxito! 💖`,
+      );
       setCouponCodeInput("");
     } else {
       toast.error(res.error || "Código de cupón no válido o expirado.");
@@ -579,7 +692,7 @@ function Index() {
 
   const finalTotal = useMemo(
     () => subtotal * (1 - discountPercent / 100),
-    [subtotal, discountPercent]
+    [subtotal, discountPercent],
   );
 
   // Cargar favoritos al inicio y sincronizar si el usuario inicia sesión
@@ -607,7 +720,9 @@ function Index() {
                 mergedMap[fid] = true;
               });
               setFavorites(mergedMap);
-              toast.success("¡Tus favoritos temporales se han sincronizado con tu cuenta! 💖");
+              toast.success(
+                "¡Tus favoritos temporales se han sincronizado con tu cuenta! 💖",
+              );
             }
           } catch (e) {
             console.error("Error al sincronizar favoritos:", e);
@@ -684,7 +799,10 @@ function Index() {
 
       if (isFav) {
         guestFavs = guestFavs.filter((fid) => fid !== productId);
-        localStorage.setItem("isafer_guest_favorites", JSON.stringify(guestFavs));
+        localStorage.setItem(
+          "isafer_guest_favorites",
+          JSON.stringify(guestFavs),
+        );
         setFavorites((prev) => {
           const next = { ...prev };
           delete next[productId];
@@ -693,9 +811,12 @@ function Index() {
         toast("Eliminado de favoritos 💔", { duration: 2000 });
       } else {
         guestFavs.push(productId);
-        localStorage.setItem("isafer_guest_favorites", JSON.stringify(guestFavs));
+        localStorage.setItem(
+          "isafer_guest_favorites",
+          JSON.stringify(guestFavs),
+        );
         setFavorites((prev) => ({ ...prev, [productId]: true }));
-        
+
         // Abrir diálogo de invitación
         setPendingFavProduct(productId);
         setFavDialogOpen(true);
@@ -708,7 +829,9 @@ function Index() {
       setSelectedProductForModal(idOrProduct);
       setProductModalOpen(true);
     } else {
-      const p = productsList.find((item) => String(item.id) === String(idOrProduct));
+      const p = productsList.find(
+        (item) => String(item.id) === String(idOrProduct),
+      );
       if (p) {
         setSelectedProductForModal(p);
         setProductModalOpen(true);
@@ -716,7 +839,11 @@ function Index() {
     }
   };
 
-  const handleAddToCartFromModal = (id: string | number, size: string, quantityToAdd: number = 1) => {
+  const handleAddToCartFromModal = (
+    id: string | number,
+    size: string,
+    quantityToAdd: number = 1,
+  ) => {
     const item = productsList.find((p) => String(p.id) === String(id));
     const cartKey = `${id}::${size}`;
 
@@ -738,11 +865,16 @@ function Index() {
     setQuickAddOpenId(null);
     setCartOpen(true);
     if (item) {
-      toast.success(`¡${item.name} (${size}) añadido a tu bolsa! ✨`, { duration: 3000 });
+      toast.success(`¡${item.name} (${size}) añadido a tu bolsa! ✨`, {
+        duration: 3000,
+      });
     }
   };
 
-  const handleQuickAddSizeSelect = (productId: string | number, size: string) => {
+  const handleQuickAddSizeSelect = (
+    productId: string | number,
+    size: string,
+  ) => {
     handleAddToCartFromModal(productId, size, 1);
     setQuickAddOpenId(null);
   };
@@ -768,19 +900,25 @@ function Index() {
 
   const removeProduct = (cartKey: string) => {
     const existing = cart[cartKey];
-    const item = existing ? productsList.find((p) => String(p.id) === String(existing.productId)) : null;
+    const item = existing
+      ? productsList.find((p) => String(p.id) === String(existing.productId))
+      : null;
     setCart((current) => {
       const next = { ...current };
       delete next[cartKey];
       return next;
     });
     if (item) {
-      toast.info(`${item.name} (${existing?.size || ''}) eliminado de la bolsa`);
+      toast.info(
+        `${item.name} (${existing?.size || ""}) eliminado de la bolsa`,
+      );
     }
   };
 
   const scrollToSection = (id: string) => {
-    const target = document.getElementById(id) || document.querySelector(`[data-section="${id}"]`);
+    const target =
+      document.getElementById(id) ||
+      document.querySelector(`[data-section="${id}"]`);
     if (target) {
       target.scrollIntoView({ behavior: "smooth" });
     } else if (id === "coleccion") {
@@ -798,7 +936,9 @@ function Index() {
 
     const itemsText = activeCartItems
       .map((item) => {
-        const p = productsList.find((prod) => String(prod.id) === String(item.productId));
+        const p = productsList.find(
+          (prod) => String(prod.id) === String(item.productId),
+        );
         if (!p) return null;
         return `- ${item.quantity}x ${p.name} (Talla: ${item.size}) ($${(p.price * item.quantity).toFixed(2)})`;
       })
@@ -806,7 +946,9 @@ function Index() {
       .join("%0A");
 
     const subtotalFormatted = finalTotal.toFixed(2);
-    const couponInfo = appliedCoupon ? `%0ACup%C3%B3n%20Aplicado%3A%20${appliedCoupon}%20(-10%25)` : "";
+    const couponInfo = appliedCoupon
+      ? `%0ACup%C3%B3n%20Aplicado%3A%20${appliedCoupon}%20(-10%25)`
+      : "";
     const whatsappUrl = `https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%3A%0A%0A${itemsText}${couponInfo}%0A%0ATotal%20Final%3A%20%24${subtotalFormatted}%0A%0A%C2%BFMe%20confirmas%20disponibilidad%20y%20m%C3%A9todo%20de%20entrega%3F`;
 
     const win = window.open(whatsappUrl, "_blank");
@@ -818,9 +960,13 @@ function Index() {
     toast.success("¡Redirigiendo a WhatsApp!");
 
     const customerEmail = user?.email || "cliente@isaferboutique.com";
-    const customerName = user?.email ? user.email.split("@")[0] : "Cliente Web (WhatsApp)";
+    const customerName = user?.email
+      ? user.email.split("@")[0]
+      : "Cliente Web (WhatsApp)";
     const itemsMapped = activeCartItems.map((item) => {
-      const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+      const p = productsList.find(
+        (prod) => String(prod.id) === String(item.productId),
+      )!;
       return {
         product_id: String(p.id),
         name: `${p.name} (${item.size})`,
@@ -835,7 +981,12 @@ function Index() {
     if (localCartId) {
       deleteCart(localCartId)
         .then(() => localStorage.removeItem("isafer_cart_id"))
-        .catch((err) => console.error("Error al borrar el carrito tras checkout de WhatsApp:", err));
+        .catch((err) =>
+          console.error(
+            "Error al borrar el carrito tras checkout de WhatsApp:",
+            err,
+          ),
+        );
     }
     setCart({});
 
@@ -856,7 +1007,9 @@ function Index() {
           });
         }
       })
-      .catch((err) => console.error("No se pudo guardar el pedido en InsForge:", err));
+      .catch((err) =>
+        console.error("No se pudo guardar el pedido en InsForge:", err),
+      );
   };
 
   const handleOpenShippingModal = () => {
@@ -879,12 +1032,16 @@ function Index() {
       return;
     }
 
-    const DEFAULT_STRIPE_PRICE_ID = import.meta.env.VITE_DEFAULT_STRIPE_PRICE_ID || "price_1Q_boutique_default";
+    const DEFAULT_STRIPE_PRICE_ID =
+      import.meta.env.VITE_DEFAULT_STRIPE_PRICE_ID ||
+      "price_1Q_boutique_default";
     toast.loading("Registrando datos de envío y preparando Stripe...");
 
     try {
       const orderItemsMapped = activeCartItems.map((item) => {
-        const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+        const p = productsList.find(
+          (prod) => String(prod.id) === String(item.productId),
+        )!;
         return {
           product_id: String(p.id),
           name: `${p.name} (${item.size})`,
@@ -894,22 +1051,27 @@ function Index() {
         };
       });
 
-      const fullShippingAddress = `${details.address}, ${details.city} ${details.postalCode} ${details.countryState}`.trim();
+      const fullShippingAddress =
+        `${details.address}, ${details.city} ${details.postalCode} ${details.countryState}`.trim();
 
       // 1. Crear el pedido con todos los datos de envío en estado 'pending' en InsForge
       const orderRes = await createOrder({
         customer_name: details.fullName,
         customer_email: details.email,
         customer_phone: details.phone,
-        shipping_address: fullShippingAddress + (details.notes ? ` (Notas: ${details.notes})` : ""),
+        shipping_address:
+          fullShippingAddress +
+          (details.notes ? ` (Notas: ${details.notes})` : ""),
         total_amount: finalTotal,
         items: orderItemsMapped,
-        stripe_session_id: 'pending_session',
+        stripe_session_id: "pending_session",
       });
 
       if (!orderRes.success || !orderRes.data?.id) {
         toast.dismiss();
-        toast.error(`No se pudo registrar el pedido previo: ${orderRes.error || "Inténtalo de nuevo"}`);
+        toast.error(
+          `No se pudo registrar el pedido previo: ${orderRes.error || "Inténtalo de nuevo"}`,
+        );
         return;
       }
 
@@ -917,31 +1079,39 @@ function Index() {
 
       // 2. Crear la sesión de Stripe Checkout pasando el order_id y metadatos completos
       const lineItems = activeCartItems.map((item) => {
-        const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+        const p = productsList.find(
+          (prod) => String(prod.id) === String(item.productId),
+        )!;
         return {
-          priceId: (p.stripe_price_id && p.stripe_price_id.trim()) ? p.stripe_price_id.trim() : DEFAULT_STRIPE_PRICE_ID,
+          priceId:
+            p.stripe_price_id && p.stripe_price_id.trim()
+              ? p.stripe_price_id.trim()
+              : DEFAULT_STRIPE_PRICE_ID,
           quantity: item.quantity,
         };
       });
 
-      const { data, error } = await insforge.payments.stripe.createCheckoutSession("test", {
-        mode: "payment",
-        lineItems,
-        successUrl: `${window.location.origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancelUrl: `${window.location.origin}/?payment=cancel`,
-        customerEmail: details.email,
-        metadata: {
-          order_id: createdOrderId,
-          customer_name: details.fullName,
-          customer_phone: details.phone,
-          shipping_address: fullShippingAddress,
-        },
-      });
+      const { data, error } =
+        await insforge.payments.stripe.createCheckoutSession("test", {
+          mode: "payment",
+          lineItems,
+          successUrl: `${window.location.origin}/?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/?payment=cancel`,
+          customerEmail: details.email,
+          metadata: {
+            order_id: createdOrderId,
+            customer_name: details.fullName,
+            customer_phone: details.phone,
+            shipping_address: fullShippingAddress,
+          },
+        });
 
       if (error) {
         toast.dismiss();
         console.error("Error al crear sesión de checkout con Stripe:", error);
-        toast.error(`Error al procesar pago: ${error.message || "Inténtalo de nuevo"}`);
+        toast.error(
+          `Error al procesar pago: ${error.message || "Inténtalo de nuevo"}`,
+        );
         return;
       }
 
@@ -973,9 +1143,12 @@ function Index() {
       return;
     }
 
-    const fullShippingAddress = `${details.address}, ${details.city} ${details.postalCode} ${details.countryState}`.trim();
+    const fullShippingAddress =
+      `${details.address}, ${details.city} ${details.postalCode} ${details.countryState}`.trim();
     const orderItemsMapped = activeCartItems.map((item) => {
-      const p = productsList.find((prod) => String(prod.id) === String(item.productId))!;
+      const p = productsList.find(
+        (prod) => String(prod.id) === String(item.productId),
+      )!;
       return {
         product_id: String(p.id),
         name: `${p.name} (${item.size})`,
@@ -990,23 +1163,32 @@ function Index() {
       customer_name: details.fullName,
       customer_email: details.email,
       customer_phone: details.phone,
-      shipping_address: fullShippingAddress + (details.notes ? ` (Notas: ${details.notes})` : ""),
+      shipping_address:
+        fullShippingAddress +
+        (details.notes ? ` (Notas: ${details.notes})` : ""),
       total_amount: finalTotal,
       items: orderItemsMapped,
-    }).catch((err) => console.error("Error al guardar pedido de WhatsApp:", err));
+    }).catch((err) =>
+      console.error("Error al guardar pedido de WhatsApp:", err),
+    );
 
     const text = activeCartItems
       .map((item) => {
-        const p = productsList.find((prod) => String(prod.id) === String(item.productId));
+        const p = productsList.find(
+          (prod) => String(prod.id) === String(item.productId),
+        );
         if (!p) return null;
         return `- ${item.quantity}x ${p.name} (Talla: ${item.size}) ($${(p.price * item.quantity).toFixed(2)})`;
       })
       .filter(Boolean)
-      .join('\n');
+      .join("\n");
 
-    const msg = `Hola Isafer Boutique 💖, quiero realizar el siguiente pedido:\n\n👤 *Cliente:* ${details.fullName}\n✉️ *Email:* ${details.email}\n📱 *Teléfono:* ${details.phone}\n📍 *Dirección de Envío:* ${fullShippingAddress}\n${details.notes ? `📝 *Notas:* ${details.notes}\n` : ''}\n🛍️ *Prendas:*\n${text}\n\n*Total:* $${finalTotal.toFixed(2)} USD`;
+    const msg = `Hola Isafer Boutique 💖, quiero realizar el siguiente pedido:\n\n👤 *Cliente:* ${details.fullName}\n✉️ *Email:* ${details.email}\n📱 *Teléfono:* ${details.phone}\n📍 *Dirección de Envío:* ${fullShippingAddress}\n${details.notes ? `📝 *Notas:* ${details.notes}\n` : ""}\n🛍️ *Prendas:*\n${text}\n\n*Total:* $${finalTotal.toFixed(2)} USD`;
 
-    window.open(`https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+    window.open(
+      `https://wa.me/${OWNER_PHONE}?text=${encodeURIComponent(msg)}`,
+      "_blank",
+    );
     setShippingModalOpen(false);
     setCartOpen(false);
     toast.success("¡Pedido enviado por WhatsApp!");
@@ -1017,17 +1199,16 @@ function Index() {
     return productsList.filter((p) => p.category === activeCategory);
   }, [activeCategory, productsList]);
 
-
-
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-amber-500/20 selection:text-amber-900 dark:selection:text-amber-100">
-
       {/* 2. HEADER NAVBAR LUXE */}
-      <header className={`sticky top-0 z-40 border-b text-zinc-800 backdrop-blur-2xl transition-all duration-300 ${
-        isScrolled
-          ? "bg-[#fff8fa]/75 dark:bg-zinc-950/75 border-rose-200/50 dark:border-rose-900/50 shadow-sm"
-          : "bg-[#fff8fa]/95 dark:bg-zinc-950/95 border-rose-100/80 dark:border-rose-900/80 shadow-xs"
-      }`}>
+      <header
+        className={`sticky top-0 z-40 border-b text-zinc-800 backdrop-blur-2xl transition-all duration-300 ${
+          isScrolled
+            ? "bg-[#fff8fa]/75 dark:bg-zinc-950/75 border-rose-200/50 dark:border-rose-900/50 shadow-sm"
+            : "bg-[#fff8fa]/95 dark:bg-zinc-950/95 border-rose-100/80 dark:border-rose-900/80 shadow-xs"
+        }`}
+      >
         <div className="relative mx-auto flex h-16 sm:h-22 max-w-7xl items-center justify-between px-4 sm:px-8">
           {/* Left Menu Trigger for Fullscreen Menu */}
           <div className="flex items-center gap-2">
@@ -1053,7 +1234,11 @@ function Index() {
               className="cursor-pointer py-1"
               aria-label="Isafer Boutique Inicio"
             >
-              <IsaferLogo variant="header" size="md" className="scale-110 sm:scale-100 transition-transform" />
+              <IsaferLogo
+                variant="header"
+                size="md"
+                className="scale-110 sm:scale-100 transition-transform"
+              />
             </a>
           </div>
 
@@ -1123,7 +1308,9 @@ function Index() {
               title="Mis Favoritos"
               aria-label="Ver productos favoritos"
             >
-              <Heart className={`size-5 ${favCount > 0 ? "fill-rose-500 text-rose-500" : ""}`} />
+              <Heart
+                className={`size-5 ${favCount > 0 ? "fill-rose-500 text-rose-500" : ""}`}
+              />
               {favCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 flex size-4 sm:size-4.5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-xs">
                   {favCount}
@@ -1158,7 +1345,9 @@ function Index() {
                     </span>
                   </SheetTitle>
                   <SheetDescription className="text-zinc-500 text-xs">
-                    {itemCount ? "Finaliza tu pedido en 1 clic de forma segura" : "Explora nuestra colección y añade tus prendas preferidas"}
+                    {itemCount
+                      ? "Finaliza tu pedido en 1 clic de forma segura"
+                      : "Explora nuestra colección y añade tus prendas preferidas"}
                   </SheetDescription>
                 </SheetHeader>
 
@@ -1170,7 +1359,11 @@ function Index() {
                           <Sparkles className="size-3" /> Beneficio VIP Isafer
                         </div>
                         <p className="text-xs font-bold text-zinc-900 mt-0.5 leading-tight">
-                          Inicia sesión para <span className="text-rose-600 font-extrabold">10% OFF</span> y guardar tu bolsa
+                          Inicia sesión para{" "}
+                          <span className="text-rose-600 font-extrabold">
+                            10% OFF
+                          </span>{" "}
+                          y guardar tu bolsa
                         </p>
                       </div>
                       <Button
@@ -1190,8 +1383,12 @@ function Index() {
                   {itemCount === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-center text-zinc-500 py-12">
                       <ShoppingBag className="size-16 mb-4 text-rose-300 stroke-[1.2]" />
-                      <p className="text-sm font-extrabold uppercase tracking-wider text-zinc-805">Tu bolsa está vacía actualmente</p>
-                      <p className="text-xs mt-1.5 text-zinc-500">Explora y añade licras o vestidos de la nueva colección</p>
+                      <p className="text-sm font-extrabold uppercase tracking-wider text-zinc-805">
+                        Tu bolsa está vacía actualmente
+                      </p>
+                      <p className="text-xs mt-1.5 text-zinc-500">
+                        Explora y añade licras o vestidos de la nueva colección
+                      </p>
                       <Button
                         variant="outline"
                         className="mt-6 w-full rounded-xl border border-rose-200 bg-white text-[#ff007f] hover:bg-rose-50/50 text-xs font-black uppercase tracking-widest py-3.5 shadow-sm cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
@@ -1205,7 +1402,9 @@ function Index() {
                     </div>
                   ) : (
                     Object.entries(cart).map(([cartKey, item]) => {
-                      const product = productsList.find((p) => String(p.id) === String(item.productId));
+                      const product = productsList.find(
+                        (p) => String(p.id) === String(item.productId),
+                      );
                       if (!product) return null;
                       return (
                         <div
@@ -1217,7 +1416,9 @@ function Index() {
                           </div>
                           <div className="min-w-0 flex flex-col justify-between">
                             <div>
-                              <p className="truncate font-extrabold text-sm text-zinc-900">{product.name}</p>
+                              <p className="truncate font-extrabold text-sm text-zinc-900">
+                                {product.name}
+                              </p>
                               <div className="flex items-center gap-1.5 mt-1">
                                 <span className="inline-flex items-center rounded-md bg-rose-100/80 px-2 py-0.5 text-[10px] font-black text-rose-700 uppercase tracking-wider">
                                   Talla: {item.size}
@@ -1226,7 +1427,8 @@ function Index() {
                             </div>
                             <div className="flex items-center justify-between mt-2">
                               <p className="text-xs text-rose-600 font-mono font-black">
-                                ${(product.price * item.quantity).toFixed(2)} USD
+                                ${(product.price * item.quantity).toFixed(2)}{" "}
+                                USD
                               </p>
                               <div className="flex items-center gap-2">
                                 <div className="flex items-center border border-rose-100 rounded-full bg-white shadow-xs">
@@ -1239,7 +1441,9 @@ function Index() {
                                   >
                                     <Minus className="size-3" />
                                   </Button>
-                                  <span className="w-5 text-center text-xs font-bold text-zinc-800">{item.quantity}</span>
+                                  <span className="w-5 text-center text-xs font-bold text-zinc-800">
+                                    {item.quantity}
+                                  </span>
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -1275,7 +1479,9 @@ function Index() {
                       <label className="text-[10px] font-extrabold text-zinc-600 uppercase tracking-widest flex items-center justify-between">
                         <span>¿Tienes un cupón VIP?</span>
                         {appliedCoupon && (
-                          <span className="text-emerald-600 font-mono font-black">{appliedCoupon} (-{discountPercent}%)</span>
+                          <span className="text-emerald-600 font-mono font-black">
+                            {appliedCoupon} (-{discountPercent}%)
+                          </span>
                         )}
                       </label>
                       <div className="flex gap-2">
@@ -1302,12 +1508,21 @@ function Index() {
                       {discountPercent > 0 && (
                         <div className="flex items-center justify-between text-xs text-rose-600 font-bold">
                           <span>Descuento VIP ({discountPercent}%)</span>
-                          <span className="font-mono">-${(subtotal * (discountPercent / 100)).toFixed(2)} USD</span>
+                          <span className="font-mono">
+                            -${(subtotal * (discountPercent / 100)).toFixed(2)}{" "}
+                            USD
+                          </span>
                         </div>
                       )}
                       <div className="flex items-center justify-between text-sm font-bold">
-                        <span className="text-zinc-700">{discountPercent > 0 ? "Total con Descuento" : "Subtotal"}</span>
-                        <span className="text-xl font-mono text-zinc-950 font-black">${finalTotal.toFixed(2)} USD</span>
+                        <span className="text-zinc-700">
+                          {discountPercent > 0
+                            ? "Total con Descuento"
+                            : "Subtotal"}
+                        </span>
+                        <span className="text-xl font-mono text-zinc-950 font-black">
+                          ${finalTotal.toFixed(2)} USD
+                        </span>
                       </div>
                     </div>
 
@@ -1349,7 +1564,9 @@ function Index() {
               <div
                 key={src}
                 className={`absolute inset-0 h-full w-full transition-opacity duration-[3000ms] ease-in-out ${
-                  isActive ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                  isActive
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none"
                 }`}
               >
                 {/* Ambient Blurred Backdrop for Widescreen Desktop Displays */}
@@ -1361,7 +1578,11 @@ function Index() {
                 {/* Main Hero Image */}
                 <img
                   src={src}
-                  alt={index === 0 ? "Camila — Dueña y Fundadora de Isafer Boutique" : `Colección Isafer Boutique ${index + 1}`}
+                  alt={
+                    index === 0
+                      ? "Camila — Dueña y Fundadora de Isafer Boutique"
+                      : `Colección Isafer Boutique ${index + 1}`
+                  }
                   width={1280}
                   height={1600}
                   fetchPriority={index === 0 ? "high" : "low"}
@@ -1428,7 +1649,10 @@ function Index() {
         />
 
         {/* 4. BENTO GRID CATEGORIES (Barbie Style) */}
-        <section id="categorias" className="scroll-mt-20 py-16 sm:py-24 bg-rose-50 dark:bg-[#1a0f14]">
+        <section
+          id="categorias"
+          className="scroll-mt-20 py-16 sm:py-24 bg-rose-50 dark:bg-[#1a0f14]"
+        >
           <div className="mx-auto max-w-7xl px-5 sm:px-8">
             <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
               <div>
@@ -1440,7 +1664,8 @@ function Index() {
                 </h2>
               </div>
               <p className="text-xs sm:text-sm font-medium text-rose-700/80 dark:text-rose-300/80 max-w-xs leading-relaxed">
-                Selecciona la categoría perfecta para tu próxima salida o evento. Brilla con estilo.
+                Selecciona la categoría perfecta para tu próxima salida o
+                evento. Brilla con estilo.
               </p>
             </div>
 
@@ -1465,7 +1690,8 @@ function Index() {
                       Licras Moldeadoras
                     </h3>
                     <p className="mt-2 text-sm text-pink-100 max-w-md font-medium">
-                      Compresión inteligente con tejido moldeador que ajusta la cintura y esculpe la silueta sin perder comodidad.
+                      Compresión inteligente con tejido moldeador que ajusta la
+                      cintura y esculpe la silueta sin perder comodidad.
                     </p>
                   </div>
                   <span className="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-pink-300 group-hover:text-pink-200 group-hover:translate-x-1 transition-all">
@@ -1489,8 +1715,12 @@ function Index() {
                     <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white mb-3">
                       Sensual & Noche
                     </span>
-                    <h3 className="font-display text-3xl font-black text-white italic drop-shadow-md">Vestidos de Malla</h3>
-                    <p className="mt-1 text-xs text-pink-100 font-medium">Transparencias y drapeados sexy.</p>
+                    <h3 className="font-display text-3xl font-black text-white italic drop-shadow-md">
+                      Vestidos de Malla
+                    </h3>
+                    <p className="mt-1 text-xs text-pink-100 font-medium">
+                      Transparencias y drapeados sexy.
+                    </p>
                   </div>
                   <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-pink-300 group-hover:text-pink-200 group-hover:translate-x-1 transition-all">
                     Explorar <ArrowRight className="size-4" />
@@ -1513,8 +1743,12 @@ function Index() {
                     <span className="inline-block rounded-full bg-white/20 backdrop-blur-md border border-white/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white mb-3">
                       Outfits 2 Piezas
                     </span>
-                    <h3 className="font-display text-3xl font-black text-white italic drop-shadow-md">Tops & Sets</h3>
-                    <p className="mt-1 text-xs text-pink-100 font-medium">Bandeau, nudos y combinables.</p>
+                    <h3 className="font-display text-3xl font-black text-white italic drop-shadow-md">
+                      Tops & Sets
+                    </h3>
+                    <p className="mt-1 text-xs text-pink-100 font-medium">
+                      Bandeau, nudos y combinables.
+                    </p>
                   </div>
                   <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-pink-300 group-hover:text-pink-200 group-hover:translate-x-1 transition-all">
                     Explorar <ArrowRight className="size-4" />
@@ -1526,7 +1760,10 @@ function Index() {
         </section>
 
         {/* 5. BEST SELLERS CATALOG (gpt-taste & motion-design) */}
-        <section id="coleccion" className="scroll-mt-20 py-16 sm:py-24 bg-background">
+        <section
+          id="coleccion"
+          className="scroll-mt-20 py-16 sm:py-24 bg-background"
+        >
           <div className="mx-auto max-w-7xl px-4 sm:px-8">
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
@@ -1552,10 +1789,11 @@ function Index() {
                     key={id}
                     variant={activeCategory === id ? "default" : "outline"}
                     size="sm"
-                    className={`rounded-full px-5 text-xs font-semibold transition-all ${activeCategory === id
+                    className={`rounded-full px-5 text-xs font-semibold transition-all ${
+                      activeCategory === id
                         ? "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-md"
                         : "border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      }`}
+                    }`}
                     onClick={() => setActiveCategory(id)}
                   >
                     {label}
@@ -1567,9 +1805,9 @@ function Index() {
             {/* Product Cards Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {filteredProducts.map((product, idx) => {
-                const shouldHide = !isCatalogExpanded && (
-                  idx >= 4 ? (idx >= 8 ? "hidden" : "hidden lg:block") : ""
-                );
+                const shouldHide =
+                  !isCatalogExpanded &&
+                  (idx >= 4 ? (idx >= 8 ? "hidden" : "hidden lg:block") : "");
                 return (
                   <article
                     key={product.id}
@@ -1602,7 +1840,9 @@ function Index() {
                         product={product}
                         isOpen={quickAddOpenId === product.id}
                         onClose={() => setQuickAddOpenId(null)}
-                        onSelectSize={(size) => handleQuickAddSizeSelect(product.id, size)}
+                        onSelectSize={(size) =>
+                          handleQuickAddSizeSelect(product.id, size)
+                        }
                       />
                     </div>
 
@@ -1621,19 +1861,28 @@ function Index() {
 
                       <div className="mt-4 flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
                         <span className="font-mono text-lg font-extrabold text-zinc-950 dark:text-zinc-100">
-                          ${product.price.toFixed(2)} <span className="text-[10px] font-normal text-zinc-400 hidden sm:inline">USD</span>
+                          ${product.price.toFixed(2)}{" "}
+                          <span className="text-[10px] font-normal text-zinc-400 hidden sm:inline">
+                            USD
+                          </span>
                         </span>
-                        
+
                         {/* Botón de Añadir para Móviles (Pull&Bear Inline Quick-Add) */}
                         <Button
-                          id={idx === 0 ? "add-to-cart-first-product-mobile" : undefined}
+                          id={
+                            idx === 0
+                              ? "add-to-cart-first-product-mobile"
+                              : undefined
+                          }
                           data-testid="add-to-cart-button-mobile"
                           variant="default"
                           size="sm"
                           className="rounded-full h-9 px-3.5 text-xs font-bold bg-zinc-950 hover:bg-zinc-900 text-white border border-zinc-800 transition-transform active:scale-95 flex sm:hidden items-center gap-1 cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setQuickAddOpenId((prev) => (prev === product.id ? null : product.id));
+                            setQuickAddOpenId((prev) =>
+                              prev === product.id ? null : product.id,
+                            );
                           }}
                           aria-label={t("catalog_add_to_cart")}
                         >
@@ -1674,13 +1923,9 @@ function Index() {
                   className="rounded-full h-12 px-8 text-xs font-bold uppercase tracking-[0.2em] bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 border border-zinc-300 dark:border-zinc-700 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg shadow-zinc-200/20"
                 >
                   {isCatalogExpanded ? (
-                    <>
-                      {t("catalog_show_less")} ✦
-                    </>
+                    <>{t("catalog_show_less")} ✦</>
                   ) : (
-                    <>
-                      {t("catalog_show_more")} ✦
-                    </>
+                    <>{t("catalog_show_more")} ✦</>
                   )}
                 </Button>
               </div>
@@ -1689,12 +1934,21 @@ function Index() {
         </section>
 
         {/* 6. EDITORIAL BANNER SECTION (Sobre Nosotros - Barbie Style Curved) */}
-        <section id="historia" className="relative w-full min-h-[450px] py-20 bg-gradient-to-r from-pink-300 to-rose-300 overflow-hidden flex items-center">
-          
+        <section
+          id="historia"
+          className="relative w-full min-h-[450px] py-20 bg-gradient-to-r from-pink-300 to-rose-300 overflow-hidden flex items-center"
+        >
           {/* Top Curved Divider */}
           <div className="absolute top-0 left-0 w-full overflow-hidden leading-[0] z-20">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full h-[40px] sm:h-[80px]">
-              <path d="M0,0 L1440,0 L1440,20 Q720,120 0,20 Z" className="fill-rose-50 dark:fill-[#1a0f14]" />
+            <svg
+              viewBox="0 0 1440 120"
+              preserveAspectRatio="none"
+              className="w-full h-[40px] sm:h-[80px]"
+            >
+              <path
+                d="M0,0 L1440,0 L1440,20 Q720,120 0,20 Z"
+                className="fill-rose-50 dark:fill-[#1a0f14]"
+              />
             </svg>
           </div>
 
@@ -1705,7 +1959,8 @@ function Index() {
                 Nuestra Esencia
               </h2>
               <p className="text-sm sm:text-lg lg:text-xl font-semibold leading-relaxed text-rose-950/80 drop-shadow-sm">
-                Desde 2024 creamos moda con sensibilidad, con corazón. No es solo diseñar ropa, es poner un poco de alma en cada pieza.
+                Desde 2024 creamos moda con sensibilidad, con corazón. No es
+                solo diseñar ropa, es poner un poco de alma en cada pieza.
               </p>
 
               <div className="pt-2 flex justify-center md:justify-start">
@@ -1724,112 +1979,198 @@ function Index() {
 
           {/* Bottom Curved Divider */}
           <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0] z-20 rotate-180">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="w-full h-[40px] sm:h-[80px]">
-              <path d="M0,0 L1440,0 L1440,20 Q720,120 0,20 Z" className="fill-zinc-50 dark:fill-zinc-950" />
+            <svg
+              viewBox="0 0 1440 120"
+              preserveAspectRatio="none"
+              className="w-full h-[40px] sm:h-[80px]"
+            >
+              <path
+                d="M0,0 L1440,0 L1440,20 Q720,120 0,20 Z"
+                className="fill-zinc-50 dark:fill-zinc-950"
+              />
             </svg>
           </div>
         </section>
 
         {/* 7. VISÍTANOS EN BROOKLYN (BENTO SHOWROOM) */}
-        <section id="visitanos" className="scroll-mt-20 py-24 px-5 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden">
+        <section
+          id="visitanos"
+          className="scroll-mt-20 py-24 px-5 bg-zinc-50 dark:bg-zinc-950 relative overflow-hidden"
+        >
           <div className="absolute inset-0 bg-grid-zinc-200/50 dark:bg-grid-white/[0.02] bg-[size:32px_32px]" />
           <div className="mx-auto max-w-6xl relative z-10">
             <div className="flex flex-col gap-2 mb-12 text-center sm:text-left">
-              <span className="text-xs font-black uppercase tracking-[0.3em] text-rose-500">Nuestra Tienda Física y Showroom</span>
-              <h2 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight">Visítanos en Brooklyn</h2>
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-rose-500">
+                Nuestra Tienda Física y Showroom
+              </span>
+              <h2 className="font-display text-4xl sm:text-5xl font-extrabold tracking-tight">
+                Visítanos en Brooklyn
+              </h2>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Address / Map */}
               <div className="md:col-span-12 lg:col-span-8 group relative overflow-hidden rounded-[2rem] border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-8 sm:p-12 shadow-xl hover:shadow-2xl transition-all duration-500 backdrop-blur-xl">
-                 <div className="absolute -right-10 -bottom-10 text-rose-500/15 group-hover:text-rose-500/25 transition-all duration-700 transform group-hover:scale-110 pointer-events-none">
-                   <MapPin className="w-96 h-96" />
-                 </div>
-                 <div className="relative z-10 flex flex-col h-full justify-between">
-                    <div>
-                      <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 mb-6 border border-rose-500/20 shadow-sm">
-                        <MapPin className="size-7" />
-                      </div>
-                      <h3 className="text-2xl sm:text-3xl font-bold mb-4 tracking-tight">4711 4th Ave, Brooklyn, NY</h3>
-                      <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-lg leading-relaxed font-medium">
-                        Pruebas privadas de vestuario, asesoría de estilo personalizada y atención directa en nuestra boutique en Sunset Park.
-                      </p>
+                <div className="absolute -right-10 -bottom-10 text-rose-500/15 group-hover:text-rose-500/25 transition-all duration-700 transform group-hover:scale-110 pointer-events-none">
+                  <MapPin className="w-96 h-96" />
+                </div>
+                <div className="relative z-10 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="inline-flex size-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 mb-6 border border-rose-500/20 shadow-sm">
+                      <MapPin className="size-7" />
                     </div>
-                    <div className="mt-10 flex flex-wrap gap-4">
-                      <Button asChild className="h-14 rounded-full px-8 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs uppercase tracking-wider shadow-lg hover:-translate-y-1 transition-all">
-                        <a href="https://maps.app.goo.gl/2kHjqUHMUXyegViK8" target="_blank" rel="noreferrer">
-                          Abrir en Google Maps <MapPin className="ml-2 size-4" />
-                        </a>
-                      </Button>
-                      <Button asChild variant="outline" className="h-14 rounded-full px-8 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 font-bold text-xs uppercase tracking-wider transition-all hover:-translate-y-1 bg-white/50 dark:bg-black/20 backdrop-blur-md">
-                        <a href={`https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique`} target="_blank" rel="noreferrer">
-                          Cita Previa <WhatsAppIcon className="ml-2 size-4 text-emerald-500" />
-                        </a>
-                      </Button>
-                    </div>
-                 </div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 tracking-tight">
+                      4711 4th Ave, Brooklyn, NY
+                    </h3>
+                    <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-lg leading-relaxed font-medium">
+                      Pruebas privadas de vestuario, asesoría de estilo
+                      personalizada y atención directa en nuestra boutique en
+                      Sunset Park.
+                    </p>
+                  </div>
+                  <div className="mt-10 flex flex-wrap gap-4">
+                    <Button
+                      asChild
+                      className="h-14 rounded-full px-8 bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs uppercase tracking-wider shadow-lg hover:-translate-y-1 transition-all"
+                    >
+                      <a
+                        href="https://maps.app.goo.gl/2kHjqUHMUXyegViK8"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Abrir en Google Maps <MapPin className="ml-2 size-4" />
+                      </a>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="h-14 rounded-full px-8 border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-white/5 font-bold text-xs uppercase tracking-wider transition-all hover:-translate-y-1 bg-white/50 dark:bg-black/20 backdrop-blur-md"
+                    >
+                      <a
+                        href={`https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Cita Previa{" "}
+                        <WhatsAppIcon className="ml-2 size-4 text-emerald-500" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {/* Operating Hours */}
               <div className="md:col-span-6 lg:col-span-4 group relative overflow-hidden rounded-[2rem] border border-zinc-200/50 dark:border-white/5 bg-white/70 dark:bg-zinc-900/50 p-8 shadow-xl hover:shadow-2xl transition-all duration-500 backdrop-blur-xl">
-                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/10 pb-5 mb-5">
-                   <span className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
-                     <Clock className="size-4 text-emerald-500" /> Horario
-                   </span>
-                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
-                     <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Abierto
-                   </span>
-                 </div>
-                 <div className="grid grid-cols-2 gap-y-3.5 text-sm">
-                   <div className="font-semibold text-zinc-400">Lunes:</div>
-                   <div className="font-bold text-rose-500 text-right">Cerrado</div>
-                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Martes:</div>
-                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
-                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Miércoles:</div>
-                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
-                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Jueves:</div>
-                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
-                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Viernes:</div>
-                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
-                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Sábado:</div>
-                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
-                   <div className="font-semibold text-zinc-700 dark:text-zinc-300">Domingo:</div>
-                   <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">11 AM – 8 PM</div>
-                 </div>
+                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/10 pb-5 mb-5">
+                  <span className="text-xs font-black uppercase tracking-widest flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+                    <Clock className="size-4 text-emerald-500" /> Horario
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold font-mono">
+                    <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>{" "}
+                    Abierto
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-y-3.5 text-sm">
+                  <div className="font-semibold text-zinc-400">Lunes:</div>
+                  <div className="font-bold text-rose-500 text-right">
+                    Cerrado
+                  </div>
+                  <div className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    Martes:
+                  </div>
+                  <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">
+                    11 AM – 8 PM
+                  </div>
+                  <div className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    Miércoles:
+                  </div>
+                  <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">
+                    11 AM – 8 PM
+                  </div>
+                  <div className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    Jueves:
+                  </div>
+                  <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">
+                    11 AM – 8 PM
+                  </div>
+                  <div className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    Viernes:
+                  </div>
+                  <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">
+                    11 AM – 8 PM
+                  </div>
+                  <div className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    Sábado:
+                  </div>
+                  <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">
+                    11 AM – 8 PM
+                  </div>
+                  <div className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    Domingo:
+                  </div>
+                  <div className="font-mono font-medium text-right text-zinc-900 dark:text-zinc-100">
+                    11 AM – 8 PM
+                  </div>
+                </div>
               </div>
 
               {/* Contact / Social Grid (Diseño compacto horizontal en móvil, tarjetas en escritorio) */}
               <div className="md:col-span-6 lg:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
-                 {/* Phone */}
-                 <a href="tel:+19293531953" className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-zinc-900/60 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-xl">
-                   <div className="size-8 sm:size-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 sm:mb-2">
-                     <Phone className="size-4 sm:size-5 text-zinc-600 dark:text-zinc-300 group-hover:text-rose-500 transition-colors" />
-                   </div>
-                   <div className="min-w-0 flex-1 sm:flex-initial">
-                     <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 sm:mb-0.5">Llámanos</span>
-                     <span className="font-mono font-bold text-xs sm:text-base text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors truncate">+1 (929) 353-1953</span>
-                   </div>
-                 </a>
-                 {/* Instagram */}
-                 <a href="https://www.instagram.com/shopisafer" target="_blank" rel="noreferrer" className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-xl">
-                   <div className="size-8 sm:size-10 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center shrink-0 sm:mb-2">
-                     <Instagram className="size-4 sm:size-5 text-rose-500 group-hover:text-rose-600 transition-colors" />
-                   </div>
-                   <div className="min-w-0 flex-1 sm:flex-initial">
-                     <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-rose-400 sm:mb-0.5">Síguenos</span>
-                     <span className="font-bold text-xs sm:text-base text-rose-600 dark:text-rose-300 truncate">@shopisafer</span>
-                   </div>
-                 </a>
-                 {/* TikTok */}
-                 <a href="https://www.tiktok.com/@shop_isafer1" target="_blank" rel="noreferrer" className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-950 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-                   <div className="size-8 sm:size-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0 sm:mb-2">
-                     <TikTokIcon className="size-4 sm:size-5 text-cyan-400 group-hover:text-white transition-colors" />
-                   </div>
-                   <div className="min-w-0 flex-1 sm:flex-initial">
-                     <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 sm:mb-0.5">Tendencias</span>
-                     <span className="font-bold text-xs sm:text-base text-white truncate">@shop_isafer1</span>
-                   </div>
-                 </a>
+                {/* Phone */}
+                <a
+                  href="tel:+19293531953"
+                  className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-zinc-900/60 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-xl"
+                >
+                  <div className="size-8 sm:size-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 sm:mb-2">
+                    <Phone className="size-4 sm:size-5 text-zinc-600 dark:text-zinc-300 group-hover:text-rose-500 transition-colors" />
+                  </div>
+                  <div className="min-w-0 flex-1 sm:flex-initial">
+                    <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 sm:mb-0.5">
+                      Llámanos
+                    </span>
+                    <span className="font-mono font-bold text-xs sm:text-base text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors truncate">
+                      +1 (929) 353-1953
+                    </span>
+                  </div>
+                </a>
+                {/* Instagram */}
+                <a
+                  href="https://www.instagram.com/shopisafer"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/80 dark:bg-rose-950/30 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 backdrop-blur-xl"
+                >
+                  <div className="size-8 sm:size-10 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center shrink-0 sm:mb-2">
+                    <Instagram className="size-4 sm:size-5 text-rose-500 group-hover:text-rose-600 transition-colors" />
+                  </div>
+                  <div className="min-w-0 flex-1 sm:flex-initial">
+                    <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-rose-400 sm:mb-0.5">
+                      Síguenos
+                    </span>
+                    <span className="font-bold text-xs sm:text-base text-rose-600 dark:text-rose-300 truncate">
+                      @shopisafer
+                    </span>
+                  </div>
+                </a>
+                {/* TikTok */}
+                <a
+                  href="https://www.tiktok.com/@shop_isafer1"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 sm:flex-col sm:justify-center sm:items-center text-left sm:text-center rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-950 p-2.5 sm:p-5 shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                >
+                  <div className="size-8 sm:size-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0 sm:mb-2">
+                    <TikTokIcon className="size-4 sm:size-5 text-cyan-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="min-w-0 flex-1 sm:flex-initial">
+                    <span className="block text-[9px] sm:text-xs font-black uppercase tracking-widest text-zinc-400 sm:mb-0.5">
+                      Tendencias
+                    </span>
+                    <span className="font-bold text-xs sm:text-base text-white truncate">
+                      @shop_isafer1
+                    </span>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
@@ -1848,17 +2189,23 @@ function Index() {
             <div className="relative z-10 w-full flex flex-col items-center">
               {/* Badge VIP */}
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-pink-200 text-pink-600 text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase mb-4 shadow-sm">
-                <Crown className="size-3.5 text-pink-500 animate-pulse" /> CLUB VIP · ISAFÉR BOUTIQUE
+                <Crown className="size-3.5 text-pink-500 animate-pulse" /> CLUB
+                VIP · ISAFÉR BOUTIQUE
               </span>
 
               {/* Título Principal */}
               <h3 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-rose-950 tracking-tight leading-tight max-w-2xl">
-                Consigue <span className="font-serif italic font-normal text-pink-500 drop-shadow-sm">10% OFF</span> en tu primer pedido
+                Consigue{" "}
+                <span className="font-serif italic font-normal text-pink-500 drop-shadow-sm">
+                  10% OFF
+                </span>{" "}
+                en tu primer pedido
               </h3>
 
               {/* Subtítulo */}
               <p className="mt-4 text-xs sm:text-sm text-rose-700 font-medium max-w-lg leading-relaxed">
-                Recibe avisos VIP de lanzamientos secretos, ventas exclusivas y ofertas semanales directamente en tu email.
+                Recibe avisos VIP de lanzamientos secretos, ventas exclusivas y
+                ofertas semanales directamente en tu email.
               </p>
 
               {/* Formulario Unificado en Barra de Entrada Elegante */}
@@ -1898,7 +2245,8 @@ function Index() {
 
               {/* Mensaje de Confianza */}
               <p className="mt-5 text-[10px] text-rose-400/80 font-medium tracking-wider">
-                🔒 Respetamos tu privacidad. Cancela tu suscripción en cualquier momento.
+                🔒 Respetamos tu privacidad. Cancela tu suscripción en cualquier
+                momento.
               </p>
             </div>
           </div>
@@ -1912,7 +2260,9 @@ function Index() {
             <div className="space-y-5 text-center md:text-left flex flex-col items-center md:items-start">
               <IsaferLogo variant="footer" size="lg" />
               <p className="text-xs text-zinc-900 leading-relaxed max-w-xs font-medium">
-                Moda femenina moldeadora, sensual y elegante. Diseñado en Brooklyn, NY para resaltar la seguridad y belleza natural de la mujer.
+                Moda femenina moldeadora, sensual y elegante. Diseñado en
+                Brooklyn, NY para resaltar la seguridad y belleza natural de la
+                mujer.
               </p>
               <div className="pt-2 flex items-center gap-3">
                 <a
@@ -1948,13 +2298,18 @@ function Index() {
             {/* Col 2: Colecciones */}
             <div className="space-y-5 text-center md:text-left">
               <h4 className="font-display text-sm font-black uppercase tracking-[0.2em] text-zinc-950 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" /> Colecciones
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" />{" "}
+                Colecciones
               </h4>
               <ul className="space-y-3.5 text-sm text-zinc-900 font-medium">
                 <li>
                   <a
                     href="#coleccion"
-                    onClick={(e) => { e.preventDefault(); setActiveCategory("Licras"); scrollToSection("coleccion"); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveCategory("Licras");
+                      scrollToSection("coleccion");
+                    }}
                     className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Fajas & Licras Moldeadoras
@@ -1963,7 +2318,11 @@ function Index() {
                 <li>
                   <a
                     href="#coleccion"
-                    onClick={(e) => { e.preventDefault(); setActiveCategory("Vestidos"); scrollToSection("coleccion"); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveCategory("Vestidos");
+                      scrollToSection("coleccion");
+                    }}
                     className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Vestidos Glam & Noche
@@ -1972,7 +2331,11 @@ function Index() {
                 <li>
                   <a
                     href="#coleccion"
-                    onClick={(e) => { e.preventDefault(); setActiveCategory("Tops & Sets"); scrollToSection("coleccion"); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveCategory("Tops & Sets");
+                      scrollToSection("coleccion");
+                    }}
                     className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Conjuntos & Tops Luxe
@@ -1981,7 +2344,10 @@ function Index() {
                 <li>
                   <a
                     href="#historia"
-                    onClick={(e) => { e.preventDefault(); setAboutUsModalOpen(true); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setAboutUsModalOpen(true);
+                    }}
                     className="hover:text-pink-500 hover:translate-x-1 inline-block transition-all"
                   >
                     Nuestra Historia & Atelier
@@ -1993,7 +2359,8 @@ function Index() {
             {/* Col 3: Servicio al Cliente */}
             <div className="space-y-5 text-center md:text-left">
               <h4 className="font-display text-sm font-black uppercase tracking-[0.2em] text-zinc-950 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" /> Servicio & Garantía
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" />{" "}
+                Servicio & Garantía
               </h4>
               <ul className="space-y-3.5 text-sm text-zinc-900 font-medium flex flex-col items-center md:items-start">
                 <li className="flex items-center gap-2.5">
@@ -2011,7 +2378,10 @@ function Index() {
                 <li className="flex items-center gap-2.5">
                   <a
                     href="#visitanos"
-                    onClick={(e) => { e.preventDefault(); scrollToSection("visitanos"); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection("visitanos");
+                    }}
                     className="hover:text-pink-500 flex items-center gap-2.5 transition-colors"
                   >
                     <div className="p-1.5 rounded-full bg-white shadow-sm border border-pink-100">
@@ -2039,7 +2409,8 @@ function Index() {
             {/* Col 4: Contacto */}
             <div className="space-y-5 text-center md:text-left">
               <h4 className="font-display text-sm font-black uppercase tracking-[0.2em] text-zinc-950 flex items-center justify-center md:justify-start gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" /> Contacto
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 inline-block" />{" "}
+                Contacto
               </h4>
               <ul className="space-y-3.5 text-sm text-zinc-900 font-medium">
                 <li className="flex items-center justify-center md:justify-start gap-2">
@@ -2047,7 +2418,10 @@ function Index() {
                   <span>4711 4th Ave, Brooklyn, NY</span>
                 </li>
                 <li>
-                  <a href="tel:+19293531953" className="flex items-center justify-center md:justify-start gap-2 hover:text-pink-500 transition-colors">
+                  <a
+                    href="tel:+19293531953"
+                    className="flex items-center justify-center md:justify-start gap-2 hover:text-pink-500 transition-colors"
+                  >
                     <Phone className="size-4 text-pink-400 shrink-0" />
                     <span>+1 (929) 353-1953</span>
                   </a>
@@ -2058,7 +2432,8 @@ function Index() {
                 </li>
               </ul>
               <div className="flex items-center justify-center md:justify-start gap-1.5 pt-1 text-[10px] text-zinc-500 font-medium">
-                <Lock className="size-3 shrink-0" /> Pago seguro con tarjeta o Apple Pay
+                <Lock className="size-3 shrink-0" /> Pago seguro con tarjeta o
+                Apple Pay
               </div>
             </div>
           </div>
@@ -2125,7 +2500,11 @@ function Index() {
           {/* Header Fijo con Fondo Blanco y Separador */}
           <div className="mx-[-24px] mt-[-24px] mb-4 bg-white border-b border-rose-100/50 px-6 py-5 flex items-center justify-between shadow-sm">
             <div className="scale-110 origin-left transition-transform">
-              <IsaferLogo variant="header" size="lg" className="hover:scale-100" />
+              <IsaferLogo
+                variant="header"
+                size="lg"
+                className="hover:scale-100"
+              />
             </div>
           </div>
 
@@ -2167,19 +2546,50 @@ function Index() {
 
               {/* 2. Catálogo / Colecciones */}
               <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="categories" className="border-b border-rose-100/40 py-0.5">
+                <AccordionItem
+                  value="categories"
+                  className="border-b border-rose-100/40 py-0.5"
+                >
                   <AccordionTrigger className="text-xs font-black uppercase tracking-wider text-zinc-800 hover:text-rose-600 hover:no-underline py-3.5">
                     {t("nav_categories") || "Catálogo / Colecciones"}
                   </AccordionTrigger>
                   <AccordionContent className="pt-1 pb-2 pl-3 flex flex-col gap-1.5">
                     {[
-                      { label: t("catalog_filter_all"), category: "Todos", icon: Grid },
-                      { label: t("catalog_filter_shapewear"), category: "Licras", icon: Sliders },
-                      { label: t("catalog_filter_dresses"), category: "Vestidos", icon: Crown },
-                      { label: t("catalog_filter_sets"), category: "Tops & Sets", icon: Layers },
-                      { label: "Bodys & Corsets Moldeadores", category: "Bodys & Corsets", icon: Flame },
-                      { label: "Accesorios Luxe & Glam", category: "Accesorios & Glam", icon: Gem },
-                      { label: t("catalog_filter_protection"), category: "Gas Pimienta", icon: ShieldCheck },
+                      {
+                        label: t("catalog_filter_all"),
+                        category: "Todos",
+                        icon: Grid,
+                      },
+                      {
+                        label: t("catalog_filter_shapewear"),
+                        category: "Licras",
+                        icon: Sliders,
+                      },
+                      {
+                        label: t("catalog_filter_dresses"),
+                        category: "Vestidos",
+                        icon: Crown,
+                      },
+                      {
+                        label: t("catalog_filter_sets"),
+                        category: "Tops & Sets",
+                        icon: Layers,
+                      },
+                      {
+                        label: "Bodys & Corsets Moldeadores",
+                        category: "Bodys & Corsets",
+                        icon: Flame,
+                      },
+                      {
+                        label: "Accesorios Luxe & Glam",
+                        category: "Accesorios & Glam",
+                        icon: Gem,
+                      },
+                      {
+                        label: t("catalog_filter_protection"),
+                        category: "Gas Pimienta",
+                        icon: ShieldCheck,
+                      },
                     ].map((item) => (
                       <a
                         key={item.category}
@@ -2242,10 +2652,16 @@ function Index() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-extrabold text-zinc-800 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                      {isAdmin ? <ShieldCheck className="size-3.5 text-amber-500" /> : <UserCheck className="size-3.5 text-rose-500" />}
+                      {isAdmin ? (
+                        <ShieldCheck className="size-3.5 text-amber-500" />
+                      ) : (
+                        <UserCheck className="size-3.5 text-rose-500" />
+                      )}
                       {isAdmin ? "Panel Administradora" : "Mi Perfil Cliente"}
                     </p>
-                    <p className="text-zinc-500 text-[9px] truncate">{user.email}</p>
+                    <p className="text-zinc-500 text-[9px] truncate">
+                      {user.email}
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-2 mt-3">
@@ -2257,7 +2673,7 @@ function Index() {
                         else setCustomerModalOpen(true);
                       }, 200);
                     }}
-                    style={{ backgroundColor: '#09090b', color: '#ffffff' }}
+                    style={{ backgroundColor: "#09090b", color: "#ffffff" }}
                     className="flex-1 h-9 rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-zinc-900 transition-colors cursor-pointer flex items-center justify-center border border-zinc-800"
                   >
                     Abrir Panel
@@ -2279,7 +2695,8 @@ function Index() {
                 onClick={() => setFullScreenMenuOpen(false)}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#ff007f] hover:bg-rose-600 text-white text-xs font-black uppercase tracking-wider py-3.5 shadow-md shadow-rose-500/10 cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
               >
-                <User className="size-4 text-white animate-pulse" /> Acceder o Crear Cuenta VIP
+                <User className="size-4 text-white animate-pulse" /> Acceder o
+                Crear Cuenta VIP
               </Link>
             )}
 
@@ -2319,7 +2736,9 @@ function Index() {
 
             {/* Language Selector */}
             <div className="flex items-center justify-between pt-2 border-t border-rose-100/30">
-              <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Idioma / Language</span>
+              <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+                Idioma / Language
+              </span>
               <LanguageSelector />
             </div>
           </div>
@@ -2371,9 +2790,19 @@ function Index() {
 
           {menuSearchQuery.trim() && (
             <div className="mt-4 max-h-[250px] overflow-y-auto space-y-2 pr-1">
-              <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">Resultados sugeridos:</p>
+              <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-mono">
+                Resultados sugeridos:
+              </p>
               {productsList
-                .filter((p) => p.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) || p.category.toLowerCase().includes(menuSearchQuery.toLowerCase()))
+                .filter(
+                  (p) =>
+                    p.name
+                      .toLowerCase()
+                      .includes(menuSearchQuery.toLowerCase()) ||
+                    p.category
+                      .toLowerCase()
+                      .includes(menuSearchQuery.toLowerCase()),
+                )
                 .slice(0, 5)
                 .map((p) => (
                   <div
@@ -2391,14 +2820,30 @@ function Index() {
                       <ProductCrop product={p} />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-bold text-zinc-800 truncate">{p.name}</h4>
-                      <p className="text-[10px] text-zinc-400 mt-0.5">{p.category}</p>
+                      <h4 className="text-xs font-bold text-zinc-800 truncate">
+                        {p.name}
+                      </h4>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">
+                        {p.category}
+                      </p>
                     </div>
-                    <p className="font-mono text-xs font-black text-rose-600">${p.price.toFixed(2)}</p>
+                    <p className="font-mono text-xs font-black text-rose-600">
+                      ${p.price.toFixed(2)}
+                    </p>
                   </div>
                 ))}
-              {productsList.filter((p) => p.name.toLowerCase().includes(menuSearchQuery.toLowerCase()) || p.category.toLowerCase().includes(menuSearchQuery.toLowerCase())).length === 0 && (
-                <p className="text-xs text-zinc-500 text-center py-4">No se encontraron prendas con "{menuSearchQuery}"</p>
+              {productsList.filter(
+                (p) =>
+                  p.name
+                    .toLowerCase()
+                    .includes(menuSearchQuery.toLowerCase()) ||
+                  p.category
+                    .toLowerCase()
+                    .includes(menuSearchQuery.toLowerCase()),
+              ).length === 0 && (
+                <p className="text-xs text-zinc-500 text-center py-4">
+                  No se encontraron prendas con "{menuSearchQuery}"
+                </p>
               )}
             </div>
           )}
@@ -2435,9 +2880,12 @@ function Index() {
                 <Heart className="w-8 h-8 stroke-[1.2]" />
               </div>
               <div>
-                <p className="text-sm font-extrabold text-zinc-800">Tu lista está vacía</p>
+                <p className="text-sm font-extrabold text-zinc-800">
+                  Tu lista está vacía
+                </p>
                 <p className="text-xs text-zinc-500 mt-1 max-w-[220px] mx-auto">
-                  Haz clic en el corazón de cualquier prenda para guardarla aquí.
+                  Haz clic en el corazón de cualquier prenda para guardarla
+                  aquí.
                 </p>
               </div>
             </div>
@@ -2446,17 +2894,26 @@ function Index() {
               {productsList
                 .filter((p) => favorites[p.id])
                 .map((p) => (
-                  <div key={p.id} className="flex gap-4 p-3 rounded-2xl border border-rose-100/50 bg-white/50 shadow-xs relative group">
+                  <div
+                    key={p.id}
+                    className="flex gap-4 p-3 rounded-2xl border border-rose-100/50 bg-white/50 shadow-xs relative group"
+                  >
                     <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 shrink-0">
                       <ProductCrop product={p} />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                       <div>
-                        <h4 className="font-extrabold text-xs text-zinc-800 truncate">{p.name}</h4>
-                        <p className="text-[10px] text-zinc-400 mt-0.5">{p.category}</p>
-                        <p className="font-mono text-xs font-black text-rose-600 mt-1.5">${p.price.toFixed(2)} USD</p>
+                        <h4 className="font-extrabold text-xs text-zinc-800 truncate">
+                          {p.name}
+                        </h4>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">
+                          {p.category}
+                        </p>
+                        <p className="font-mono text-xs font-black text-rose-600 mt-1.5">
+                          ${p.price.toFixed(2)} USD
+                        </p>
                       </div>
-                      
+
                       <Button
                         size="sm"
                         className="w-full mt-2 h-8 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-rose-500 hover:bg-rose-600 text-white shadow-xs cursor-pointer"
@@ -2465,7 +2922,8 @@ function Index() {
                           setFavoritesDrawerOpen(false);
                         }}
                       >
-                        <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Añadir a bolsa
+                        <ShoppingBag className="w-3.5 h-3.5 mr-1" /> Añadir a
+                        bolsa
                       </Button>
                     </div>
 
@@ -2522,7 +2980,10 @@ function Index() {
       </Dialog>
 
       {/* Dialog para Políticas Legales (Privacidad, Términos, Cookies) */}
-      <Dialog open={legalType !== null} onOpenChange={(open) => !open && setLegalType(null)}>
+      <Dialog
+        open={legalType !== null}
+        onOpenChange={(open) => !open && setLegalType(null)}
+      >
         <DialogContent className="w-[92vw] max-w-2xl bg-white border border-rose-100 p-6 rounded-3xl text-left shadow-2xl [&>button]:bg-transparent [&>button]:text-zinc-400 [&>button]:hover:text-rose-500 [&>button]:right-5 [&>button]:top-5 [&>button]:rounded-full [&>button]:p-2 [&>button]:hover:bg-rose-50/50 [&>button]:border-0 [&>button]:shadow-none">
           <DialogHeader>
             <DialogTitle className="text-2xl font-serif font-black text-zinc-950 flex items-center gap-2">
@@ -2553,19 +3014,33 @@ function Index() {
           <div className="mt-4 max-h-[50vh] overflow-y-auto pr-2 space-y-4 text-sm text-zinc-600 leading-relaxed font-sans scrollbar-thin scrollbar-thumb-zinc-200">
             {legalType === "privacy" && (
               <>
-                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">{t("legal_privacy_intro")}</p>
+                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">
+                  {t("legal_privacy_intro")}
+                </p>
                 <div className="space-y-4 mt-2">
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_privacy_sec1_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_privacy_sec1_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_privacy_sec1_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_privacy_sec1_text")}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_privacy_sec2_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_privacy_sec2_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_privacy_sec2_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_privacy_sec2_text")}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_privacy_sec3_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_privacy_sec3_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_privacy_sec3_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_privacy_sec3_text")}
+                    </p>
                   </div>
                 </div>
               </>
@@ -2573,19 +3048,33 @@ function Index() {
 
             {legalType === "terms" && (
               <>
-                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">{t("legal_terms_intro")}</p>
+                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">
+                  {t("legal_terms_intro")}
+                </p>
                 <div className="space-y-4 mt-2">
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_terms_sec1_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_terms_sec1_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_terms_sec1_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_terms_sec1_text")}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_terms_sec2_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_terms_sec2_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_terms_sec2_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_terms_sec2_text")}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_terms_sec3_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_terms_sec3_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_terms_sec3_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_terms_sec3_text")}
+                    </p>
                   </div>
                 </div>
               </>
@@ -2593,19 +3082,33 @@ function Index() {
 
             {legalType === "cookies" && (
               <>
-                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">{t("legal_cookies_intro")}</p>
+                <p className="font-semibold text-zinc-800 text-sm border-l-2 border-rose-400 pl-3 py-1 bg-rose-50/20 rounded-r-lg">
+                  {t("legal_cookies_intro")}
+                </p>
                 <div className="space-y-4 mt-2">
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_cookies_sec1_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_cookies_sec1_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_cookies_sec1_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_cookies_sec1_text")}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_cookies_sec2_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_cookies_sec2_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_cookies_sec2_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_cookies_sec2_text")}
+                    </p>
                   </div>
                   <div className="space-y-1">
-                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">{t("legal_cookies_sec3_title")}</h5>
-                    <p className="text-xs text-zinc-600 leading-relaxed">{t("legal_cookies_sec3_text")}</p>
+                    <h5 className="font-extrabold text-zinc-900 text-xs uppercase tracking-wider">
+                      {t("legal_cookies_sec3_title")}
+                    </h5>
+                    <p className="text-xs text-zinc-600 leading-relaxed">
+                      {t("legal_cookies_sec3_text")}
+                    </p>
                   </div>
                 </div>
               </>
@@ -2613,7 +3116,7 @@ function Index() {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <Button 
+            <Button
               className="bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-extrabold uppercase tracking-widest px-6 h-11 cursor-pointer"
               onClick={() => setLegalType(null)}
             >
@@ -2630,15 +3133,16 @@ function Index() {
             <div className="flex-1 space-y-2">
               <p className="text-[11px] sm:text-xs text-zinc-600 leading-relaxed font-medium">
                 {t("cookies_text")}{" "}
-                <button 
-                  onClick={() => setLegalType("cookies")} 
+                <button
+                  onClick={() => setLegalType("cookies")}
                   className="underline font-bold text-zinc-900 hover:text-rose-600 transition-colors bg-transparent border-0 p-0 cursor-pointer text-[11px] sm:text-xs font-semibold inline"
                 >
                   {t("cookies_policy_link")}
-                </button>.
+                </button>
+                .
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
               <Button
                 variant="outline"
@@ -2677,14 +3181,20 @@ function Index() {
                   setLanguage(targetLang);
                   localStorage.setItem("isafer_geo_consent", "saved");
                   setShowGeoBanner(false);
-                  toast.success(targetLang === "es" ? "Idioma cambiado a Español 🇪🇸" : "Language changed to English 🇺🇸");
+                  toast.success(
+                    targetLang === "es"
+                      ? "Idioma cambiado a Español 🇪🇸"
+                      : "Language changed to English 🇺🇸",
+                  );
                 }}
                 className="text-[10px] font-bold text-zinc-400 underline hover:text-rose-600 transition-colors cursor-pointer"
               >
-                {targetLang === "es" ? t("geo_change_loc_es") : t("geo_change_loc_en")}
+                {targetLang === "es"
+                  ? t("geo_change_loc_es")
+                  : t("geo_change_loc_en")}
               </button>
             </div>
-            
+
             <p className="text-[11px] text-zinc-500 font-medium">
               {targetLang === "es" ? t("geo_desc_es") : t("geo_desc_en")}
             </p>
@@ -2706,7 +3216,11 @@ function Index() {
                   setLanguage(targetLang);
                   localStorage.setItem("isafer_geo_consent", "saved");
                   setShowGeoBanner(false);
-                  toast.success(targetLang === "es" ? "Idioma y ubicación guardados 🌍" : "Location and language saved 🌍");
+                  toast.success(
+                    targetLang === "es"
+                      ? "Idioma y ubicación guardados 🌍"
+                      : "Location and language saved 🌍",
+                  );
                 }}
               >
                 {targetLang === "es" ? t("geo_yes_es") : t("geo_yes_en")}
@@ -2727,12 +3241,15 @@ function Index() {
       />
 
       {/* MODAL / PESTAÑA SOBRE NOSOTROS & NUESTRA HISTORIA */}
-      <AboutUsModal open={aboutUsModalOpen} onOpenChange={setAboutUsModalOpen} />
+      <AboutUsModal
+        open={aboutUsModalOpen}
+        onOpenChange={setAboutUsModalOpen}
+      />
 
       {/* FIXED FULLSCREEN ABOUT PAGE */}
       {currentView === "about" && (
-        <AboutPage 
-          onBackToShop={() => setCurrentView("shop")} 
+        <AboutPage
+          onBackToShop={() => setCurrentView("shop")}
           favCount={favCount}
           onOpenFavorites={() => setFavoritesDrawerOpen(true)}
         />

@@ -15,7 +15,10 @@ export function useAdminAvatar() {
 
   useEffect(() => {
     const handleAvatarChange = () => {
-      if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      if (
+        typeof window !== "undefined" &&
+        typeof localStorage !== "undefined"
+      ) {
         const saved = localStorage.getItem(STORAGE_KEY);
         setAvatar(saved || camilaDefaultAvatar);
       }
@@ -43,7 +46,10 @@ export function useAdminAvatar() {
     }
   };
 
-  const isCustom = typeof window !== "undefined" && typeof localStorage !== "undefined" && !!localStorage.getItem(STORAGE_KEY);
+  const isCustom =
+    typeof window !== "undefined" &&
+    typeof localStorage !== "undefined" &&
+    !!localStorage.getItem(STORAGE_KEY);
 
   return {
     avatar,

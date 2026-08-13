@@ -37,9 +37,12 @@ export class AdminErrorBoundary extends Component<Props, State> {
             <AlertCircle className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-base font-black text-white">Recuperación del Panel de Control</h3>
+            <h3 className="text-base font-black text-white">
+              Recuperación del Panel de Control
+            </h3>
             <p className="text-xs text-zinc-400 mt-1 max-w-md mx-auto">
-              Se ha prevenido un bloqueo de renderizado. Los datos continúan a salvo en InsForge.
+              Se ha prevenido un bloqueo de renderizado. Los datos continúan a
+              salvo en InsForge.
             </p>
           </div>
           <button

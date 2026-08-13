@@ -1,25 +1,27 @@
-import { chromium } from 'playwright';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs';
-import path from 'path';
-import { createClient } from '@insforge/sdk';
+import { chromium } from "playwright";
+import { exec } from "child_process";
+import { promisify } from "util";
+import fs from "fs";
+import path from "path";
+import { createClient } from "@insforge/sdk";
 
 const execAsync = promisify(exec);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const CHROME_PATH =
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const DEBUG_PORT = 9222;
 const CDP_URL = `http://127.0.0.1:${DEBUG_PORT}`;
-const USER_DATA_DIR = '/Users/musa/Library/Application Support/Google/ChromeDev';
-const BASE_OUTPUT_DIR = '/Users/musa/Downloads/sopisafer/carpeta de referencia';
+const USER_DATA_DIR =
+  "/Users/musa/Library/Application Support/Google/ChromeDev";
+const BASE_OUTPUT_DIR = "/Users/musa/Downloads/sopisafer/carpeta de referencia";
 
 async function isChromeListening() {
   try {
     const res = await fetch(`${CDP_URL}/json/version`);
     if (res.ok) {
       const data = await res.json();
-      console.log('Found Chrome listening on 9222. Version:', data.Browser);
+      console.log("Found Chrome listening on 9222. Version:", data.Browser);
       return true;
     }
   } catch (err) {
@@ -29,24 +31,28 @@ async function isChromeListening() {
 }
 
 async function launchChromeRemote() {
-  console.log('Chrome is not running with remote debugging. Launching a new instance...');
+  console.log(
+    "Chrome is not running with remote debugging. Launching a new instance...",
+  );
   if (!fs.existsSync(USER_DATA_DIR)) {
     fs.mkdirSync(USER_DATA_DIR, { recursive: true });
   }
 
   const command = `"${CHROME_PATH}" --remote-debugging-port=${DEBUG_PORT} --user-data-dir="${USER_DATA_DIR}" --no-first-run --no-default-browser-check > /dev/null 2>&1 &`;
-  console.log('Running launch command:', command);
+  console.log("Running launch command:", command);
   exec(command);
 
   for (let i = 0; i < 10; i++) {
     await sleep(1000);
     if (await isChromeListening()) {
-      console.log('Chrome debug instance successfully launched!');
+      console.log("Chrome debug instance successfully launched!");
       return true;
     }
-    console.log(`Waiting for Chrome to listen on port ${DEBUG_PORT}... (${i + 1}/10)`);
+    console.log(
+      `Waiting for Chrome to listen on port ${DEBUG_PORT}... (${i + 1}/10)`,
+    );
   }
-  throw new Error('Failed to launch and connect to Chrome.');
+  throw new Error("Failed to launch and connect to Chrome.");
 }
 
 async function main() {
@@ -57,18 +63,21 @@ async function main() {
     }
 
     // 2. Cargar los productos directamente desde la base de datos de InsForge
-    const baseUrl = 'https://i5jqzbx6.us-east.insforge.app';
-    const anonKey = 'anon_222bdcf4c41d9b468d8e68a8d7492f49751b42070a2ff5e74dcba8b815dfa71b';
+    const baseUrl = "https://i5jqzbx6.us-east.insforge.app";
+    const anonKey =
+      "anon_222bdcf4c41d9b468d8e68a8d7492f49751b42070a2ff5e74dcba8b815dfa71b";
     const insforge = createClient({ baseUrl, anonKey });
 
-    console.log('Fetching latest products from database...');
+    console.log("Fetching latest products from database...");
     const { data: rawProducts, error: dbError } = await insforge.database
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (dbError) {
-      throw new Error(`Error al consultar base de datos de InsForge: ${dbError.message}`);
+      throw new Error(
+        `Error al consultar base de datos de InsForge: ${dbError.message}`,
+      );
     }
 
     console.log(`Loaded ${rawProducts.length} products for PDF generation.`);
@@ -76,39 +85,52 @@ async function main() {
     // 3. Agrupar productos por categoría
     // Lógica idéntica al frontend de la tienda
     const categories = {
-      'Vestidos': [],
-      'Licras': [],
-      'Bodys & Corsets': [],
-      'Accesorios & Glam': [],
-      'Tops & Sets': []
+      Vestidos: [],
+      Licras: [],
+      "Bodys & Corsets": [],
+      "Accesorios & Glam": [],
+      "Tops & Sets": [],
     };
 
-    rawProducts.forEach(bp => {
+    rawProducts.forEach((bp) => {
       let category = "Tops & Sets";
       const nameLower = bp.name.toLowerCase();
-      if (nameLower.includes("vestido") || nameLower.includes("gown") || nameLower.includes("skirt")) {
+      if (
+        nameLower.includes("vestido") ||
+        nameLower.includes("gown") ||
+        nameLower.includes("skirt")
+      ) {
         category = "Vestidos";
-      } else if (nameLower.includes("licra") || nameLower.includes("jumpsuit") || nameLower.includes("athletic") || nameLower.includes("biker")) {
+      } else if (
+        nameLower.includes("licra") ||
+        nameLower.includes("jumpsuit") ||
+        nameLower.includes("athletic") ||
+        nameLower.includes("biker")
+      ) {
         category = "Licras";
       } else if (nameLower.includes("body")) {
         category = "Bodys & Corsets";
-      } else if (nameLower.includes("bolso") || nameLower.includes("cinturón") || nameLower.includes("accesorios")) {
+      } else if (
+        nameLower.includes("bolso") ||
+        nameLower.includes("cinturón") ||
+        nameLower.includes("accesorios")
+      ) {
         category = "Accesorios & Glam";
       }
       categories[category].push(bp);
     });
 
-    console.log('Product categorization:');
+    console.log("Product categorization:");
     for (const [cat, prods] of Object.entries(categories)) {
       console.log(`- ${cat}: ${prods.length} products`);
     }
 
     // Número de teléfono centralizado
-    const OWNER_PHONE = '346673109486';
+    const OWNER_PHONE = "346673109486";
 
     // 4. Generar el contenido HTML
     // Usaremos rutas absolutas locales file:// para los assets locales
-    const assetsDir = '/Users/musa/Downloads/sopisafer/src/assets';
+    const assetsDir = "/Users/musa/Downloads/sopisafer/src/assets";
     const logoHeaderPath = `file://${assetsDir}/logo-header-barbie.png`;
     const logoFooterPath = `file://${assetsDir}/logo-footer-chic.png`;
     const coverImagePath = `file://${assetsDir}/rosse-hero.jpg`;
@@ -262,10 +284,10 @@ async function main() {
 
     <!-- Grid de productos -->
     <div class="grid grid-cols-2 gap-x-8 gap-y-8 flex-grow py-6">
-      ${renderProductCard(categories['Vestidos'][0], OWNER_PHONE)}
-      ${renderProductCard(categories['Vestidos'][1], OWNER_PHONE)}
-      ${renderProductCard(categories['Vestidos'][2], OWNER_PHONE)}
-      ${renderProductCard(categories['Vestidos'][3], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][0], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][1], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][2], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][3], OWNER_PHONE)}
     </div>
 
     <!-- Footer -->
@@ -285,9 +307,9 @@ async function main() {
 
     <!-- Grid de productos -->
     <div class="grid grid-cols-2 gap-x-8 gap-y-8 flex-grow py-6">
-      ${renderProductCard(categories['Vestidos'][4], OWNER_PHONE)}
-      ${renderProductCard(categories['Vestidos'][5], OWNER_PHONE)}
-      ${renderProductCard(categories['Vestidos'][6], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][4], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][5], OWNER_PHONE)}
+      ${renderProductCard(categories["Vestidos"][6], OWNER_PHONE)}
       
       <!-- Promo Box Estilizada en lugar de 4to producto -->
       <div class="bg-gradient-to-br from-rose-50/60 to-rose-100/30 rounded-2xl p-6 border border-rose-100 flex flex-col justify-between h-full shadow-sm">
@@ -321,10 +343,10 @@ async function main() {
 
     <!-- Grid de productos -->
     <div class="grid grid-cols-2 gap-x-8 gap-y-8 flex-grow py-6">
-      ${renderProductCard(categories['Licras'][0], OWNER_PHONE, 'Licra Moldeadora')}
-      ${renderProductCard(categories['Licras'][1], OWNER_PHONE, 'Licra Moldeadora')}
-      ${renderProductCard(categories['Bodys & Corsets'][0], OWNER_PHONE, 'Body / Corset')}
-      ${renderProductCard(categories['Bodys & Corsets'][1], OWNER_PHONE, 'Body / Corset')}
+      ${renderProductCard(categories["Licras"][0], OWNER_PHONE, "Licra Moldeadora")}
+      ${renderProductCard(categories["Licras"][1], OWNER_PHONE, "Licra Moldeadora")}
+      ${renderProductCard(categories["Bodys & Corsets"][0], OWNER_PHONE, "Body / Corset")}
+      ${renderProductCard(categories["Bodys & Corsets"][1], OWNER_PHONE, "Body / Corset")}
     </div>
 
     <!-- Footer -->
@@ -344,10 +366,10 @@ async function main() {
 
     <!-- Grid de productos -->
     <div class="grid grid-cols-2 gap-x-8 gap-y-8 flex-grow py-6">
-      ${renderProductCard(categories['Tops & Sets'][0], OWNER_PHONE, 'Set / Crop Top')}
-      ${renderProductCard(categories['Tops & Sets'][1], OWNER_PHONE, 'Set / Crop Top')}
-      ${renderProductCard(categories['Tops & Sets'][2], OWNER_PHONE, 'Set / Crop Top')}
-      ${renderProductCard(categories['Accesorios & Glam'][0], OWNER_PHONE, 'Accesorio Premium')}
+      ${renderProductCard(categories["Tops & Sets"][0], OWNER_PHONE, "Set / Crop Top")}
+      ${renderProductCard(categories["Tops & Sets"][1], OWNER_PHONE, "Set / Crop Top")}
+      ${renderProductCard(categories["Tops & Sets"][2], OWNER_PHONE, "Set / Crop Top")}
+      ${renderProductCard(categories["Accesorios & Glam"][0], OWNER_PHONE, "Accesorio Premium")}
     </div>
 
     <!-- Footer -->
@@ -403,8 +425,11 @@ async function main() {
     `;
 
     // 5. Guardar el HTML temporal
-    const tempHtmlPath = path.join('/Users/musa/Downloads/sopisafer/scripts', 'catalog_preview.html');
-    fs.writeFileSync(tempHtmlPath, htmlContent, 'utf8');
+    const tempHtmlPath = path.join(
+      "/Users/musa/Downloads/sopisafer/scripts",
+      "catalog_preview.html",
+    );
+    fs.writeFileSync(tempHtmlPath, htmlContent, "utf8");
     console.log(`Generated template HTML at: ${tempHtmlPath}`);
 
     // 6. Conectar a Chrome y procesar el PDF
@@ -413,42 +438,52 @@ async function main() {
       connected = await launchChromeRemote();
     }
 
-    console.log('Connecting Playwright to Chrome via CDP...');
+    console.log("Connecting Playwright to Chrome via CDP...");
     const browser = await chromium.connectOverCDP(CDP_URL);
-    console.log('Connected to Chrome debug session!');
+    console.log("Connected to Chrome debug session!");
 
     const desktopContext = await browser.newContext({
       viewport: { width: 1200, height: 1700 }, // Aspect ratio similar a A4
       deviceScaleFactor: 2, // Mayor densidad para mejores capturas
     });
-    
+
     const page = await desktopContext.newPage();
     console.log(`Opening catalog HTML file in Chrome...`);
-    await page.goto(`file://${tempHtmlPath}`, { waitUntil: 'networkidle', timeout: 60000 });
-    
-    console.log('Waiting additional 6 seconds for Google Fonts and network images to fully render...');
+    await page.goto(`file://${tempHtmlPath}`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
+
+    console.log(
+      "Waiting additional 6 seconds for Google Fonts and network images to fully render...",
+    );
     await sleep(6000);
 
     // 7. Generar el PDF final
-    const pdfOutputPath = path.join(BASE_OUTPUT_DIR, 'catalogo_productos.pdf');
+    const pdfOutputPath = path.join(BASE_OUTPUT_DIR, "catalogo_productos.pdf");
     console.log(`Generating PDF: ${pdfOutputPath}`);
     await page.pdf({
       path: pdfOutputPath,
-      format: 'A4',
+      format: "A4",
       printBackground: true,
-      margin: { top: '0px', bottom: '0px', left: '0px', right: '0px' }
+      margin: { top: "0px", bottom: "0px", left: "0px", right: "0px" },
     });
-    console.log('✓ PDF catalog generated successfully!');
+    console.log("✓ PDF catalog generated successfully!");
 
     // 8. Tomar capturas de cada página individual .page para la carpeta de referencia (Previsualizaciones del cliente)
-    console.log('Taking high-resolution PNG page screenshots for user reference folder...');
-    const pageLocators = page.locator('.page');
+    console.log(
+      "Taking high-resolution PNG page screenshots for user reference folder...",
+    );
+    const pageLocators = page.locator(".page");
     const pageCount = await pageLocators.count();
     console.log(`Found ${pageCount} catalog pages to capture.`);
 
     for (let i = 0; i < pageCount; i++) {
       const pageSelector = pageLocators.nth(i);
-      const imgPath = path.join(BASE_OUTPUT_DIR, `catalogo_pagina_${i + 1}.png`);
+      const imgPath = path.join(
+        BASE_OUTPUT_DIR,
+        `catalogo_pagina_${i + 1}.png`,
+      );
       console.log(`- Capture page ${i + 1} of ${pageCount} to ${imgPath}`);
       await pageSelector.screenshot({ path: imgPath });
     }
@@ -456,16 +491,15 @@ async function main() {
     // 9. Limpieza
     await desktopContext.close();
     await browser.close();
-    console.log('✓ Done! All assets saved in: ', BASE_OUTPUT_DIR);
-
+    console.log("✓ Done! All assets saved in: ", BASE_OUTPUT_DIR);
   } catch (err) {
-    console.error('CRITICAL ERROR generating catalog PDF:', err);
+    console.error("CRITICAL ERROR generating catalog PDF:", err);
     process.exit(1);
   }
 }
 
 // Función auxiliar para renderizar cada tarjeta de producto de forma dinámica
-function renderProductCard(product, phone, displayCategory = '') {
+function renderProductCard(product, phone, displayCategory = "") {
   if (!product) {
     return `
       <!-- Card vacía (Reserva de diseño) -->
@@ -475,12 +509,17 @@ function renderProductCard(product, phone, displayCategory = '') {
     `;
   }
 
-  const name = product.name || 'Prenda Exclusiva';
-  const desc = product.description || 'Prenda de alta calidad con ajuste perfecto para realzar tu silueta.';
+  const name = product.name || "Prenda Exclusiva";
+  const desc =
+    product.description ||
+    "Prenda de alta calidad con ajuste perfecto para realzar tu silueta.";
   const price = Number(product.price).toFixed(2);
-  const badge = product.badge || 'Destacado';
-  const imageUrl = product.images && product.images[0] ? product.images[0] : 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80';
-  const displayCat = displayCategory || 'Colección Exclusiva';
+  const badge = product.badge || "Destacado";
+  const imageUrl =
+    product.images && product.images[0]
+      ? product.images[0]
+      : "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
+  const displayCat = displayCategory || "Colección Exclusiva";
 
   // Codificar mensaje de WhatsApp dinámico para el enlace directo
   const messageText = `Hola Isafer Boutique, vi el producto "${name}" en el catálogo PDF y me gustaría consultar disponibilidad en talla y método de envío. 💖`;

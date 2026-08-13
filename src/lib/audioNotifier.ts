@@ -10,8 +10,11 @@ class AudioNotifier {
   }
 
   private initCtx() {
-    if (!this.audioCtx && typeof window !== 'undefined') {
-      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!this.audioCtx && typeof window !== "undefined") {
+      const AudioCtxClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       if (AudioCtxClass) {
         this.audioCtx = new AudioCtxClass();
       }
@@ -36,7 +39,7 @@ class AudioNotifier {
       this.initCtx();
       if (!this.audioCtx) return;
 
-      if (this.audioCtx.state === 'suspended') {
+      if (this.audioCtx.state === "suspended") {
         this.audioCtx.resume();
       }
 
@@ -45,7 +48,7 @@ class AudioNotifier {
       // Oscilador 1 (Tono agudo elegante)
       const osc1 = this.audioCtx.createOscillator();
       const gain1 = this.audioCtx.createGain();
-      osc1.type = 'sine';
+      osc1.type = "sine";
       osc1.frequency.setValueAtTime(523.25, now); // C5
       osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
       osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.3); // G5
@@ -63,7 +66,7 @@ class AudioNotifier {
       // Oscilador 2 (Harmónico suave)
       const osc2 = this.audioCtx.createOscillator();
       const gain2 = this.audioCtx.createGain();
-      osc2.type = 'triangle';
+      osc2.type = "triangle";
       osc2.frequency.setValueAtTime(1046.5, now + 0.15); // C6
 
       gain2.gain.setValueAtTime(0, now + 0.15);

@@ -21,8 +21,12 @@ export function IsaferLogo({
     }[size];
 
     return (
-      <div className={`inline-flex items-center justify-center select-none ${className}`}>
-        <div className={`${sizeClasses} rounded-full bg-[#f8f7f2] border-2 border-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.3)] overflow-hidden flex items-center justify-center transition-transform duration-300 hover:scale-105 hover:border-rose-400`}>
+      <div
+        className={`inline-flex items-center justify-center select-none ${className}`}
+      >
+        <div
+          className={`${sizeClasses} rounded-full bg-[#f8f7f2] border-2 border-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.3)] overflow-hidden flex items-center justify-center transition-transform duration-300 hover:scale-105 hover:border-rose-400`}
+        >
           <img
             src={logoFooter}
             alt="ISAFÉR BOUTIQUE BROOKLYN"
@@ -41,7 +45,9 @@ export function IsaferLogo({
   }[size];
 
   return (
-    <div className={`inline-flex items-center justify-center select-none ${className}`}>
+    <div
+      className={`inline-flex items-center justify-center select-none ${className}`}
+    >
       <img
         src={logoHeaderBarbie}
         alt="ISAFÉR BOUTIQUE BROOKLYN"

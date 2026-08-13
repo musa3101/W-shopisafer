@@ -1,20 +1,21 @@
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { chromium } from 'playwright';
+import http from "http";
+import fs from "fs";
+import path from "path";
+import { chromium } from "playwright";
 
-const VIDEO_PATH = '/Users/musa/Downloads/sopisafer/carpeta de referencia/IMG_5003.MOV';
-const OUTPUT_DIR = '/Users/musa/Downloads/sopisafer/carpeta de referencia';
+const VIDEO_PATH =
+  "/Users/musa/Downloads/sopisafer/carpeta de referencia/IMG_5003.MOV";
+const OUTPUT_DIR = "/Users/musa/Downloads/sopisafer/carpeta de referencia";
 const PORT = 8765;
 
 // Step 1: Start a tiny HTTP server to serve the video file
 const server = http.createServer((req, res) => {
-  if (req.url === '/video.mov') {
+  if (req.url === "/video.mov") {
     const stat = fs.statSync(VIDEO_PATH);
     res.writeHead(200, {
-      'Content-Type': 'video/quicktime',
-      'Content-Length': stat.size,
-      'Accept-Ranges': 'bytes'
+      "Content-Type": "video/quicktime",
+      "Content-Length": stat.size,
+      "Accept-Ranges": "bytes",
     });
     fs.createReadStream(VIDEO_PATH).pipe(res);
   } else {
@@ -27,8 +28,8 @@ server.listen(PORT, async () => {
   console.log(`Video server running on http://localhost:${PORT}/video.mov`);
 
   try {
-    const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
-    const context = browser.contexts()[0] || await browser.newContext();
+    const browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
+    const context = browser.contexts()[0] || (await browser.newContext());
     const page = await context.newPage();
     await page.setViewportSize({ width: 375, height: 812 });
 
@@ -41,13 +42,18 @@ server.listen(PORT, async () => {
       </html>
     `);
 
-    console.log('Waiting for video to load...');
-    await page.waitForFunction(() => {
-      const v = document.getElementById('vid');
-      return v && v.readyState >= 2 && v.duration > 0;
-    }, { timeout: 30000 });
+    console.log("Waiting for video to load...");
+    await page.waitForFunction(
+      () => {
+        const v = document.getElementById("vid");
+        return v && v.readyState >= 2 && v.duration > 0;
+      },
+      { timeout: 30000 },
+    );
 
-    const duration = await page.evaluate(() => document.getElementById('vid').duration);
+    const duration = await page.evaluate(
+      () => document.getElementById("vid").duration,
+    );
     console.log(`Video duration: ${duration}s`);
 
     // Calculate good sample timestamps
@@ -59,28 +65,37 @@ server.listen(PORT, async () => {
     for (const t of timestamps) {
       console.log(`Seeking to ${t.toFixed(1)}s...`);
       await page.evaluate((time) => {
-        const v = document.getElementById('vid');
+        const v = document.getElementById("vid");
         v.currentTime = time;
       }, t);
 
       // Wait for seek
-      await page.waitForFunction((time) => {
-        const v = document.getElementById('vid');
-        return Math.abs(v.currentTime - time) < 1;
-      }, t, { timeout: 5000 }).catch(() => {});
+      await page
+        .waitForFunction(
+          (time) => {
+            const v = document.getElementById("vid");
+            return Math.abs(v.currentTime - time) < 1;
+          },
+          t,
+          { timeout: 5000 },
+        )
+        .catch(() => {});
 
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
 
-      const filename = `pullbear_frame_${String(Math.round(t)).padStart(2, '0')}s.png`;
-      await page.screenshot({ path: path.join(OUTPUT_DIR, filename), type: 'png' });
+      const filename = `pullbear_frame_${String(Math.round(t)).padStart(2, "0")}s.png`;
+      await page.screenshot({
+        path: path.join(OUTPUT_DIR, filename),
+        type: "png",
+      });
       console.log(`  -> ${filename}`);
     }
 
-    console.log('All frames captured!');
+    console.log("All frames captured!");
     await page.close();
     await browser.close();
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   } finally {
     server.close();
     process.exit(0);

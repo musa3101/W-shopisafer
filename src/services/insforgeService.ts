@@ -1,5 +1,5 @@
-import { insforge } from '@/lib/insforge';
-import { OWNER_PHONE } from '@/lib/constants';
+import { insforge } from "@/lib/insforge";
+import { OWNER_PHONE } from "@/lib/constants";
 
 export interface CartItemInput {
   id: string | number;
@@ -29,9 +29,9 @@ export interface BackendProduct {
   is_featured: boolean;
   badge?: string;
   stripe_price_id?: string;
-  gender?: 'women' | 'men' | 'unisex' | string;
+  gender?: "women" | "men" | "unisex" | string;
   sizes?: string[];
-  size_system?: 'US' | 'EU' | string;
+  size_system?: "US" | "EU" | string;
 }
 
 export interface BackendCategory {
@@ -56,7 +56,7 @@ export interface BackendOrder {
   customer_phone?: string;
   shipping_address?: string;
   total_amount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   items: OrderItem[] | string;
   stripe_session_id?: string;
   created_at?: string;
@@ -81,18 +81,18 @@ export interface OrderInput {
 export async function fetchProducts(): Promise<BackendProduct[]> {
   try {
     const { data, error } = await insforge.database
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Error al cargar productos de InsForge:', error);
+      console.error("Error al cargar productos de InsForge:", error);
       return [];
     }
 
     return (data as BackendProduct[]) || [];
   } catch (err) {
-    console.error('Error de conexión al cargar productos:', err);
+    console.error("Error de conexión al cargar productos:", err);
     return [];
   }
 }
@@ -103,18 +103,18 @@ export async function fetchProducts(): Promise<BackendProduct[]> {
 export async function fetchCategories(): Promise<BackendCategory[]> {
   try {
     const { data, error } = await insforge.database
-      .from('categories')
-      .select('*')
-      .order('name', { ascending: true });
+      .from("categories")
+      .select("*")
+      .order("name", { ascending: true });
 
     if (error) {
-      console.warn('Error al cargar categorías de InsForge:', error);
+      console.warn("Error al cargar categorías de InsForge:", error);
       return [];
     }
 
     return (data as BackendCategory[]) || [];
   } catch (err) {
-    console.error('Error conectando a categorías en InsForge:', err);
+    console.error("Error conectando a categorías en InsForge:", err);
     return [];
   }
 }
@@ -122,41 +122,54 @@ export async function fetchCategories(): Promise<BackendCategory[]> {
 /**
  * Actualiza el precio y el stock de un producto (para el Panel de la Dueña)
  */
-export async function updateProductPriceAndStock(id: string, price: number, stock: number, stripe_price_id?: string) {
+export async function updateProductPriceAndStock(
+  id: string,
+  price: number,
+  stock: number,
+  stripe_price_id?: string,
+) {
   try {
     const { data, error } = await insforge.database
-      .from('products')
+      .from("products")
       .update({ price, stock, stripe_price_id })
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    console.error('Error al actualizar producto:', err);
-    return { success: false, error: err.message || 'Error al actualizar producto' };
+    console.error("Error al actualizar producto:", err);
+    return {
+      success: false,
+      error: err.message || "Error al actualizar producto",
+    };
   }
 }
 
 /**
  * Sube una imagen de producto a InsForge Storage o genera un Data URL de respaldo
  */
-export async function uploadProductImage(file: File): Promise<{ success: boolean; url?: string; error?: string }> {
+export async function uploadProductImage(
+  file: File,
+): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
-    const fileExt = file.name.split('.').pop() || 'png';
+    const fileExt = file.name.split(".").pop() || "png";
     const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-    
+
     // Intento 1: InsForge Storage
     if (insforge.storage) {
       try {
         const { data, error } = await insforge.storage
-          .from('products')
+          .from("products")
           .upload(fileName, file);
 
         if (!error && data?.url) {
           return { success: true, url: data.url };
         }
       } catch (storageErr) {
-        console.warn('InsForge Storage upload not available, falling back to base64 reader:', storageErr);
+        console.warn(
+          "InsForge Storage upload not available, falling back to base64 reader:",
+          storageErr,
+        );
       }
     }
 
@@ -164,17 +177,27 @@ export async function uploadProductImage(file: File): Promise<{ success: boolean
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
+        if (typeof reader.result === "string") {
           resolve({ success: true, url: reader.result });
         } else {
-          resolve({ success: false, error: 'Error al procesar la imagen seleccionada.' });
+          resolve({
+            success: false,
+            error: "Error al procesar la imagen seleccionada.",
+          });
         }
       };
-      reader.onerror = () => resolve({ success: false, error: 'Error al leer el archivo de imagen.' });
+      reader.onerror = () =>
+        resolve({
+          success: false,
+          error: "Error al leer el archivo de imagen.",
+        });
       reader.readAsDataURL(file);
     });
   } catch (err: any) {
-    return { success: false, error: err.message || 'Error en la subida de imagen' };
+    return {
+      success: false,
+      error: err.message || "Error en la subida de imagen",
+    };
   }
 }
 
@@ -183,20 +206,34 @@ export async function uploadProductImage(file: File): Promise<{ success: boolean
  */
 export async function createProduct(product: Partial<BackendProduct>) {
   try {
-    const slug = product.slug || (product.name ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `prod-${Date.now()}`);
-    const id = product.id || `custom-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    
+    const slug =
+      product.slug ||
+      (product.name
+        ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+        : `prod-${Date.now()}`);
+    const isValidUuid = (val?: string) =>
+      !!val &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        val,
+      );
+    const id = isValidUuid(product.id) ? product.id! : crypto.randomUUID();
+
     const fullPayload: any = {
       id,
-      name: product.name || 'Nuevo Producto',
+      name: product.name || "Nuevo Producto",
       slug,
-      description: product.description || '',
+      description: product.description || "",
       price: Number(product.price) || 0,
       stock: Number(product.stock) || 0,
-      images: product.images && product.images.length > 0 ? product.images : ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80'],
+      images:
+        product.images && product.images.length > 0
+          ? product.images
+          : [
+              "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80",
+            ],
       is_featured: product.is_featured ?? true,
-      badge: product.badge || 'NUEVO DROP',
-      stripe_price_id: product.stripe_price_id || '',
+      badge: product.badge || "NUEVO DROP",
+      stripe_price_id: product.stripe_price_id || "",
     };
 
     if (product.category) fullPayload.category = product.category;
@@ -206,7 +243,7 @@ export async function createProduct(product: Partial<BackendProduct>) {
 
     // Intento 1: Insertar con todos los campos en InsForge PostgreSQL
     const { data, error } = await insforge.database
-      .from('products')
+      .from("products")
       .insert([fullPayload]);
 
     if (!error) {
@@ -220,18 +257,26 @@ export async function createProduct(product: Partial<BackendProduct>) {
     delete standardPayload.size_system;
 
     const retryRes = await insforge.database
-      .from('products')
+      .from("products")
       .insert([standardPayload]);
 
     if (retryRes.error) {
-      console.error('Error al insertar producto en PostgreSQL:', retryRes.error.message);
-      return { success: false, error: retryRes.error.message || 'Error al guardar el producto en la base de datos' };
+      console.error(
+        "Error al insertar producto en PostgreSQL:",
+        retryRes.error.message,
+      );
+      return {
+        success: false,
+        error:
+          retryRes.error.message ||
+          "Error al guardar el producto en la base de datos",
+      };
     }
 
     return { success: true, data: retryRes.data };
   } catch (err: any) {
-    console.error('Error al crear producto:', err);
-    return { success: false, error: err.message || 'Error al crear la prenda' };
+    console.error("Error al crear producto:", err);
+    return { success: false, error: err.message || "Error al crear la prenda" };
   }
 }
 
@@ -241,19 +286,25 @@ export async function createProduct(product: Partial<BackendProduct>) {
 export async function deleteProduct(id: string) {
   try {
     const { error } = await insforge.database
-      .from('products')
+      .from("products")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
-      console.error('Error al eliminar producto de PostgreSQL:', error);
-      return { success: false, error: error.message || 'Error al eliminar el producto' };
+      console.error("Error al eliminar producto de PostgreSQL:", error);
+      return {
+        success: false,
+        error: error.message || "Error al eliminar el producto",
+      };
     }
 
     return { success: true };
   } catch (err: any) {
-    console.error('Error al eliminar producto:', err);
-    return { success: false, error: err.message || 'Error de conexión al eliminar' };
+    console.error("Error al eliminar producto:", err);
+    return {
+      success: false,
+      error: err.message || "Error de conexión al eliminar",
+    };
   }
 }
 
@@ -263,56 +314,69 @@ export async function deleteProduct(id: string) {
 export async function createOrder(order: OrderInput) {
   try {
     if (order.total_amount < 0) {
-      return { success: false, error: 'El monto total del pedido no puede ser negativo.' };
+      return {
+        success: false,
+        error: "El monto total del pedido no puede ser negativo.",
+      };
     }
-    const hasInvalidItems = Array.isArray(order.items) && order.items.some(i => (i.quantity ?? 1) <= 0 || (i.price ?? 0) < 0);
+    const hasInvalidItems =
+      Array.isArray(order.items) &&
+      order.items.some((i) => (i.quantity ?? 1) <= 0 || (i.price ?? 0) < 0);
     if (hasInvalidItems) {
-      return { success: false, error: 'Los artículos del pedido contienen cantidades o precios inválidos.' };
+      return {
+        success: false,
+        error:
+          "Los artículos del pedido contienen cantidades o precios inválidos.",
+      };
     }
     const orderId = crypto.randomUUID();
-    const { error } = await insforge.database
-      .from('orders')
-      .insert([
-        {
-          id: orderId,
-          customer_name: order.customer_name,
-          customer_email: order.customer_email,
-          customer_phone: order.customer_phone || '',
-          shipping_address: order.shipping_address || '',
-          total_amount: order.total_amount,
-          items: JSON.stringify(order.items),
-          status: 'pending',
-          stripe_session_id: order.stripe_session_id || '',
-        },
-      ]);
+    const { error } = await insforge.database.from("orders").insert([
+      {
+        id: orderId,
+        customer_name: order.customer_name,
+        customer_email: order.customer_email,
+        customer_phone: order.customer_phone || "",
+        shipping_address: order.shipping_address || "",
+        total_amount: order.total_amount,
+        items: JSON.stringify(order.items),
+        status: "pending",
+        stripe_session_id: order.stripe_session_id || "",
+      },
+    ]);
 
     if (error) {
-      console.error('Error al guardar pedido en InsForge:', error);
+      console.error("Error al guardar pedido en InsForge:", error);
       return { success: false, error: error.message };
     }
 
     return { success: true, data: { id: orderId } };
   } catch (err: any) {
-    console.error('Excepción al crear pedido en InsForge:', err);
-    return { success: false, error: err.message || 'Error de conexión' };
+    console.error("Excepción al crear pedido en InsForge:", err);
+    return { success: false, error: err.message || "Error de conexión" };
   }
 }
 
 /**
  * Actualiza el stripe_session_id de una orden
  */
-export async function updateOrderStripeSession(id: string, stripe_session_id: string) {
+export async function updateOrderStripeSession(
+  id: string,
+  stripe_session_id: string,
+) {
   try {
     const { data, error } = await insforge.database
-      .from('orders')
+      .from("orders")
       .update({ stripe_session_id })
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    console.error('Error al actualizar stripe_session_id de la orden:', err);
-    return { success: false, error: err.message || 'Error al actualizar stripe_session_id' };
+    console.error("Error al actualizar stripe_session_id de la orden:", err);
+    return {
+      success: false,
+      error: err.message || "Error al actualizar stripe_session_id",
+    };
   }
 }
 
@@ -322,21 +386,24 @@ export async function updateOrderStripeSession(id: string, stripe_session_id: st
 export async function fetchAllOrders(): Promise<BackendOrder[]> {
   try {
     const { data, error } = await insforge.database
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.warn('Error al cargar pedidos:', error);
+      console.warn("Error al cargar pedidos:", error);
       return [];
     }
 
     return (data || []).map((order) => ({
       ...order,
-      items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items || [],
+      items:
+        typeof order.items === "string"
+          ? JSON.parse(order.items)
+          : order.items || [],
     }));
   } catch (err) {
-    console.error('Error de conexión al cargar pedidos:', err);
+    console.error("Error de conexión al cargar pedidos:", err);
     return [];
   }
 }
@@ -344,25 +411,30 @@ export async function fetchAllOrders(): Promise<BackendOrder[]> {
 /**
  * Obtiene los pedidos del cliente por su email
  */
-export async function fetchCustomerOrders(email: string): Promise<BackendOrder[]> {
+export async function fetchCustomerOrders(
+  email: string,
+): Promise<BackendOrder[]> {
   try {
     const { data, error } = await insforge.database
-      .from('orders')
-      .select('*')
-      .eq('customer_email', email)
-      .order('created_at', { ascending: false });
+      .from("orders")
+      .select("*")
+      .eq("customer_email", email)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.warn('Error al cargar pedidos del cliente:', error);
+      console.warn("Error al cargar pedidos del cliente:", error);
       return [];
     }
 
     return (data || []).map((order) => ({
       ...order,
-      items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items || [],
+      items:
+        typeof order.items === "string"
+          ? JSON.parse(order.items)
+          : order.items || [],
     }));
   } catch (err) {
-    console.error('Error de conexión al cargar pedidos del cliente:', err);
+    console.error("Error de conexión al cargar pedidos del cliente:", err);
     return [];
   }
 }
@@ -370,18 +442,24 @@ export async function fetchCustomerOrders(email: string): Promise<BackendOrder[]
 /**
  * Actualiza el estado de un pedido (pendientes, en proceso, enviado, entregado)
  */
-export async function updateOrderStatus(id: string, status: BackendOrder['status']) {
+export async function updateOrderStatus(
+  id: string,
+  status: BackendOrder["status"],
+) {
   try {
     const { data, error } = await insforge.database
-      .from('orders')
+      .from("orders")
       .update({ status })
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    console.error('Error al actualizar estado del pedido:', err);
-    return { success: false, error: err.message || 'Error al actualizar pedido' };
+    console.error("Error al actualizar estado del pedido:", err);
+    return {
+      success: false,
+      error: err.message || "Error al actualizar pedido",
+    };
   }
 }
 
@@ -395,7 +473,10 @@ export async function sendOrderConfirmationEmail(orderData: {
   items: Array<{ name: string; price: number; quantity: number }>;
   orderId: string;
 }) {
-  if (!orderData.customerEmail || orderData.customerEmail.includes("cliente@isaferboutique.com")) {
+  if (
+    !orderData.customerEmail ||
+    orderData.customerEmail.includes("cliente@isaferboutique.com")
+  ) {
     console.log("No se envía correo: es un invitado sin correo real.");
     return;
   }
@@ -404,7 +485,7 @@ export async function sendOrderConfirmationEmail(orderData: {
     const itemsHtml = orderData.items
       .map(
         (item) =>
-          `<li style="margin: 8px 0; font-size: 14px;"><strong>${item.name}</strong> x${item.quantity} - <span style="color: #e11d48;">$${(item.price * item.quantity).toFixed(2)} USD</span></li>`
+          `<li style="margin: 8px 0; font-size: 14px;"><strong>${item.name}</strong> x${item.quantity} - <span style="color: #e11d48;">$${(item.price * item.quantity).toFixed(2)} USD</span></li>`,
       )
       .join("");
 
@@ -430,7 +511,7 @@ export async function sendOrderConfirmationEmail(orderData: {
           <p>Por favor, si aún no nos has escrito, pulsa el botón de abajo para enviarnos tu comprobante de WhatsApp:</p>
           
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20acabo%20de%20realizar%20un%20pedido%20por%20la%20web%20para%20la%20orden%20%23${orderData.orderId.slice(0,8)}" 
+            <a href="https://wa.me/${OWNER_PHONE}?text=Hola%20Isafer%20Boutique%2C%20acabo%20de%20realizar%20un%20pedido%20por%20la%20web%20para%20la%20orden%20%23${orderData.orderId.slice(0, 8)}" 
                style="background-color: #10b981; color: #ffffff; padding: 14px 28px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 6px rgba(16,185,129,0.2);">
                Escribir por WhatsApp
             </a>
@@ -454,7 +535,9 @@ export async function sendOrderConfirmationEmail(orderData: {
     if (res?.error) {
       console.error("Error del backend al enviar email:", res.error);
     } else {
-      console.log(`Email de pedido por WhatsApp enviado con éxito a ${orderData.customerEmail}`);
+      console.log(
+        `Email de pedido por WhatsApp enviado con éxito a ${orderData.customerEmail}`,
+      );
     }
   } catch (err) {
     console.error("Error al enviar email de pedido por WhatsApp:", err);
@@ -464,7 +547,10 @@ export async function sendOrderConfirmationEmail(orderData: {
 /**
  * Envía un correo electrónico de bienvenida con cupón promocional del 10% OFF
  */
-export async function sendWelcomeCouponEmail(customerEmail: string, couponCode: string = "VIP10") {
+export async function sendWelcomeCouponEmail(
+  customerEmail: string,
+  couponCode: string = "VIP10",
+) {
   const cleanEmail = customerEmail.trim().toLowerCase();
   if (!cleanEmail || !cleanEmail.includes("@")) return;
 
@@ -513,7 +599,9 @@ export async function sendWelcomeCouponEmail(customerEmail: string, couponCode: 
     if (res?.error) {
       console.warn("Aviso email de bienvenida (InsForge fallback):", res.error);
     } else {
-      console.log(`Email de cupón de bienvenida del 10% enviado con éxito a ${cleanEmail}`);
+      console.log(
+        `Email de cupón de bienvenida del 10% enviado con éxito a ${cleanEmail}`,
+      );
     }
   } catch (err) {
     console.error("Error al enviar email de bienvenida:", err);
@@ -526,25 +614,28 @@ export async function sendWelcomeCouponEmail(customerEmail: string, couponCode: 
 export async function fetchCartById(id: string): Promise<BackendCart | null> {
   try {
     const { data, error } = await insforge.database
-      .from('carts')
-      .select('*')
-      .eq('id', id)
+      .from("carts")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
-      console.warn('Error al cargar el carrito de InsForge:', error.message);
+      console.warn("Error al cargar el carrito de InsForge:", error.message);
       return null;
     }
 
     if (data) {
       return {
         ...data,
-        items: typeof data.items === 'string' ? JSON.parse(data.items) : data.items || [],
+        items:
+          typeof data.items === "string"
+            ? JSON.parse(data.items)
+            : data.items || [],
       } as BackendCart;
     }
     return null;
   } catch (err) {
-    console.error('Error de red al cargar el carrito:', err);
+    console.error("Error de red al cargar el carrito:", err);
     return null;
   }
 }
@@ -552,25 +643,30 @@ export async function fetchCartById(id: string): Promise<BackendCart | null> {
 /**
  * Guarda o actualiza un carrito en la base de datos de InsForge
  */
-export async function saveCart(cart: { id: string; customer_email?: string | null; items: CartItemInput[] }) {
+export async function saveCart(cart: {
+  id: string;
+  customer_email?: string | null;
+  items: CartItemInput[];
+}) {
   try {
-    const { data, error } = await insforge.database
-      .from('carts')
-      .upsert([
-        {
-          id: cart.id,
-          customer_email: cart.customer_email || null,
-          items: cart.items,
-          recovery_email_sent: false,
-          updated_at: new Date().toISOString(),
-        },
-      ]);
+    const { data, error } = await insforge.database.from("carts").upsert([
+      {
+        id: cart.id,
+        customer_email: cart.customer_email || null,
+        items: cart.items,
+        recovery_email_sent: false,
+        updated_at: new Date().toISOString(),
+      },
+    ]);
 
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    console.error('Error al guardar carrito en InsForge:', err);
-    return { success: false, error: err.message || 'Error al guardar el carrito' };
+    console.error("Error al guardar carrito en InsForge:", err);
+    return {
+      success: false,
+      error: err.message || "Error al guardar el carrito",
+    };
   }
 }
 
@@ -580,33 +676,34 @@ export async function saveCart(cart: { id: string; customer_email?: string | nul
 export async function deleteCart(id: string) {
   try {
     const { data, error } = await insforge.database
-      .from('carts')
+      .from("carts")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
     return { success: true, data };
   } catch (err: any) {
-    console.error('Error al eliminar carrito en InsForge:', err);
-    return { success: false, error: err.message || 'Error al eliminar el carrito' };
+    console.error("Error al eliminar carrito en InsForge:", err);
+    return {
+      success: false,
+      error: err.message || "Error al eliminar el carrito",
+    };
   }
 }
 
-/**
- * Registra una suscripción al Newsletter VIP en InsForge
- */
 export async function subscribeToNewsletter(email: string) {
   const cleanEmail = email.trim().toLowerCase();
-  if (!cleanEmail) return { success: false, error: 'Email inválido' };
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+    return {
+      success: false,
+      error: "Introduce una dirección de correo válida.",
+    };
+  }
 
   try {
-    // Guardar en LocalStorage para recordar el estado de la suscripción
-    localStorage.setItem('isafer_newsletter_subscribed', 'true');
-    localStorage.setItem('isafer_subscribed_email', cleanEmail);
-
-    // Intentar persistir en la base de datos PostgreSQL de InsForge
-    const { data, error } = await insforge.database
-      .from('newsletter_subscriptions')
+    const { error } = await insforge.database
+      .from("newsletter_subscriptions")
       .upsert([
         {
           email: cleanEmail,
@@ -615,17 +712,28 @@ export async function subscribeToNewsletter(email: string) {
       ]);
 
     if (error) {
-      console.warn('Aviso InsForge Newsletter (fallback local activo):', error.message);
+      console.error(
+        "Error al registrar suscripción newsletter en InsForge:",
+        error.message,
+      );
+      return {
+        success: false,
+        error: "No se pudo guardar tu suscripción. Inténtalo más tarde.",
+      };
     }
 
-    // Enviar automáticamente el correo de bienvenida con el cupón del 10% OFF
-    sendWelcomeCouponEmail(cleanEmail, 'VIP10').catch((e) => console.error(e));
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      localStorage.setItem("isafer_newsletter_subscribed", "true");
+      localStorage.setItem("isafer_subscribed_email", cleanEmail);
+    }
+
+    sendWelcomeCouponEmail(cleanEmail, "VIP10").catch((e) => console.error(e));
 
     return { success: true, email: cleanEmail };
-  } catch (err: any) {
-    console.error('Error al registrar suscripción newsletter:', err);
-    sendWelcomeCouponEmail(cleanEmail, 'VIP10').catch((e) => console.error(e));
-    return { success: true, email: cleanEmail };
+  } catch (err: unknown) {
+    const errorMsg =
+      err instanceof Error ? err.message : "Error inesperado al suscribirse.";
+    console.error("Error al registrar suscripción newsletter:", err);
+    return { success: false, error: errorMsg };
   }
 }
-

@@ -28,8 +28,16 @@ function AdminLoginComponent() {
     try {
       // Timeout de seguridad de 10s para evitar pantallas congeladas
       const authPromise = signInWithPassword(email, password || "admin");
-      const timeoutPromise = new Promise<{ success: false; error: string }>((resolve) =>
-        setTimeout(() => resolve({ success: false, error: "Tiempo de espera agotado. Verifica tu conexión." }), 10000)
+      const timeoutPromise = new Promise<{ success: false; error: string }>(
+        (resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                success: false,
+                error: "Tiempo de espera agotado. Verifica tu conexión.",
+              }),
+            10000,
+          ),
       );
 
       const res = await Promise.race([authPromise, timeoutPromise]);
@@ -73,9 +81,9 @@ function AdminLoginComponent() {
           </p>
 
           {/* Email Input */}
-          <input 
-            type="text" 
-            placeholder="Usuario o Email" 
+          <input
+            type="text"
+            placeholder="Usuario o Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
@@ -84,9 +92,9 @@ function AdminLoginComponent() {
           />
 
           {/* Password Input */}
-          <input 
-            type="password" 
-            placeholder="Contraseña" 
+          <input
+            type="password"
+            placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
@@ -94,9 +102,24 @@ function AdminLoginComponent() {
           />
 
           {/* Submit Button */}
-          <button type="submit" disabled={isLoading} className="oauthButton mt-4">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="oauthButton mt-4"
+          >
             {isLoading ? "Cargando..." : "Acceder al Panel"}
-            <svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              className="icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="m6 17 5-5-5-5"></path>
               <path d="m13 17 5-5-5-5"></path>
             </svg>

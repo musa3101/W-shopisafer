@@ -1,19 +1,52 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { audioNotifier } from "@/lib/audioNotifier";
-import { 
-  ArrowLeft, Volume2, VolumeX, Database, ShieldAlert, Sparkles, 
-  Activity, Bell, BellOff, Loader2, User, Store, Tag, Percent, 
-  Lightbulb, ChevronDown, ChevronUp, Palette, CheckCircle2, Ticket,
-  Camera, Upload, RotateCcw, Edit3, Key, Plus, Trash2, Copy, Check,
-  Eye, EyeOff, Save, Lock, Mail
+import {
+  ArrowLeft,
+  Volume2,
+  VolumeX,
+  Database,
+  ShieldAlert,
+  Sparkles,
+  Activity,
+  Bell,
+  BellOff,
+  Loader2,
+  User,
+  Store,
+  Tag,
+  Percent,
+  Lightbulb,
+  ChevronDown,
+  ChevronUp,
+  Palette,
+  CheckCircle2,
+  Ticket,
+  Camera,
+  Upload,
+  RotateCcw,
+  Edit3,
+  Key,
+  Plus,
+  Trash2,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
+  Save,
+  Lock,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { insforge } from "@/lib/insforge";
 import { VAPID_PUBLIC_KEY } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminAvatar } from "@/hooks/useAdminAvatar";
-import { couponsService, Coupon, WelcomeBannerConfig } from "@/services/couponsService";
+import {
+  couponsService,
+  Coupon,
+  WelcomeBannerConfig,
+} from "@/services/couponsService";
 
 export const Route = createFileRoute("/admin/ajustes")({
   component: AjustesPage,
@@ -22,7 +55,7 @@ export const Route = createFileRoute("/admin/ajustes")({
 export function AjustesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   // Estado Avatar de Admin
   const { avatar, updateAvatar, resetAvatar, isCustom } = useAdminAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,12 +65,16 @@ export function AjustesPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Por favor, selecciona un archivo de imagen válido (JPG, PNG, WEBP).");
+      toast.error(
+        "Por favor, selecciona un archivo de imagen válido (JPG, PNG, WEBP).",
+      );
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("La imagen es demasiado grande. Selecciona una de máximo 5 MB.");
+      toast.error(
+        "La imagen es demasiado grande. Selecciona una de máximo 5 MB.",
+      );
       return;
     }
 
@@ -64,36 +101,34 @@ export function AjustesPage() {
   const [dbStatus, setDbStatus] = useState<string>("unknown");
   const [healthLogs, setHealthLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
-  const [showTechnicalDiagnostics, setShowTechnicalDiagnostics] = useState(false);
+  const [showTechnicalDiagnostics, setShowTechnicalDiagnostics] =
+    useState(false);
 
   // Estado Edición de Credenciales y Perfil
   const [showEditCredentials, setShowEditCredentials] = useState(false);
-  const [adminName, setAdminName] = useState(() => {
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      const stored = localStorage.getItem("isafer_admin_profile");
-      if (stored) {
-        try { return JSON.parse(stored).name || "Camila"; } catch (e) {}
-      }
-    }
-    return "Camila";
-  });
-  const [adminEmail, setAdminEmail] = useState(() => {
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      const stored = localStorage.getItem("isafer_admin_profile");
-      if (stored) {
-        try { return JSON.parse(stored).email || "admin@isaferboutique.com"; } catch (e) {}
-      }
-    }
-    return "admin@isaferboutique.com";
-  });
+  const [adminName, setAdminName] = useState(user?.name || "Camila");
+  const [adminEmail, setAdminEmail] = useState(
+    user?.email || "admin@isaferboutique.com",
+  );
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSavingCredentials, setIsSavingCredentials] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      if (user.name) setAdminName(user.name);
+      if (user.email) setAdminEmail(user.email);
+    }
+  }, [user]);
+
   // Estado Cupones y Banners Promocionales
-  const [bannerConfig, setBannerConfig] = useState<WelcomeBannerConfig>(() => couponsService.getWelcomeBanner());
-  const [coupons, setCoupons] = useState<Coupon[]>(() => couponsService.getCoupons());
+  const [bannerConfig, setBannerConfig] = useState<WelcomeBannerConfig>(() =>
+    couponsService.getWelcomeBanner(),
+  );
+  const [coupons, setCoupons] = useState<Coupon[]>(() =>
+    couponsService.getCoupons(),
+  );
   const [showCreateCouponModal, setShowCreateCouponModal] = useState(false);
   const [newCouponCode, setNewCouponCode] = useState("");
   const [newCouponDiscount, setNewCouponDiscount] = useState("10");
@@ -106,8 +141,10 @@ export function AjustesPage() {
       return;
     }
 
-    if (newPassword && newPassword.length < 6) {
-      toast.error("La nueva contraseña debe tener al menos 6 caracteres.");
+    if (newPassword && newPassword.length < 10) {
+      toast.error(
+        "La nueva contraseña debe tener al menos 10 caracteres por motivos de seguridad.",
+      );
       return;
     }
 
@@ -118,34 +155,26 @@ export function AjustesPage() {
 
     setIsSavingCredentials(true);
     try {
-      try {
-        if (typeof (insforge.auth as any).setProfile === "function") {
-          await (insforge.auth as any).setProfile({ name: adminName });
-        }
-        if (newPassword && typeof (insforge.auth as any).resetPassword === "function") {
-          await (insforge.auth as any).resetPassword({ newPassword });
-        }
-      } catch (errInsforge) {
-        console.warn("Aviso en sincronización directa con InsForge:", errInsforge);
+      const authObj = insforge.auth as unknown as Record<string, Function>;
+      if (typeof authObj.setProfile === "function") {
+        await authObj.setProfile({ name: adminName });
+      }
+      if (newPassword && typeof authObj.resetPassword === "function") {
+        await authObj.resetPassword({ newPassword });
       }
 
-      const profileData = { name: adminName, email: adminEmail };
-      localStorage.setItem("isafer_admin_profile", JSON.stringify(profileData));
-
-      const existingSession = localStorage.getItem("isafer_admin_session");
-      const updatedSession = {
-        ...(existingSession ? JSON.parse(existingSession) : {}),
-        email: adminEmail,
-        name: adminName,
-      };
-      localStorage.setItem("isafer_admin_session", JSON.stringify(updatedSession));
-
-      toast.success("¡Credenciales de Camila actualizadas con éxito en InsForge! 💖");
+      toast.success(
+        "¡Credenciales de Camila actualizadas con éxito en InsForge! 💖",
+      );
       setNewPassword("");
       setConfirmPassword("");
       setShowEditCredentials(false);
-    } catch (err: any) {
-      toast.error(err.message || "Error al actualizar las credenciales.");
+    } catch (err: unknown) {
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : "Error al actualizar las credenciales.";
+      toast.error(errorMsg);
     } finally {
       setIsSavingCredentials(false);
     }
@@ -154,7 +183,9 @@ export function AjustesPage() {
   const handleSaveBanner = (e: React.FormEvent) => {
     e.preventDefault();
     couponsService.saveWelcomeBanner(bannerConfig);
-    toast.success("¡Configuración del Banner VIP de Bienvenida guardada con éxito! ✨");
+    toast.success(
+      "¡Configuración del Banner VIP de Bienvenida guardada con éxito! ✨",
+    );
   };
 
   const handleCreateCoupon = (e: React.FormEvent) => {
@@ -166,14 +197,17 @@ export function AjustesPage() {
 
     const discountNum = parseInt(newCouponDiscount, 10);
     if (isNaN(discountNum) || discountNum <= 0 || discountNum > 100) {
-      toast.error("Introduce un porcentaje de descuento válido (entre 1% y 100%).");
+      toast.error(
+        "Introduce un porcentaje de descuento válido (entre 1% y 100%).",
+      );
       return;
     }
 
     couponsService.addCoupon({
       code: newCouponCode,
       discountPercent: discountNum,
-      description: newCouponDescription || `${discountNum}% OFF en compras seleccionadas`,
+      description:
+        newCouponDescription || `${discountNum}% OFF en compras seleccionadas`,
       isActive: true,
     });
 
@@ -181,7 +215,9 @@ export function AjustesPage() {
     setNewCouponCode("");
     setNewCouponDescription("");
     setShowCreateCouponModal(false);
-    toast.success(`¡Cupón ${newCouponCode.toUpperCase()} creado y disponible en la tienda! 🎟️`);
+    toast.success(
+      `¡Cupón ${newCouponCode.toUpperCase()} creado y disponible en la tienda! 🎟️`,
+    );
   };
 
   const handleToggleCoupon = (id: string, code: string) => {
@@ -198,10 +234,10 @@ export function AjustesPage() {
 
   // Convertir VAPID key
   const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
-      .replace(/\-/g, '+')
-      .replace(/_/g, '/');
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
 
     const rawData = window.atob(base64);
     const outputArray = new Uint8Array(rawData.length);
@@ -213,7 +249,11 @@ export function AjustesPage() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window) {
+    if (
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator &&
+      "PushManager" in window
+    ) {
       setPushSupported(true);
       navigator.serviceWorker.ready.then(async (registration) => {
         try {
@@ -224,7 +264,7 @@ export function AjustesPage() {
               .select("id")
               .eq("endpoint", subscription.endpoint)
               .maybeSingle();
-            
+
             if (data && !error) {
               setPushEnabled(true);
             } else {
@@ -245,7 +285,7 @@ export function AjustesPage() {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      
+
       if (pushEnabled) {
         const subscription = await registration.pushManager.getSubscription();
         if (subscription) {
@@ -253,7 +293,7 @@ export function AjustesPage() {
             .from("push_subscriptions")
             .delete()
             .eq("endpoint", subscription.endpoint);
-          
+
           await subscription.unsubscribe();
         }
         setPushEnabled(false);
@@ -268,22 +308,26 @@ export function AjustesPage() {
 
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
 
         const subscriptionJson = subscription.toJSON();
         if (!subscriptionJson.keys?.p256dh || !subscriptionJson.keys?.auth) {
-          throw new Error("No se pudieron obtener las claves criptográficas de la suscripción");
+          throw new Error(
+            "No se pudieron obtener las claves criptográficas de la suscripción",
+          );
         }
 
         const { error } = await insforge.database
           .from("push_subscriptions")
-          .insert([{
-            endpoint: subscription.endpoint,
-            p256dh: subscriptionJson.keys.p256dh,
-            auth: subscriptionJson.keys.auth,
-            user_id: user?.id || null
-          }]);
+          .insert([
+            {
+              endpoint: subscription.endpoint,
+              p256dh: subscriptionJson.keys.p256dh,
+              auth: subscriptionJson.keys.auth,
+              user_id: user?.id || null,
+            },
+          ]);
 
         if (error) throw error;
 
@@ -317,7 +361,7 @@ export function AjustesPage() {
         .select("*")
         .order("timestamp", { ascending: false })
         .limit(48);
-      
+
       if (error) throw error;
       setHealthLogs(data || []);
     } catch (err) {
@@ -331,7 +375,10 @@ export function AjustesPage() {
     setCheckingLatency(true);
     const start = Date.now();
     try {
-      const { error } = await insforge.database.from("products").select("id").limit(1);
+      const { error } = await insforge.database
+        .from("products")
+        .select("id")
+        .limit(1);
       if (!error) {
         setDbStatus("online");
         setLatency(Date.now() - start);
@@ -367,8 +414,12 @@ export function AjustesPage() {
           <ArrowLeft className="size-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">Preferencias de la Tienda</h1>
-          <p className="text-sm text-zinc-500 font-medium mt-0.5">Administra el perfil de Camila, notificaciones, ofertas y marca.</p>
+          <h1 className="text-3xl font-extrabold text-zinc-900 tracking-tight">
+            Preferencias de la Tienda
+          </h1>
+          <p className="text-sm text-zinc-500 font-medium mt-0.5">
+            Administra el perfil de Camila, notificaciones, ofertas y marca.
+          </p>
         </div>
       </div>
 
@@ -388,13 +439,17 @@ export function AjustesPage() {
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-5 bg-gradient-to-br from-rose-50/50 via-pink-50/20 to-white rounded-2xl border border-rose-100/60">
             {/* Foto de Perfil Interactiva */}
-            <div 
-              className="relative group cursor-pointer shrink-0" 
+            <div
+              className="relative group cursor-pointer shrink-0"
               onClick={() => fileInputRef.current?.click()}
               title="Haz clic para cambiar o subir foto"
             >
               <div className="size-20 sm:size-24 rounded-2xl overflow-hidden bg-rose-100 border-2 border-rose-200/90 shadow-md group-hover:shadow-lg transition-all group-hover:scale-[1.02]">
-                <img src={avatar} alt="Camila — Perfil Oficial" className="w-full h-full object-cover" />
+                <img
+                  src={avatar}
+                  alt="Camila — Perfil Oficial"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <button
                 type="button"
@@ -427,8 +482,12 @@ export function AjustesPage() {
                   </span>
                 )}
               </div>
-              <p className="text-xs font-semibold text-zinc-500">Propietaria & Diseñadora · Isafer Boutique Brooklyn</p>
-              <p className="text-[11px] font-mono font-bold text-rose-600/90">{adminEmail}</p>
+              <p className="text-xs font-semibold text-zinc-500">
+                Propietaria & Diseñadora · Isafer Boutique Brooklyn
+              </p>
+              <p className="text-[11px] font-mono font-bold text-rose-600/90">
+                {adminEmail}
+              </p>
 
               {/* Botones de Acción */}
               <div className="flex flex-wrap items-center gap-2.5 pt-2">
@@ -447,7 +506,9 @@ export function AjustesPage() {
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
                 >
                   <Edit3 className="size-3.5" />
-                  {showEditCredentials ? "Cerrar Edición" : "Editar Credenciales (Correo/Clave)"}
+                  {showEditCredentials
+                    ? "Cerrar Edición"
+                    : "Editar Credenciales (Correo/Clave)"}
                 </button>
 
                 {isCustom && (
@@ -455,7 +516,9 @@ export function AjustesPage() {
                     type="button"
                     onClick={() => {
                       resetAvatar();
-                      toast.info("Foto restablecida a la imagen oficial de Camila ✨");
+                      toast.info(
+                        "Foto restablecida a la imagen oficial de Camila ✨",
+                      );
                     }}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-bold transition-all active:scale-95 cursor-pointer"
                   >
@@ -469,13 +532,18 @@ export function AjustesPage() {
 
           {/* Formulario de Edición de Credenciales */}
           {showEditCredentials && (
-            <form onSubmit={handleSaveCredentials} className="p-5 bg-zinc-50 border border-rose-100 rounded-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            <form
+              onSubmit={handleSaveCredentials}
+              className="p-5 bg-zinc-50 border border-rose-100 rounded-2xl space-y-4 animate-in fade-in zoom-in-95 duration-300"
+            >
               <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
                 <h3 className="text-xs font-black uppercase tracking-wider text-rose-950 flex items-center gap-2">
                   <Key className="size-4 text-rose-500" />
                   Actualizar Datos de Acceso al Panel
                 </h3>
-                <span className="text-[10px] text-zinc-400 font-mono">Conectado a InsForge Auth</span>
+                <span className="text-[10px] text-zinc-400 font-mono">
+                  Conectado a InsForge Auth
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -527,7 +595,11 @@ export function AjustesPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 cursor-pointer"
                     >
-                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                      {showPassword ? (
+                        <EyeOff className="size-4" />
+                      ) : (
+                        <Eye className="size-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -560,8 +632,14 @@ export function AjustesPage() {
                   disabled={isSavingCredentials}
                   className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 text-white text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
                 >
-                  {isSavingCredentials ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                  {isSavingCredentials ? "Guardando..." : "Guardar Cambios en InsForge"}
+                  {isSavingCredentials ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Save className="size-4" />
+                  )}
+                  {isSavingCredentials
+                    ? "Guardando..."
+                    : "Guardar Cambios en InsForge"}
                 </button>
               </div>
             </form>
@@ -580,14 +658,18 @@ export function AjustesPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl space-y-1">
-              <span className="text-[10px] font-black uppercase text-zinc-400">Estilo de Marca</span>
+              <span className="text-[10px] font-black uppercase text-zinc-400">
+                Estilo de Marca
+              </span>
               <p className="text-xs font-extrabold text-zinc-900 flex items-center gap-1.5">
                 <Store className="size-4 text-rose-500" />
                 Barbie Luxe Chic
               </p>
             </div>
             <div className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl space-y-1">
-              <span className="text-[10px] font-black uppercase text-zinc-400">Paleta de Colores</span>
+              <span className="text-[10px] font-black uppercase text-zinc-400">
+                Paleta de Colores
+              </span>
               <p className="text-xs font-extrabold text-zinc-900 flex items-center gap-2">
                 <span className="size-3 rounded-full bg-rose-500" />
                 <span className="size-3 rounded-full bg-pink-300" />
@@ -596,8 +678,12 @@ export function AjustesPage() {
               </p>
             </div>
             <div className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl space-y-1">
-              <span className="text-[10px] font-black uppercase text-zinc-400">Ubicación</span>
-              <p className="text-xs font-extrabold text-zinc-900">Brooklyn, NY</p>
+              <span className="text-[10px] font-black uppercase text-zinc-400">
+                Ubicación
+              </span>
+              <p className="text-xs font-extrabold text-zinc-900">
+                Brooklyn, NY
+              </p>
             </div>
           </div>
         </div>
@@ -609,14 +695,17 @@ export function AjustesPage() {
             Notificaciones & Alertas en Vivo
           </h2>
           <p className="text-xs text-zinc-500 leading-relaxed">
-            Ajusta los avisos sonoros y notificaciones push nativas al recibir una compra.
+            Ajusta los avisos sonoros y notificaciones push nativas al recibir
+            una compra.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             {/* Alerta de Sonido */}
             <div className="p-4 bg-rose-50/40 border border-rose-100 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-zinc-900">Campana de Alerta</span>
+                <span className="text-xs font-extrabold text-zinc-900">
+                  Campana de Alerta
+                </span>
                 <span className="text-[10px] font-black uppercase font-mono px-2 py-0.5 rounded-full bg-white border border-rose-200 text-rose-600">
                   {soundEnabled ? "ON" : "OFF"}
                 </span>
@@ -629,7 +718,11 @@ export function AjustesPage() {
                     : "bg-zinc-100 text-zinc-600 border-zinc-200"
                 }`}
               >
-                {soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+                {soundEnabled ? (
+                  <Volume2 className="size-4" />
+                ) : (
+                  <VolumeX className="size-4" />
+                )}
                 {soundEnabled ? "Desactivar Sonido" : "Activar Sonido"}
               </button>
 
@@ -647,7 +740,9 @@ export function AjustesPage() {
             {/* Notificaciones Push PWA */}
             <div className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-zinc-900">Alertas Móviles (Push)</span>
+                <span className="text-xs font-extrabold text-zinc-900">
+                  Alertas Móviles (Push)
+                </span>
                 <span className="text-[10px] font-black uppercase font-mono px-2 py-0.5 rounded-full bg-white border border-zinc-200 text-zinc-600">
                   {pushEnabled ? "ON" : "OFF"}
                 </span>
@@ -670,11 +765,14 @@ export function AjustesPage() {
                   ) : (
                     <BellOff className="size-4" />
                   )}
-                  {pushEnabled ? "Notificaciones Activas" : "Activar Alertas PWA"}
+                  {pushEnabled
+                    ? "Notificaciones Activas"
+                    : "Activar Alertas PWA"}
                 </button>
               ) : (
                 <p className="text-[11px] text-amber-700 bg-amber-50 p-2.5 rounded-xl border border-amber-200 font-medium">
-                  Instala la app como PWA para notificaciones push en segundo plano.
+                  Instala la app como PWA para notificaciones push en segundo
+                  plano.
                 </p>
               )}
             </div>
@@ -682,7 +780,10 @@ export function AjustesPage() {
         </div>
 
         {/* BLOQUE 4: Promociones & Campañas (Banner VIP) */}
-        <form onSubmit={handleSaveBanner} className="bg-white p-6 sm:p-7 rounded-3xl border border-zinc-200/80 shadow-sm space-y-4">
+        <form
+          onSubmit={handleSaveBanner}
+          className="bg-white p-6 sm:p-7 rounded-3xl border border-zinc-200/80 shadow-sm space-y-4"
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-extrabold text-zinc-900 flex items-center gap-2.5">
               <Percent className="size-5 text-rose-500" />
@@ -697,7 +798,8 @@ export function AjustesPage() {
             </button>
           </div>
           <p className="text-xs text-zinc-500 leading-relaxed">
-            Configuración activa del anuncio superior en vivo para la tienda pública.
+            Configuración activa del anuncio superior en vivo para la tienda
+            pública.
           </p>
 
           <div className="p-5 bg-gradient-to-r from-rose-50 to-pink-50/50 border border-rose-100 rounded-2xl space-y-4">
@@ -710,7 +812,12 @@ export function AjustesPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setBannerConfig({ ...bannerConfig, enabled: !bannerConfig.enabled })}
+                onClick={() =>
+                  setBannerConfig({
+                    ...bannerConfig,
+                    enabled: !bannerConfig.enabled,
+                  })
+                }
                 className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border transition-all cursor-pointer ${
                   bannerConfig.enabled
                     ? "bg-emerald-100 text-emerald-700 border-emerald-300"
@@ -723,33 +830,54 @@ export function AjustesPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-zinc-700">Porcentaje % OFF</label>
+                <label className="text-[11px] font-bold text-zinc-700">
+                  Porcentaje % OFF
+                </label>
                 <input
                   type="number"
                   min="1"
                   max="99"
                   value={bannerConfig.discountPercent}
-                  onChange={(e) => setBannerConfig({ ...bannerConfig, discountPercent: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setBannerConfig({
+                      ...bannerConfig,
+                      discountPercent: parseInt(e.target.value) || 0,
+                    })
+                  }
                   className="w-full px-3 py-2 bg-white rounded-xl border border-rose-200 text-xs font-mono font-bold text-rose-900 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-zinc-700">Código del Cupón</label>
+                <label className="text-[11px] font-bold text-zinc-700">
+                  Código del Cupón
+                </label>
                 <input
                   type="text"
                   value={bannerConfig.code}
-                  onChange={(e) => setBannerConfig({ ...bannerConfig, code: e.target.value.toUpperCase() })}
+                  onChange={(e) =>
+                    setBannerConfig({
+                      ...bannerConfig,
+                      code: e.target.value.toUpperCase(),
+                    })
+                  }
                   className="w-full px-3 py-2 bg-white rounded-xl border border-rose-200 text-xs font-mono font-bold text-rose-900 uppercase focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1 sm:col-span-3">
-                <label className="text-[11px] font-bold text-zinc-700">Texto Anuncio Top Ticker</label>
+                <label className="text-[11px] font-bold text-zinc-700">
+                  Texto Anuncio Top Ticker
+                </label>
                 <input
                   type="text"
                   value={bannerConfig.bannerText}
-                  onChange={(e) => setBannerConfig({ ...bannerConfig, bannerText: e.target.value })}
+                  onChange={(e) =>
+                    setBannerConfig({
+                      ...bannerConfig,
+                      bannerText: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 bg-white rounded-xl border border-rose-200 text-xs font-bold text-zinc-900 focus:outline-none"
                 />
               </div>
@@ -773,23 +901,32 @@ export function AjustesPage() {
             </button>
           </div>
           <p className="text-xs text-zinc-500 leading-relaxed">
-            Gestiona y crea códigos de descuento aplicables automáticamente por las usuarias en la bolsa de compras.
+            Gestiona y crea códigos de descuento aplicables automáticamente por
+            las usuarias en la bolsa de compras.
           </p>
 
           {/* Formulario de Creación de Cupón */}
           {showCreateCouponModal && (
-            <form onSubmit={handleCreateCoupon} className="p-4 bg-rose-50/50 border border-rose-200 rounded-2xl space-y-3 animate-in fade-in duration-300">
+            <form
+              onSubmit={handleCreateCoupon}
+              className="p-4 bg-rose-50/50 border border-rose-200 rounded-2xl space-y-3 animate-in fade-in duration-300"
+            >
               <h3 className="text-xs font-black uppercase text-rose-950 flex items-center gap-1.5">
-                <Tag className="size-4 text-rose-600" /> Crear Nuevo Código Promocional
+                <Tag className="size-4 text-rose-600" /> Crear Nuevo Código
+                Promocional
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-zinc-700">Código (Ej: ISAFER20)</label>
+                  <label className="text-[11px] font-bold text-zinc-700">
+                    Código (Ej: ISAFER20)
+                  </label>
                   <input
                     type="text"
                     value={newCouponCode}
-                    onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
+                    onChange={(e) =>
+                      setNewCouponCode(e.target.value.toUpperCase())
+                    }
                     placeholder="ISAFER20"
                     required
                     className="w-full px-3 py-2 bg-white rounded-xl border border-zinc-300 text-xs font-mono font-bold text-zinc-900 uppercase focus:border-rose-500 focus:outline-none"
@@ -797,7 +934,9 @@ export function AjustesPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-zinc-700">Descuento %</label>
+                  <label className="text-[11px] font-bold text-zinc-700">
+                    Descuento %
+                  </label>
                   <input
                     type="number"
                     min="1"
@@ -811,7 +950,9 @@ export function AjustesPage() {
                 </div>
 
                 <div className="space-y-1 sm:col-span-3">
-                  <label className="text-[11px] font-bold text-zinc-700">Descripción Corta</label>
+                  <label className="text-[11px] font-bold text-zinc-700">
+                    Descripción Corta
+                  </label>
                   <input
                     type="text"
                     value={newCouponDescription}
@@ -836,14 +977,19 @@ export function AjustesPage() {
           {/* Lista de Cupones */}
           <div className="space-y-3">
             {coupons.map((c) => (
-              <div key={c.id} className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-rose-200 transition-colors">
+              <div
+                key={c.id}
+                className="p-4 bg-zinc-50 border border-zinc-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-rose-200 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <div className="size-11 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white font-mono font-black text-xs flex items-center justify-center shadow-sm">
                     {c.discountPercent}%
                   </div>
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-black text-zinc-900 font-mono tracking-wider">{c.code}</p>
+                      <p className="text-sm font-black text-zinc-900 font-mono tracking-wider">
+                        {c.code}
+                      </p>
                       {c.isActive ? (
                         <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md border border-emerald-200">
                           ACTIVO
@@ -854,7 +1000,9 @@ export function AjustesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-zinc-500 font-medium">{c.description}</p>
+                    <p className="text-xs text-zinc-500 font-medium">
+                      {c.description}
+                    </p>
                   </div>
                 </div>
 
@@ -875,7 +1023,9 @@ export function AjustesPage() {
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(c.code);
-                      toast.success(`Código ${c.code} copiado al portapapeles 📋`);
+                      toast.success(
+                        `Código ${c.code} copiado al portapapeles 📋`,
+                      );
                     }}
                     className="p-2 bg-white border border-zinc-200 hover:bg-zinc-100 text-zinc-700 rounded-xl transition-all cursor-pointer"
                     title="Copiar código"
@@ -913,7 +1063,8 @@ export function AjustesPage() {
               Lanzamiento Otoño Brooklyn Luxe
             </p>
             <p className="text-xs text-amber-900/80 leading-relaxed font-medium">
-              Preparar nueva tanda de licras moldeadoras de alta compresión y vestidos ajustados de noche para la temporada.
+              Preparar nueva tanda de licras moldeadoras de alta compresión y
+              vestidos ajustados de noche para la temporada.
             </p>
           </div>
         </div>
@@ -921,17 +1072,28 @@ export function AjustesPage() {
         {/* BLOQUE 7: Diagnóstico Técnico (Oculto / Desplegable) */}
         <div className="bg-white rounded-3xl border border-zinc-200/80 shadow-sm overflow-hidden">
           <button
-            onClick={() => setShowTechnicalDiagnostics(!showTechnicalDiagnostics)}
+            onClick={() =>
+              setShowTechnicalDiagnostics(!showTechnicalDiagnostics)
+            }
             className="w-full p-6 text-left flex items-center justify-between hover:bg-zinc-50 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <Database className="size-5 text-zinc-600" />
               <div>
-                <h2 className="text-base font-extrabold text-zinc-900">Diagnóstico Técnico & Avanzado</h2>
-                <p className="text-xs text-zinc-500 font-medium">Monitoreo de latencia, keep-alive y conexión con PostgreSQL de InsForge.</p>
+                <h2 className="text-base font-extrabold text-zinc-900">
+                  Diagnóstico Técnico & Avanzado
+                </h2>
+                <p className="text-xs text-zinc-500 font-medium">
+                  Monitoreo de latencia, keep-alive y conexión con PostgreSQL de
+                  InsForge.
+                </p>
               </div>
             </div>
-            {showTechnicalDiagnostics ? <ChevronUp className="size-5 text-zinc-400" /> : <ChevronDown className="size-5 text-zinc-400" />}
+            {showTechnicalDiagnostics ? (
+              <ChevronUp className="size-5 text-zinc-400" />
+            ) : (
+              <ChevronDown className="size-5 text-zinc-400" />
+            )}
           </button>
 
           {showTechnicalDiagnostics && (
@@ -939,33 +1101,62 @@ export function AjustesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Status Postgres */}
                 <div className="flex items-center justify-between p-3.5 bg-white border border-zinc-200 rounded-2xl">
-                  <span className="text-xs font-bold text-zinc-700">Estado de PostgreSQL</span>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
-                    dbStatus === "online" ? "bg-emerald-50 text-emerald-600 border border-emerald-200" :
-                    dbStatus === "degraded" ? "bg-amber-50 text-amber-600 border border-amber-200" :
-                    "bg-red-50 text-red-600 border border-red-200"
-                  }`}>
-                    <span className={`size-1.5 rounded-full ${
-                      dbStatus === "online" ? "bg-emerald-500" :
-                      dbStatus === "degraded" ? "bg-amber-500" : "bg-red-500"
-                    }`} />
-                    {dbStatus === "online" ? "Conectado" : dbStatus === "degraded" ? "Degradado" : "Desconectado"}
+                  <span className="text-xs font-bold text-zinc-700">
+                    Estado de PostgreSQL
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${
+                      dbStatus === "online"
+                        ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                        : dbStatus === "degraded"
+                          ? "bg-amber-50 text-amber-600 border border-amber-200"
+                          : "bg-red-50 text-red-600 border border-red-200"
+                    }`}
+                  >
+                    <span
+                      className={`size-1.5 rounded-full ${
+                        dbStatus === "online"
+                          ? "bg-emerald-500"
+                          : dbStatus === "degraded"
+                            ? "bg-amber-500"
+                            : "bg-red-500"
+                      }`}
+                    />
+                    {dbStatus === "online"
+                      ? "Conectado"
+                      : dbStatus === "degraded"
+                        ? "Degradado"
+                        : "Desconectado"}
                   </span>
                 </div>
 
                 {/* Latencia */}
                 <div className="flex items-center justify-between p-3.5 bg-white border border-zinc-200 rounded-2xl">
-                  <span className="text-xs font-bold text-zinc-700">Latencia de Red</span>
-                  <span className="text-xs font-mono font-black text-zinc-900">{latency !== null ? `${latency} ms` : "Calculando..."}</span>
+                  <span className="text-xs font-bold text-zinc-700">
+                    Latencia de Red
+                  </span>
+                  <span className="text-xs font-mono font-black text-zinc-900">
+                    {latency !== null ? `${latency} ms` : "Calculando..."}
+                  </span>
                 </div>
               </div>
 
               {/* Tira pings keep-alive */}
               <div className="space-y-3 bg-white p-4 rounded-2xl border border-zinc-200">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="font-extrabold text-zinc-700 uppercase tracking-wider text-[10px]">Historial Keep-Alive</span>
+                  <span className="font-extrabold text-zinc-700 uppercase tracking-wider text-[10px]">
+                    Historial Keep-Alive
+                  </span>
                   <span className="text-emerald-600 font-mono font-black text-[10px] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                    UPTIME: {healthLogs.length > 0 ? (healthLogs.filter(l => l.status === 'ok').length / healthLogs.length * 100).toFixed(1) : "100.0"}%
+                    UPTIME:{" "}
+                    {healthLogs.length > 0
+                      ? (
+                          (healthLogs.filter((l) => l.status === "ok").length /
+                            healthLogs.length) *
+                          100
+                        ).toFixed(1)
+                      : "100.0"}
+                    %
                   </span>
                 </div>
 
@@ -976,21 +1167,25 @@ export function AjustesPage() {
                       Cargando pings...
                     </div>
                   ) : healthLogs.length === 0 ? (
-                    <span className="text-xs text-zinc-400 font-bold">Esperando registros del cron de producción...</span>
+                    <span className="text-xs text-zinc-400 font-bold">
+                      Esperando registros del cron de producción...
+                    </span>
                   ) : (
-                    [...healthLogs].reverse().map((log, idx) => (
-                      <div
-                        key={log.id || idx}
-                        title={`${new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}: ${log.status === "ok" ? log.latency_ms + " ms" : "Error: " + (log.error_message || "Desconocido")}`}
-                        className={`size-2.5 rounded-[3px] transition-all duration-300 hover:scale-125 cursor-help ${
-                          log.status === "ok"
-                            ? log.latency_ms < 150
-                              ? "bg-emerald-500 hover:bg-emerald-600"
-                              : "bg-amber-400 hover:bg-amber-500"
-                            : "bg-red-500 hover:bg-red-600 animate-pulse"
-                        }`}
-                      />
-                    ))
+                    [...healthLogs]
+                      .reverse()
+                      .map((log, idx) => (
+                        <div
+                          key={log.id || idx}
+                          title={`${new Date(log.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}: ${log.status === "ok" ? log.latency_ms + " ms" : "Error: " + (log.error_message || "Desconocido")}`}
+                          className={`size-2.5 rounded-[3px] transition-all duration-300 hover:scale-125 cursor-help ${
+                            log.status === "ok"
+                              ? log.latency_ms < 150
+                                ? "bg-emerald-500 hover:bg-emerald-600"
+                                : "bg-amber-400 hover:bg-amber-500"
+                              : "bg-red-500 hover:bg-red-600 animate-pulse"
+                          }`}
+                        />
+                      ))
                   )}
                 </div>
               </div>
@@ -1001,12 +1196,17 @@ export function AjustesPage() {
                   disabled={checkingLatency || loadingLogs}
                   className="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 shadow-sm"
                 >
-                  <Activity className={`size-4 ${checkingLatency || loadingLogs ? "animate-spin text-zinc-400" : "text-emerald-400"}`} />
+                  <Activity
+                    className={`size-4 ${checkingLatency || loadingLogs ? "animate-spin text-zinc-400" : "text-emerald-400"}`}
+                  />
                   Refrescar Diagnóstico
                 </button>
 
                 <div className="text-[11px] text-zinc-500 font-medium">
-                  API: <code className="font-mono text-zinc-700 bg-zinc-200/60 px-1.5 py-0.5 rounded">https://i5jqzbx6.us-east.insforge.app</code>
+                  API:{" "}
+                  <code className="font-mono text-zinc-700 bg-zinc-200/60 px-1.5 py-0.5 rounded">
+                    https://i5jqzbx6.us-east.insforge.app
+                  </code>
                 </div>
               </div>
             </div>

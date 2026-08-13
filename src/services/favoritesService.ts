@@ -25,20 +25,24 @@ export async function fetchUserFavorites(userId: string): Promise<string[]> {
 /**
  * Agrega un producto a los favoritos de un usuario en PostgreSQL
  */
-export async function addFavorite(userId: string, productId: string): Promise<boolean> {
+export async function addFavorite(
+  userId: string,
+  productId: string,
+): Promise<boolean> {
   try {
-    const { error } = await insforge.database
-      .from("favorites")
-      .insert([
-        {
-          user_id: userId,
-          product_id: productId,
-        },
-      ]);
+    const { error } = await insforge.database.from("favorites").insert([
+      {
+        user_id: userId,
+        product_id: productId,
+      },
+    ]);
 
     if (error) {
       // Ignorar error si ya existe por la restricción UNIQUE
-      if (error.message?.includes("unique_violation") || error.code === "23505") {
+      if (
+        error.message?.includes("unique_violation") ||
+        error.code === "23505"
+      ) {
         return true;
       }
       console.error("Error al agregar favorito:", error);
@@ -54,7 +58,10 @@ export async function addFavorite(userId: string, productId: string): Promise<bo
 /**
  * Elimina un producto de los favoritos de un usuario en PostgreSQL
  */
-export async function removeFavorite(userId: string, productId: string): Promise<boolean> {
+export async function removeFavorite(
+  userId: string,
+  productId: string,
+): Promise<boolean> {
   try {
     const { error } = await insforge.database
       .from("favorites")
@@ -76,7 +83,10 @@ export async function removeFavorite(userId: string, productId: string): Promise
 /**
  * Sincroniza los favoritos del LocalStorage del invitado al iniciar sesión
  */
-export async function syncGuestFavorites(userId: string, productIds: string[]): Promise<boolean> {
+export async function syncGuestFavorites(
+  userId: string,
+  productIds: string[],
+): Promise<boolean> {
   if (!productIds || productIds.length === 0) return true;
 
   try {
@@ -86,9 +96,7 @@ export async function syncGuestFavorites(userId: string, productIds: string[]): 
     }));
 
     // En InsForge/PostgREST podemos hacer upsert para evitar fallos por registros duplicados
-    const { error } = await insforge.database
-      .from("favorites")
-      .insert(records);
+    const { error } = await insforge.database.from("favorites").insert(records);
 
     if (error) {
       console.error("Error al sincronizar favoritos de invitado:", error);

@@ -8,15 +8,15 @@
 
 ## 📋 Estado Final de los Errores Encontrados
 
-| ID | Componente | Severidad | Resumen del Error | Estado |
-|---|---|---|---|---|
-| **BUG-001** | Catálogo / InsForge Storage | 🔴 **ALTA** | 21 imágenes de productos rotas cargadas desde InsForge Storage. | ✅ **RESUELTO** |
-| **BUG-002** | Catálogo / ProductCard | 🔴 **ALTA** | Hacer clic en la imagen o tarjeta de un producto no abría el modal de detalles. | ✅ **RESUELTO** |
-| **BUG-003** | Carrito Vacío | 🟡 **MEDIA** | El botón "Explorar Colección" dentro del carrito vacío no cerraba el panel lateral. | ✅ **RESUELTO** |
-| **BUG-004** | Hero Section / CTA | 🟡 **MEDIA** | El botón CTA "EXPLORAR COLECCIÓN ✦" no realizaba scroll suave si la sección no estaba lista. | ✅ **RESUELTO** |
-| **BUG-005** | Ruta `/admin/login` | 🟡 **MEDIA** | Parpadeo / Estado en blanco temporal al cargar la ruta de administración directamente. | ✅ **RESUELTO** |
-| **BUG-006** | Backend / Auth Hook | 🟢 **BAJA** | Peticiones continuas `HTTP 401 Unauthorized` a `/api/auth/refresh` en usuarios invitados. | ✅ **RESUELTO** |
-| **BUG-007** | Accesibilidad / SEO | 🟢 **BAJA** | Atributos `alt` ausentes o vacíos en imágenes del catálogo. | ✅ **RESUELTO** |
+| ID          | Componente                  | Severidad    | Resumen del Error                                                                            | Estado          |
+| ----------- | --------------------------- | ------------ | -------------------------------------------------------------------------------------------- | --------------- |
+| **BUG-001** | Catálogo / InsForge Storage | 🔴 **ALTA**  | 21 imágenes de productos rotas cargadas desde InsForge Storage.                              | ✅ **RESUELTO** |
+| **BUG-002** | Catálogo / ProductCard      | 🔴 **ALTA**  | Hacer clic en la imagen o tarjeta de un producto no abría el modal de detalles.              | ✅ **RESUELTO** |
+| **BUG-003** | Carrito Vacío               | 🟡 **MEDIA** | El botón "Explorar Colección" dentro del carrito vacío no cerraba el panel lateral.          | ✅ **RESUELTO** |
+| **BUG-004** | Hero Section / CTA          | 🟡 **MEDIA** | El botón CTA "EXPLORAR COLECCIÓN ✦" no realizaba scroll suave si la sección no estaba lista. | ✅ **RESUELTO** |
+| **BUG-005** | Ruta `/admin/login`         | 🟡 **MEDIA** | Parpadeo / Estado en blanco temporal al cargar la ruta de administración directamente.       | ✅ **RESUELTO** |
+| **BUG-006** | Backend / Auth Hook         | 🟢 **BAJA**  | Peticiones continuas `HTTP 401 Unauthorized` a `/api/auth/refresh` en usuarios invitados.    | ✅ **RESUELTO** |
+| **BUG-007** | Accesibilidad / SEO         | 🟢 **BAJA**  | Atributos `alt` ausentes o vacíos en imágenes del catálogo.                                  | ✅ **RESUELTO** |
 
 ---
 

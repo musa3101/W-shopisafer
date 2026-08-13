@@ -1,9 +1,11 @@
 # Guía de Configuración e Integración con InsForge Backend
 
 ## 1. Resumen Ejecutivo
+
 Este proyecto está configurado con **InsForge** (`isafer-boutique`, URL base `https://i5jqzbx6.us-east.insforge.app`) como Backend-as-a-Service (BaaS) en PostgreSQL.
 
 Permite dos tipos de acceso:
+
 1. **Acceso de Clientas (Google OAuth)**:
    - Las clientas pueden iniciar sesión con un solo clic con Google (`insforge.auth.signInWithOAuth`).
    - **Registro Automático**: En cuanto una clienta nueva inicia sesión con Google, InsForge registra automáticamente su usuario, correo, foto de perfil y fecha de registro en la tabla de autenticación (`auth.users`) del backend en PostgreSQL.
@@ -19,6 +21,7 @@ Permite dos tipos de acceso:
 ## 2. Estructura de Tablas en InsForge (PostgreSQL)
 
 ### Tabla `products`
+
 - `id`: UUID (Clave primaria)
 - `name`: VARCHAR / TEXT (Nombre del producto)
 - `slug`: VARCHAR (Identificador URL único)
@@ -31,6 +34,7 @@ Permite dos tipos de acceso:
 - `created_at`: TIMESTAMP WITH TIMEZONE
 
 ### Tabla `orders`
+
 - `id`: UUID (Clave primaria)
 - `customer_name`: TEXT (Nombre del comprador)
 - `customer_email`: TEXT (Email del comprador)
@@ -43,10 +47,12 @@ Permite dos tipos de acceso:
 ---
 
 ## 3. Inicio de Sesión con Google OAuth
+
 El inicio de sesión se gestiona con `@insforge/sdk` a través del proveedor Google:
+
 ```typescript
 const { data, error } = await insforge.auth.signInWithOAuth({
-  provider: 'google',
+  provider: "google",
   redirectTo: window.location.origin,
 });
 ```
@@ -56,6 +62,7 @@ En el Dashboard de InsForge (`https://i5jqzbx6.us-east.insforge.app`), en la sec
 ---
 
 ## 3.1. Políticas de Seguridad RLS (Row Level Security)
+
 Para aplicar las políticas de seguridad en la base de datos de InsForge, ejecuta el archivo SQL ubicado en [`docs/sql/01_rls_security_policies.sql`](file:///Users/musa/Downloads/sopisafer/docs/sql/01_rls_security_policies.sql) en el **SQL Editor** del Dashboard de InsForge.
 
 - **`favorites`**: Solo el usuario autenticado puede seleccionar, insertar y eliminar sus propios favoritos (`auth.uid() = user_id`).
@@ -67,6 +74,7 @@ Para aplicar las políticas de seguridad en la base de datos de InsForge, ejecut
 ## 4. Guía para la Entrega a la Dueña
 
 Cuando le entregues la web a la dueña:
+
 1. **Acceso al Panel de Control**:
    - En la parte superior derecha de la web (cabecera), haz clic en el icono de **Escudo / Panel de Administración** (<ShieldCheck />).
    - Usa las siguientes credenciales predeterminadas para ingresar:
@@ -77,4 +85,4 @@ Cuando le entregues la web a la dueña:
    - Puede escribir el nuevo precio o cambiar las unidades de stock.
    - Al pulsar **Guardar**, el cambio queda actualizado inmediatamente en la base de datos de InsForge.
 3. **Ver Pedidos**:
-   - Pestaña **Gestión de Pedidos**: podrá ver todas las compras realizadas por las clientas en la web, el total en euros/dólares, y cambiar el estado del pedido a *Enviado* o *Entregado*.
+   - Pestaña **Gestión de Pedidos**: podrá ver todas las compras realizadas por las clientas en la web, el total en euros/dólares, y cambiar el estado del pedido a _Enviado_ o _Entregado_.

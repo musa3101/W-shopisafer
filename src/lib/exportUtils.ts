@@ -8,34 +8,47 @@ export interface ExportColumn<T> {
 /**
  * Generates and triggers download of an Excel-compatible CSV file with UTF-8 BOM
  */
-export function exportToCSV<T>(filename: string, columns: ExportColumn<T>[], data: T[]) {
+export function exportToCSV<T>(
+  filename: string,
+  columns: ExportColumn<T>[],
+  data: T[],
+) {
   if (!data || data.length === 0) {
     alert("No hay datos disponibles para exportar.");
     return;
   }
 
   // Header line
-  const headers = columns.map(c => `"${c.header.replace(/"/g, '""')}"`).join(",");
-  
+  const headers = columns
+    .map((c) => `"${c.header.replace(/"/g, '""')}"`)
+    .join(",");
+
   // Data lines
-  const rows = data.map(item => {
-    return columns.map(c => {
-      const val = c.accessor(item);
-      const strVal = val === null || val === undefined ? "" : String(val);
-      return `"${strVal.replace(/"/g, '""')}"`;
-    }).join(",");
+  const rows = data.map((item) => {
+    return columns
+      .map((c) => {
+        const val = c.accessor(item);
+        const strVal = val === null || val === undefined ? "" : String(val);
+        return `"${strVal.replace(/"/g, '""')}"`;
+      })
+      .join(",");
   });
 
   const csvContent = [headers, ...rows].join("\r\n");
 
   // UTF-8 BOM for Microsoft Excel compatibility
   const BOM = "\uFEFF";
-  const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
-  
+  const blob = new Blob([BOM + csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `${filename}_${new Date().toISOString().slice(0, 10)}.csv`);
+  link.setAttribute(
+    "download",
+    `${filename}_${new Date().toISOString().slice(0, 10)}.csv`,
+  );
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -50,11 +63,13 @@ export function printReport<T>(
   subtitle: string,
   columns: ExportColumn<T>[],
   data: T[],
-  summaryCards?: { label: string; value: string }[]
+  summaryCards?: { label: string; value: string }[],
 ) {
   const printWindow = window.open("", "_blank");
   if (!printWindow) {
-    alert("Por favor habilita las ventanas emergentes (popups) para exportar el reporte en PDF.");
+    alert(
+      "Por favor habilita las ventanas emergentes (popups) para exportar el reporte en PDF.",
+    );
     return;
   }
 
@@ -63,7 +78,7 @@ export function printReport<T>(
     month: "long",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   });
 
   const summaryHtml = summaryCards
@@ -71,33 +86,36 @@ export function printReport<T>(
     <div style="display: flex; gap: 16px; margin-bottom: 24px;">
       ${summaryCards
         .map(
-          c => `
+          (c) => `
         <div style="flex: 1; background: #f4f4f5; padding: 12px 16px; border-radius: 8px; border: 1px solid #e4e4e7;">
           <div style="font-size: 10px; font-weight: bold; color: #71717a; text-transform: uppercase;">${c.label}</div>
           <div style="font-size: 18px; font-weight: 900; color: #09090b; margin-top: 4px;">${c.value}</div>
         </div>
-      `
+      `,
         )
         .join("")}
     </div>`
     : "";
 
   const tableHeaderHtml = columns
-    .map(c => `<th style="padding: 10px 12px; text-align: left; background: #18181b; color: #ffffff; font-size: 11px; font-weight: bold; text-transform: uppercase;">${c.header}</th>`)
+    .map(
+      (c) =>
+        `<th style="padding: 10px 12px; text-align: left; background: #18181b; color: #ffffff; font-size: 11px; font-weight: bold; text-transform: uppercase;">${c.header}</th>`,
+    )
     .join("");
 
   const tableRowsHtml = data
     .map(
       (item, idx) => `
-    <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#fafafa'}; border-bottom: 1px solid #e4e4e7;">
+    <tr style="background: ${idx % 2 === 0 ? "#ffffff" : "#fafafa"}; border-bottom: 1px solid #e4e4e7;">
       ${columns
         .map(
-          c => `
+          (c) => `
         <td style="padding: 10px 12px; font-size: 11px; color: #27272a;">${c.accessor(item)}</td>
-      `
+      `,
         )
         .join("")}
-    </tr>`
+    </tr>`,
     )
     .join("");
 

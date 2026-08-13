@@ -36,7 +36,12 @@ export function TrendingCarousel({
   const [thumbWidth, setThumbWidth] = useState(25);
 
   const baseTrendingProducts = products.slice(0, 6);
-  const trendingProducts = [...baseTrendingProducts, ...baseTrendingProducts, ...baseTrendingProducts, ...baseTrendingProducts].map((p, idx) => ({
+  const trendingProducts = [
+    ...baseTrendingProducts,
+    ...baseTrendingProducts,
+    ...baseTrendingProducts,
+    ...baseTrendingProducts,
+  ].map((p, idx) => ({
     ...p,
     uniqueKey: `${p.id}-${idx}`,
   }));
@@ -73,7 +78,8 @@ export function TrendingCarousel({
     }
   }, [trendingProducts.length]);
 
-  const fallbackUnsplash = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
+  const fallbackUnsplash =
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80";
 
   const renderProductImage = (p: ProductItem) => {
     if (p.image) {
@@ -150,7 +156,6 @@ export function TrendingCarousel({
                     className={`size-4 stroke-[1.5] ${favorites[product.id] ? "fill-red-500 text-red-500" : "text-black dark:text-white"}`}
                   />
                 </button>
-
               </div>
 
               {/* Product Details - Sharp and clean layout */}
@@ -158,16 +163,19 @@ export function TrendingCarousel({
                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                   {product.category}
                 </span>
-                
+
                 <h3 className="mt-1 font-sans text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
                   {product.name}
                 </h3>
-                
+
                 <div className="mt-1 flex items-center justify-between">
                   <span className="font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                    ${product.price.toFixed(2)} <span className="text-[9px] font-normal text-zinc-400">USD</span>
+                    ${product.price.toFixed(2)}{" "}
+                    <span className="text-[9px] font-normal text-zinc-400">
+                      USD
+                    </span>
                   </span>
-                  
+
                   {/* Mobile Quick Add Plus Icon Button */}
                   <button
                     onClick={() => addProduct(product.id)}

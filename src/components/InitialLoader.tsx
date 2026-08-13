@@ -70,9 +70,9 @@ export function InitialLoader() {
           <span
             key={index}
             className="isafer-loader-letter"
-            style={{ 
+            style={{
               animationDelay: `${0.1 + index * 0.105}s`,
-              width: letter === " " ? "0.5em" : "auto"
+              width: letter === " " ? "0.5em" : "auto",
             }}
           >
             {letter}

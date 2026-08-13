@@ -2,14 +2,22 @@ import { createClient } from "npm:@insforge/sdk@1.5.2";
 
 export default async function (req: Request) {
   try {
-    console.log("Iniciando tarea programada: Procesar recuperación de carritos abandonados...");
+    console.log(
+      "Iniciando tarea programada: Procesar recuperación de carritos abandonados...",
+    );
 
     // Inicializar cliente de administración de InsForge
-    const insforgeUrl = Deno.env.get("INSFORGE_URL") || "https://i5jqzbx6.us-east.insforge.app";
-    const serviceKey = Deno.env.get("INSFORGE_API_KEY") || Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") || "";
+    const insforgeUrl =
+      Deno.env.get("INSFORGE_URL") || "https://i5jqzbx6.us-east.insforge.app";
+    const serviceKey =
+      Deno.env.get("INSFORGE_API_KEY") ||
+      Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") ||
+      "";
 
     if (!serviceKey) {
-      console.error("INSFORGE_API_KEY no encontrada en las variables de entorno!");
+      console.error(
+        "INSFORGE_API_KEY no encontrada en las variables de entorno!",
+      );
       return new Response("Missing API Key", { status: 500 });
     }
 
@@ -20,39 +28,59 @@ export default async function (req: Request) {
 
     // Calcular límites de tiempo: inactividad entre 2 y 24 horas
     const timeLimit2h = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    const timeLimit24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const timeLimit24h = new Date(
+      Date.now() - 24 * 60 * 60 * 1000,
+    ).toISOString();
 
-    console.log(`Buscando carritos abandonados actualizados entre ${timeLimit24h} y ${timeLimit2h}...`);
+    console.log(
+      `Buscando carritos abandonados actualizados entre ${timeLimit24h} y ${timeLimit2h}...`,
+    );
 
     // Obtener carritos elegibles
-    const { data: abandonedCarts, error: fetchCartsError } = await insforge.database
-      .from("carts")
-      .select("*")
-      .eq("recovery_email_sent", false)
-      .not("customer_email", "is", null)
-      .lt("updated_at", timeLimit2h)
-      .gt("updated_at", timeLimit24h);
+    const { data: abandonedCarts, error: fetchCartsError } =
+      await insforge.database
+        .from("carts")
+        .select("*")
+        .eq("recovery_email_sent", false)
+        .not("customer_email", "is", null)
+        .lt("updated_at", timeLimit2h)
+        .gt("updated_at", timeLimit24h);
 
     if (fetchCartsError) {
-      console.error("Error al buscar carritos abandonados en PostgreSQL:", fetchCartsError);
-      return new Response(JSON.stringify({ error: fetchCartsError.message }), { status: 500 });
+      console.error(
+        "Error al buscar carritos abandonados en PostgreSQL:",
+        fetchCartsError,
+      );
+      return new Response(JSON.stringify({ error: fetchCartsError.message }), {
+        status: 500,
+      });
     }
 
     if (!abandonedCarts || abandonedCarts.length === 0) {
       console.log("No se encontraron carritos abandonados para procesar.");
-      return new Response(JSON.stringify({ message: "No abandoned carts found.", count: 0 }), { status: 200 });
+      return new Response(
+        JSON.stringify({ message: "No abandoned carts found.", count: 0 }),
+        { status: 200 },
+      );
     }
 
-    console.log(`Se encontraron ${abandonedCarts.length} carrito(s) abandonado(s). Cargando catálogo de productos...`);
+    console.log(
+      `Se encontraron ${abandonedCarts.length} carrito(s) abandonado(s). Cargando catálogo de productos...`,
+    );
 
     // Cargar productos para poder mostrar fotos, nombres y precios reales
-    const { data: products, error: fetchProductsError } = await insforge.database
-      .from("products")
-      .select("*");
+    const { data: products, error: fetchProductsError } =
+      await insforge.database.from("products").select("*");
 
     if (fetchProductsError) {
-      console.error("Error al cargar productos para la correspondencia del carrito:", fetchProductsError);
-      return new Response(JSON.stringify({ error: fetchProductsError.message }), { status: 500 });
+      console.error(
+        "Error al cargar productos para la correspondencia del carrito:",
+        fetchProductsError,
+      );
+      return new Response(
+        JSON.stringify({ error: fetchProductsError.message }),
+        { status: 500 },
+      );
     }
 
     const productsMap = new Map();
@@ -68,7 +96,10 @@ export default async function (req: Request) {
       const { id: cartId, customer_email, items } = cart;
 
       // Filtrar correos de prueba e invitados por defecto
-      if (!customer_email || customer_email.includes("cliente@isaferboutique.com")) {
+      if (
+        !customer_email ||
+        customer_email.includes("cliente@isaferboutique.com")
+      ) {
         console.log(`Carrito #${cartId} omitido: Invitado sin correo real.`);
         await insforge.database
           .from("carts")
@@ -77,7 +108,8 @@ export default async function (req: Request) {
         continue;
       }
 
-      const parsedItems = typeof items === "string" ? JSON.parse(items) : items || [];
+      const parsedItems =
+        typeof items === "string" ? JSON.parse(items) : items || [];
       if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
         console.log(`Carrito #${cartId} omitido: No contiene items válidos.`);
         await insforge.database
@@ -87,7 +119,9 @@ export default async function (req: Request) {
         continue;
       }
 
-      console.log(`Procesando recuperación para carrito #${cartId} de ${customer_email}...`);
+      console.log(
+        `Procesando recuperación para carrito #${cartId} de ${customer_email}...`,
+      );
 
       let totalCartAmount = 0;
       let itemsHtml = "";
@@ -101,14 +135,17 @@ export default async function (req: Request) {
           totalCartAmount += subtotalItem;
 
           // Obtener foto principal o imagen por defecto
-          const imgUrl = productInfo.images && productInfo.images.length > 0
-            ? productInfo.images[0]
-            : "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80";
+          const imgUrl =
+            productInfo.images && productInfo.images.length > 0
+              ? productInfo.images[0]
+              : "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80";
 
           // Formatear url a webp si es de Unsplash
           let optimizedImgUrl = imgUrl;
           if (imgUrl.includes("images.unsplash.com")) {
-            optimizedImgUrl = imgUrl.includes("?") ? `${imgUrl}&fm=webp&w=150` : `${imgUrl}?fm=webp&w=150`;
+            optimizedImgUrl = imgUrl.includes("?")
+              ? `${imgUrl}&fm=webp&w=150`
+              : `${imgUrl}?fm=webp&w=150`;
           }
 
           itemsHtml += `
@@ -128,7 +165,9 @@ export default async function (req: Request) {
 
       // Si ningún producto del carrito coincidió con el catálogo, omitir
       if (totalCartAmount === 0 || !itemsHtml) {
-        console.log(`Carrito #${cartId} omitido: Ningún producto válido en catálogo.`);
+        console.log(
+          `Carrito #${cartId} omitido: Ningún producto válido en catálogo.`,
+        );
         await insforge.database
           .from("carts")
           .update({ recovery_email_sent: true })
@@ -184,15 +223,21 @@ export default async function (req: Request) {
       // Enviar email por InsForge
       const emailRes = await insforge.emails.send({
         to: customer_email,
-        subject: "💖 ¿Se te olvidó algo? Tu bolsa de compras te espera · Isafer Boutique",
+        subject:
+          "💖 ¿Se te olvidó algo? Tu bolsa de compras te espera · Isafer Boutique",
         html: emailHtml,
         from: "Isafer Boutique",
       });
 
       if (emailRes.error) {
-        console.error(`Error al enviar email de recuperación para carrito #${cartId}:`, emailRes.error);
+        console.error(
+          `Error al enviar email de recuperación para carrito #${cartId}:`,
+          emailRes.error,
+        );
       } else {
-        console.log(`✓ Email de recuperación de carrito enviado con éxito a ${customer_email}.`);
+        console.log(
+          `✓ Email de recuperación de carrito enviado con éxito a ${customer_email}.`,
+        );
         emailsSentCount++;
       }
 
@@ -203,13 +248,22 @@ export default async function (req: Request) {
         .eq("id", cartId);
     }
 
-    console.log(`Recuperación de carritos finalizada con éxito. Emails enviados: ${emailsSentCount}`);
+    console.log(
+      `Recuperación de carritos finalizada con éxito. Emails enviados: ${emailsSentCount}`,
+    );
     return new Response(
-      JSON.stringify({ success: true, message: "Abandoned carts processed.", sent: emailsSentCount }),
-      { headers: { "Content-Type": "application/json" }, status: 200 }
+      JSON.stringify({
+        success: true,
+        message: "Abandoned carts processed.",
+        sent: emailsSentCount,
+      }),
+      { headers: { "Content-Type": "application/json" }, status: 200 },
     );
   } catch (err: any) {
-    console.error("Excepción en la Edge Function de carritos abandonados:", err.message);
+    console.error(
+      "Excepción en la Edge Function de carritos abandonados:",
+      err.message,
+    );
     return new Response(err.message, { status: 500 });
   }
 }

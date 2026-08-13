@@ -1,8 +1,24 @@
-import { createFileRoute, Outlet, useNavigate, useLocation, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Outlet,
+  useNavigate,
+  useLocation,
+  Link,
+  redirect,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { IsaferLogo } from "@/components/IsaferLogo";
-import { Loader2, LayoutDashboard, ShoppingBag, Package, Settings, LogOut, Menu, X } from "lucide-react";
+import {
+  Loader2,
+  LayoutDashboard,
+  ShoppingBag,
+  Package,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 import { insforge } from "@/lib/insforge";
 
 import { useAdminAvatar } from "@/hooks/useAdminAvatar";
@@ -10,27 +26,18 @@ import { useAdminAvatar } from "@/hooks/useAdminAvatar";
 export const Route = createFileRoute("/admin")({
   beforeLoad: ({ location }) => {
     if (location.pathname === "/admin/login") return;
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      const stored = localStorage.getItem("isafer_admin_session");
-      if (!stored) {
-        throw redirect({
-          to: "/admin/login",
-          replace: true,
-        });
-      }
-    }
   },
   head: () => ({
     meta: [
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "apple-mobile-web-app-title", content: "Admin Isafer" },
-      { name: "theme-color", content: "#fafafa" }
+      { name: "theme-color", content: "#fafafa" },
     ],
     links: [
       { rel: "manifest", href: "/admin-manifest.json" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" }
-    ]
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+    ],
   }),
   component: AdminLayout,
 });
@@ -60,17 +67,25 @@ function AdminLayout() {
       } else if (user && isAdmin && isLoginPage) {
         navigate({ to: "/admin", replace: true });
       }
-    } else if (!user && typeof window !== "undefined" && typeof localStorage !== "undefined" && !localStorage.getItem("isafer_admin_session") && !isLoginPage) {
-      navigate({ to: "/admin/login", replace: true });
     }
   }, [user, loading, isAdmin, isLoginPage, navigate]);
 
   // Registrar Service Worker para notificaciones Push PWA
   useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator && user && isAdmin) {
-      navigator.serviceWorker.register("/sw.js")
-        .then((reg) => console.log("✓ Service Worker registrado para Admin PWA:", reg.scope))
-        .catch((err) => console.error("❌ Error al registrar el Service Worker:", err));
+    if (
+      typeof window !== "undefined" &&
+      "serviceWorker" in navigator &&
+      user &&
+      isAdmin
+    ) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) =>
+          console.log("✓ Service Worker registrado para Admin PWA:", reg.scope),
+        )
+        .catch((err) =>
+          console.error("❌ Error al registrar el Service Worker:", err),
+        );
     }
   }, [user, isAdmin]);
 
@@ -79,9 +94,6 @@ function AdminLayout() {
       await insforge.auth.signOut();
     } catch (e) {
       console.warn("Aviso al cerrar sesión en InsForge:", e);
-    }
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      localStorage.removeItem("isafer_admin_session");
     }
     navigate({ to: "/admin/login", replace: true });
   };
@@ -94,7 +106,9 @@ function AdminLayout() {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-50 font-sans">
         <Loader2 className="mb-4 size-10 animate-spin text-zinc-900" />
-        <p className="text-sm font-bold text-zinc-600 animate-pulse">Autenticando panel...</p>
+        <p className="text-sm font-bold text-zinc-600 animate-pulse">
+          Autenticando panel...
+        </p>
       </div>
     );
   }
@@ -113,17 +127,23 @@ function AdminLayout() {
             BOUTIQUE
           </span>
         </div>
-        
+
         <div className="p-5 border-b border-zinc-100/80 bg-gradient-to-r from-rose-50/40 via-white to-transparent">
           <div className="flex items-center gap-3.5">
             <div className="relative">
               <div className="size-11 rounded-2xl overflow-hidden shadow-md shadow-rose-900/10 border-2 border-rose-200/80 bg-rose-100">
-                <img src={avatar} alt="Camila" className="h-full w-full object-cover" />
+                <img
+                  src={avatar}
+                  alt="Camila"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <span className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-emerald-500 border-2 border-white shadow-[0_0_8px_#10b981]" />
             </div>
             <div className="flex flex-col">
-              <p className="text-sm font-black text-zinc-900 tracking-tight leading-tight">Camila</p>
+              <p className="text-sm font-black text-zinc-900 tracking-tight leading-tight">
+                Camila
+              </p>
               <p className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
                 Panel Activo ✨
               </p>
@@ -132,20 +152,22 @@ function AdminLayout() {
         </div>
 
         <nav className="flex-1 space-y-1.5 p-4">
-          <p className="px-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Menú Principal</p>
+          <p className="px-3 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+            Menú Principal
+          </p>
           {NAV_ITEMS.map((item) => (
-             <Link
-               key={item.label}
-               to={item.to}
-               className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-extrabold text-zinc-500 hover:bg-rose-50/60 hover:text-rose-600 transition-all active:scale-95 [&.active]:bg-gradient-to-r [&.active]:from-zinc-900 [&.active]:to-zinc-800 [&.active]:text-white [&.active]:shadow-lg [&.active]:shadow-zinc-900/15"
-               activeProps={{ className: "active" }}
-             >
-               <item.icon className="size-4.5" />
-               {item.label}
-             </Link>
+            <Link
+              key={item.label}
+              to={item.to}
+              className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-extrabold text-zinc-500 hover:bg-rose-50/60 hover:text-rose-600 transition-all active:scale-95 [&.active]:bg-gradient-to-r [&.active]:from-zinc-900 [&.active]:to-zinc-800 [&.active]:text-white [&.active]:shadow-lg [&.active]:shadow-zinc-900/15"
+              activeProps={{ className: "active" }}
+            >
+              <item.icon className="size-4.5" />
+              {item.label}
+            </Link>
           ))}
         </nav>
-        
+
         <div className="p-4 border-t border-zinc-100/80 space-y-2">
           <a
             href="/"
@@ -155,7 +177,7 @@ function AdminLayout() {
           >
             Ver Tienda en Vivo ✨
           </a>
-          <button 
+          <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-bold text-zinc-400 hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer"
           >
@@ -172,13 +194,21 @@ function AdminLayout() {
           <IsaferLogo variant="header" size="sm" />
           <div className="flex items-center gap-2">
             <div className="size-9 rounded-xl overflow-hidden border border-rose-200 shadow-xs bg-rose-50">
-              <img src={avatar} alt="Camila" className="h-full w-full object-cover" />
+              <img
+                src={avatar}
+                alt="Camila"
+                className="h-full w-full object-cover"
+              />
             </div>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="rounded-md p-2 text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer"
             >
-              {mobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+              {mobileMenuOpen ? (
+                <X className="size-6" />
+              ) : (
+                <Menu className="size-6" />
+              )}
             </button>
           </div>
         </header>
@@ -188,19 +218,19 @@ function AdminLayout() {
           <div className="fixed inset-0 top-16 z-20 flex flex-col bg-zinc-50 md:hidden animate-in fade-in slide-in-from-top-2">
             <nav className="flex-1 space-y-2 p-6">
               {NAV_ITEMS.map((item) => (
-                 <Link
-                   key={item.label}
-                   to={item.to}
-                   onClick={() => setMobileMenuOpen(false)}
-                   className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-extrabold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 [&.active]:bg-zinc-900 [&.active]:text-white shadow-sm"
-                 >
-                   <item.icon className="size-5" />
-                   {item.label}
-                 </Link>
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base font-extrabold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 [&.active]:bg-zinc-900 [&.active]:text-white shadow-sm"
+                >
+                  <item.icon className="size-5" />
+                  {item.label}
+                </Link>
               ))}
             </nav>
             <div className="p-6 border-t border-zinc-200 pb-12">
-              <button 
+              <button
                 onClick={handleLogout}
                 className="flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3.5 text-base font-black text-white bg-red-600 hover:bg-red-700 shadow-md cursor-pointer"
               >

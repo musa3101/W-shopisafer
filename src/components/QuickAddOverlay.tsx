@@ -20,11 +20,15 @@ export function QuickAddOverlay({
   // Determinar la lista de tallas disponibles
   const availableSizes = (() => {
     if (product.sizes && product.sizes.length > 0) return product.sizes;
-    
+
     const catLower = (product.category || "").toLowerCase();
     const nameLower = (product.name || "").toLowerCase();
 
-    if (catLower.includes("accesorios") || catLower.includes("bolso") || nameLower.includes("cinturón")) {
+    if (
+      catLower.includes("accesorios") ||
+      catLower.includes("bolso") ||
+      nameLower.includes("cinturón")
+    ) {
       return ["Talla Única"];
     }
     return ["XS", "S", "M", "L", "XL"];

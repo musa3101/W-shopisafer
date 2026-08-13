@@ -22,18 +22,18 @@ Call log:
 
 ```ts
   1  | import { test, expect } from '../fixtures/base';
-  2  | 
+  2  |
   3  | test.describe('06 — Adaptabilidad Responsive', () => {
-  4  | 
+  4  |
   5  |   test('el sitio es navegable en vista móvil', async ({ page }) => {
   6  |     await page.setViewportSize({ width: 375, height: 667 });
 > 7  |     await page.goto('/');
      |                ^ Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
   8  |     await page.waitForTimeout(3000); // Esperar loader
-  9  | 
+  9  |
   10 |     const body = page.locator('body');
   11 |     await expect(body).toBeVisible();
-  12 | 
+  12 |
   13 |     // Comprobar menú hamburguesa si existe
   14 |     const menuBtn = page.locator('button').filter({ has: page.locator('svg.lucide-menu') }).first();
   15 |     if (await menuBtn.isVisible().catch(() => false)) {
@@ -41,7 +41,7 @@ Call log:
   17 |       await page.waitForTimeout(500);
   18 |     }
   19 |   });
-  20 | 
+  20 |
   21 | });
-  22 | 
+  22 |
 ```

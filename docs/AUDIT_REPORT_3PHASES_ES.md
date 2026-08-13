@@ -20,27 +20,26 @@
 ## 📋 Lista de Pruebas Ejecutadas
 
 ### ✅ Pruebas Exitosas (19)
+
 - **[Frontend]** Título SEO de la página principal `(Isafer Boutique | Sexy, Elegante y Moldeadora · Brooklyn, NY)`
-- **[Frontend]** InitialLoader desaparece correctamente tras carga inicial 
+- **[Frontend]** InitialLoader desaparece correctamente tras carga inicial
 - **[Frontend]** Sección Hero visible `(Sensual &Elegante)`
-- **[Frontend]** Botón CTA en Hero procesado correctamente 
+- **[Frontend]** Botón CTA en Hero procesado correctamente
 - **[Frontend]** Barra de navegación renderizada con botones `(4 elementos)`
 - **[Frontend]** Catálogo renderiza tarjetas de productos `(15 productos)`
-- **[Frontend]** Clic en tarjeta de producto abre ProductDetailModal 
-- **[Frontend]** Icono de bolsa abre el carrito lateral (Sheet) 
-- **[Frontend]** Botón de explorar dentro del carrito vacío cierra el modal 
-- **[Frontend]** Todas las imágenes cargan correctamente (0 imágenes rotas) 
-- **[Frontend]** Responsive Móvil sin scrollbar horizontal (375px) 
+- **[Frontend]** Clic en tarjeta de producto abre ProductDetailModal
+- **[Frontend]** Icono de bolsa abre el carrito lateral (Sheet)
+- **[Frontend]** Botón de explorar dentro del carrito vacío cierra el modal
+- **[Frontend]** Todas las imágenes cargan correctamente (0 imágenes rotas)
+- **[Frontend]** Responsive Móvil sin scrollbar horizontal (375px)
 - **[Backend]** Lectura pública de tabla "products" permitida `(15 productos obtenidos)`
 - **[Backend]** RLS/Seguridad bloquea inserciones anónimas en "products" `(new row violates row-level security policy for table "products")`
-- **[Backend]** RLS/Seguridad bloquea eliminación anónima en "products" 
-- **[Backend]** Tabla de pedidos no expone datos 
-- **[Backend]** Autenticación con usuario administrador exitosa (admin / admin) 
-- **[Adversarial]** Protección de ruta /admin redirecciona a login sin sesión activa 
-- **[Adversarial]** Protección de ruta /admin/pedidos redirecciona a login 
-- **[Backend]** Validación del servidor rechaza pedidos con montos o cantidades negativas 
-
-
+- **[Backend]** RLS/Seguridad bloquea eliminación anónima en "products"
+- **[Backend]** Tabla de pedidos no expone datos
+- **[Backend]** Autenticación con usuario administrador exitosa (admin / admin)
+- **[Adversarial]** Protección de ruta /admin redirecciona a login sin sesión activa
+- **[Adversarial]** Protección de ruta /admin/pedidos redirecciona a login
+- **[Backend]** Validación del servidor rechaza pedidos con montos o cantidades negativas
 
 ---
 

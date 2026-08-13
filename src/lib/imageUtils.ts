@@ -5,7 +5,7 @@
 /**
  * Convierte un archivo de imagen (PNG, JPG, HEIC, etc.) a formato WebP optimizado
  * y redimensiona su ancho si excede un límite máximo para acelerar la carga en móvil.
- * 
+ *
  * @param file Archivo de imagen original seleccionado por el usuario.
  * @param quality Calidad de compresión WebP (0 a 1). Por defecto 0.8.
  * @param maxWidth Ancho máximo permitido para la imagen. Por defecto 1200px.
@@ -14,11 +14,17 @@
 export async function convertToWebP(
   file: File,
   quality: number = 0.8,
-  maxWidth: number = 1200
+  maxWidth: number = 1200,
 ): Promise<File> {
   // Si el navegador no soporta Canvas o FileReader de forma básica, retornar el original
-  if (typeof window === 'undefined' || !window.HTMLCanvasElement || !window.FileReader) {
-    console.warn("Entorno no soporta Canvas/FileReader, subiendo imagen original.");
+  if (
+    typeof window === "undefined" ||
+    !window.HTMLCanvasElement ||
+    !window.FileReader
+  ) {
+    console.warn(
+      "Entorno no soporta Canvas/FileReader, subiendo imagen original.",
+    );
     return file;
   }
 
@@ -30,11 +36,11 @@ export async function convertToWebP(
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    
+
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target?.result as string;
-      
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
         let width = img.width;
@@ -65,37 +71,42 @@ export async function convertToWebP(
               // Reemplazar la extensión del nombre por .webp
               const originalName = file.name;
               const lastDotIndex = originalName.lastIndexOf(".");
-              const baseName = lastDotIndex !== -1 ? originalName.substring(0, lastDotIndex) : originalName;
+              const baseName =
+                lastDotIndex !== -1
+                  ? originalName.substring(0, lastDotIndex)
+                  : originalName;
               const webpName = `${baseName}.webp`;
 
               const webpFile = new File([blob], webpName, {
                 type: "image/webp",
                 lastModified: Date.now(),
               });
-              
+
               console.log(
                 `Imagen optimizada a WebP: ${file.name} (${(file.size / 1024).toFixed(1)} KB) -> ` +
-                `${webpFile.name} (${(webpFile.size / 1024).toFixed(1)} KB) | Ahorro: ` +
-                `${(((file.size - webpFile.size) / file.size) * 100).toFixed(0)}%`
+                  `${webpFile.name} (${(webpFile.size / 1024).toFixed(1)} KB) | Ahorro: ` +
+                  `${(((file.size - webpFile.size) / file.size) * 100).toFixed(0)}%`,
               );
-              
+
               resolve(webpFile);
             } else {
               reject(new Error("Error al exportar el canvas a blob WebP."));
             }
           },
           "image/webp",
-          quality
+          quality,
         );
       };
-      
+
       img.onerror = (err) => {
         reject(new Error("Error al cargar el objeto Image del navegador."));
       };
     };
-    
+
     reader.onerror = (err) => {
-      reject(new Error("Error al leer el archivo de imagen mediante FileReader."));
+      reject(
+        new Error("Error al leer el archivo de imagen mediante FileReader."),
+      );
     };
   });
 }

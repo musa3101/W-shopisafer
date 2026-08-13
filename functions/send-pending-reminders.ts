@@ -2,15 +2,23 @@ import { createClient } from "npm:@insforge/sdk@1.5.2";
 
 export default async function (req: Request) {
   try {
-    console.log("Iniciando tarea programada: Enviar recordatorios de pedidos pendientes...");
+    console.log(
+      "Iniciando tarea programada: Enviar recordatorios de pedidos pendientes...",
+    );
 
     // Inicializar cliente de administración de InsForge
-    const insforgeUrl = Deno.env.get("INSFORGE_URL") || "https://i5jqzbx6.us-east.insforge.app";
-    const serviceKey = Deno.env.get("INSFORGE_API_KEY") || Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") || "";
+    const insforgeUrl =
+      Deno.env.get("INSFORGE_URL") || "https://i5jqzbx6.us-east.insforge.app";
+    const serviceKey =
+      Deno.env.get("INSFORGE_API_KEY") ||
+      Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") ||
+      "";
     const ownerPhone = Deno.env.get("OWNER_PHONE") || "19296772514";
 
     if (!serviceKey) {
-      console.error("INSFORGE_API_KEY no encontrada en las variables de entorno!");
+      console.error(
+        "INSFORGE_API_KEY no encontrada en las variables de entorno!",
+      );
       return new Response("Missing API Key", { status: 500 });
     }
 
@@ -21,10 +29,16 @@ export default async function (req: Request) {
 
     // Calcular límites de tiempo
     // Creados hace más de 24 horas y menos de 7 días (para evitar spamear pedidos antiguos)
-    const timeLimit24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const timeLimit7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const timeLimit24h = new Date(
+      Date.now() - 24 * 60 * 60 * 1000,
+    ).toISOString();
+    const timeLimit7d = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
 
-    console.log(`Buscando órdenes pendientes creadas entre ${timeLimit7d} y ${timeLimit24h}...`);
+    console.log(
+      `Buscando órdenes pendientes creadas entre ${timeLimit7d} y ${timeLimit24h}...`,
+    );
 
     const { data: pendingOrders, error: fetchError } = await insforge.database
       .from("orders")
@@ -35,23 +49,47 @@ export default async function (req: Request) {
       .gt("created_at", timeLimit7d);
 
     if (fetchError) {
-      console.error("Error al buscar órdenes pendientes en PostgreSQL:", fetchError);
-      return new Response(JSON.stringify({ error: fetchError.message }), { status: 500 });
+      console.error(
+        "Error al buscar órdenes pendientes en PostgreSQL:",
+        fetchError,
+      );
+      return new Response(JSON.stringify({ error: fetchError.message }), {
+        status: 500,
+      });
     }
 
     if (!pendingOrders || pendingOrders.length === 0) {
-      console.log("No se encontraron pedidos pendientes que califiquen para recordatorio.");
-      return new Response(JSON.stringify({ message: "No pending orders to remind.", count: 0 }), { status: 200 });
+      console.log(
+        "No se encontraron pedidos pendientes que califiquen para recordatorio.",
+      );
+      return new Response(
+        JSON.stringify({ message: "No pending orders to remind.", count: 0 }),
+        { status: 200 },
+      );
     }
 
-    console.log(`Se encontraron ${pendingOrders.length} pedido(s) pendiente(s). Procesando correos...`);
+    console.log(
+      `Se encontraron ${pendingOrders.length} pedido(s) pendiente(s). Procesando correos...`,
+    );
     let emailsSentCount = 0;
 
     for (const order of pendingOrders) {
-      const { id, customer_name, customer_email, total_amount, items, stripe_session_id } = order;
+      const {
+        id,
+        customer_name,
+        customer_email,
+        total_amount,
+        items,
+        stripe_session_id,
+      } = order;
 
-      if (!customer_email || customer_email.includes("cliente@isaferboutique.com")) {
-        console.log(`Orden #${id.slice(0, 8)} omitida: Es un invitado sin correo real.`);
+      if (
+        !customer_email ||
+        customer_email.includes("cliente@isaferboutique.com")
+      ) {
+        console.log(
+          `Orden #${id.slice(0, 8)} omitida: Es un invitado sin correo real.`,
+        );
         // Marcar como procesado para no volver a evaluarlo
         await insforge.database
           .from("orders")
@@ -60,30 +98,35 @@ export default async function (req: Request) {
         continue;
       }
 
-      console.log(`Enviando recordatorio para Orden #${id.slice(0, 8)} a ${customer_email}...`);
+      console.log(
+        `Enviando recordatorio para Orden #${id.slice(0, 8)} a ${customer_email}...`,
+      );
 
       // Parsear items si están en string
-      const parsedItems = typeof items === "string" ? JSON.parse(items) : items || [];
+      const parsedItems =
+        typeof items === "string" ? JSON.parse(items) : items || [];
       const itemsHtml = Array.isArray(parsedItems)
         ? parsedItems
             .map(
               (item: any) =>
-                `<li style="margin: 8px 0; font-size: 14px;"><strong>${item.name || "Prenda"}</strong> x${item.quantity || 1} - <span style="color: #e11d48;">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)} USD</span></li>`
+                `<li style="margin: 8px 0; font-size: 14px;"><strong>${item.name || "Prenda"}</strong> x${item.quantity || 1} - <span style="color: #e11d48;">$${((item.price || 0) * (item.quantity || 1)).toFixed(2)} USD</span></li>`,
             )
             .join("")
         : "";
 
       // Generar link de pago o confirmación de WhatsApp
-      let actionUrl = `https://wa.me/${ownerPhone}?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%20pendiente%20%23${id.slice(0,8)}`;
+      let actionUrl = `https://wa.me/${ownerPhone}?text=Hola%20Isafer%20Boutique%2C%20quisiera%20confirmar%20mi%20pedido%20pendiente%20%23${id.slice(0, 8)}`;
       let actionText = "Confirmar por WhatsApp 💬";
-      let actionDescription = "Para coordinar el pago en efectivo o por Zelle, y agendar tu retiro o envío, escríbenos directamente a nuestro WhatsApp oficial pulsando el botón inferior:";
+      let actionDescription =
+        "Para coordinar el pago en efectivo o por Zelle, y agendar tu retiro o envío, escríbenos directamente a nuestro WhatsApp oficial pulsando el botón inferior:";
 
       if (stripe_session_id) {
         // Si el pedido tiene un ID de sesión de Stripe, es un pedido con tarjeta pendiente
-        // Aunque generalmente en Stripe las sesiones expiran en 24h, redirigimos a WhatsApp para soporte si es necesario, 
+        // Aunque generalmente en Stripe las sesiones expiran en 24h, redirigimos a WhatsApp para soporte si es necesario,
         // o proporcionamos la redirección si la sesión sigue activa.
         actionText = "Completar Pago con Tarjeta 💳";
-        actionDescription = "Vemos que iniciaste el proceso de pago con tarjeta pero no se completó. Puedes pulsar abajo para escribirnos a nuestro WhatsApp y te ayudaremos a finalizarlo:";
+        actionDescription =
+          "Vemos que iniciaste el proceso de pago con tarjeta pero no se completó. Puedes pulsar abajo para escribirnos a nuestro WhatsApp y te ayudaremos a finalizarlo:";
       }
 
       const emailHtml = `
@@ -127,15 +170,21 @@ export default async function (req: Request) {
 
       const emailRes = await insforge.emails.send({
         to: customer_email,
-        subject: "💖 ¿Aún quieres tus prendas? Recordatorio de Pedido Pendiente · Isafer Boutique",
+        subject:
+          "💖 ¿Aún quieres tus prendas? Recordatorio de Pedido Pendiente · Isafer Boutique",
         html: emailHtml,
         from: "Isafer Boutique",
       });
 
       if (emailRes.error) {
-        console.error(`Error al enviar email de recordatorio para orden #${id.slice(0, 8)}:`, emailRes.error);
+        console.error(
+          `Error al enviar email de recordatorio para orden #${id.slice(0, 8)}:`,
+          emailRes.error,
+        );
       } else {
-        console.log(`✓ Email de recordatorio enviado exitosamente a ${customer_email}.`);
+        console.log(
+          `✓ Email de recordatorio enviado exitosamente a ${customer_email}.`,
+        );
         emailsSentCount++;
       }
 
@@ -147,13 +196,22 @@ export default async function (req: Request) {
         .eq("id", id);
     }
 
-    console.log(`Recordatorios de pedidos finalizado. Emails enviados: ${emailsSentCount}`);
+    console.log(
+      `Recordatorios de pedidos finalizado. Emails enviados: ${emailsSentCount}`,
+    );
     return new Response(
-      JSON.stringify({ success: true, message: "Reminders processed.", sent: emailsSentCount }),
-      { headers: { "Content-Type": "application/json" }, status: 200 }
+      JSON.stringify({
+        success: true,
+        message: "Reminders processed.",
+        sent: emailsSentCount,
+      }),
+      { headers: { "Content-Type": "application/json" }, status: 200 },
     );
   } catch (err: any) {
-    console.error("Excepción en la Edge Function de recordatorios:", err.message);
+    console.error(
+      "Excepción en la Edge Function de recordatorios:",
+      err.message,
+    );
     return new Response(err.message, { status: 500 });
   }
 }

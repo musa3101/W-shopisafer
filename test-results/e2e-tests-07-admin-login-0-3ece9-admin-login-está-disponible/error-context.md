@@ -22,21 +22,21 @@ Call log:
 
 ```ts
   1  | import { test, expect } from '../fixtures/base';
-  2  | 
+  2  |
   3  | test.describe('07 — Ruta de Administración', () => {
-  4  | 
+  4  |
   5  |   test('la ruta /admin o /admin/login está disponible', async ({ page }) => {
 > 6  |     await page.goto('/admin/login');
      |                ^ Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
   7  |     await page.waitForTimeout(2000);
-  8  | 
+  8  |
   9  |     // Debe haber un formulario o pantalla de acceso
   10 |     const inputs = page.locator('input');
   11 |     if (await inputs.count() > 0) {
   12 |       await expect(inputs.first()).toBeVisible();
   13 |     }
   14 |   });
-  15 | 
+  15 |
   16 | });
-  17 | 
+  17 |
 ```
